@@ -1,0 +1,60 @@
+<!-- Plugin Configuration File: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+	<!-- Unique identifier of the plugin. It should be FQN, cannot be changed between the plugin versions. -->
+	<id>builderb0y.GlobeScript</id>
+
+	<!-- Public plugin name should be written in Title Case.
+		 Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+	<name>GlobeScript</name>
+
+	<!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+	<vendor>Builderb0y</vendor>
+
+	<!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+		 Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+	<description><![CDATA[
+		Provides syntax highlighting for GlobeScript, the language used by Big Globe.
+    ]]></description>
+
+	<!-- Product and plugin compatibility requirements.
+		 Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+	<!--depends>com.intellij.modules.lsp</depends-->
+	<!--depends>com.intellij.java</depends-->
+	<depends>com.intellij.modules.json</depends>
+	<!-- Extensions defined by the plugin.
+		 Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+	<extensions defaultExtensionNs="com.intellij">
+		<fileType
+			name="GlobeScript"
+			implementationClass="builderb0y.globescript.Instances$GlobeScriptFileType"
+			fieldName="INSTANCE"
+			language="GlobeScript"
+			extensions="gs"
+		/>
+		<lang.parserDefinition
+			language="GlobeScript"
+			implementationClass="builderb0y.globescript.GlobeScriptParserDefinition"
+		/>
+		<colorSettingsPage
+			implementation="builderb0y.globescript.GlobescriptColorSettingsPage"
+		/>
+		<annotator
+			language="GlobeScript"
+			implementationClass="builderb0y.globescript.GlobeScriptAnnotator$RawAnnotator"
+		/>
+		<annotator
+			language="JSON"
+			implementationClass="builderb0y.globescript.GlobeScriptAnnotator$JsonAnnotator"
+		/>
+		<enterHandlerDelegate
+			implementation="builderb0y.globescript.JsonEnterHandler"
+			order="first"
+		/>
+		<backspaceHandlerDelegate
+			implementation="builderb0y.globescript.JsonBackspaceHandler"
+		/>
+		<customPasteProvider
+			implementation="builderb0y.globescript.JsonPasteHandler"
+		/>
+	</extensions>
+</idea-plugin>

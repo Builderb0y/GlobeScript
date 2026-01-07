@@ -1,0 +1,1 @@
+Provides syntax highlighting for GlobeScript (the scripting language used by [Big Globe](https://github.com/Builderb0y/BigGlobe).
