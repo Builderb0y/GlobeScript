@@ -1,0 +1,38 @@
+{
+	"types": [
+		{
+			"name": "root",
+			"extends": null
+		},
+		"class value extends root",
+		"interface primitive_comparable extends value",
+		"class boolean extends value implements primitive_comparable",
+		"class primitive_number extends value implements primitive_comparable",
+		"class primitive_integer extends primitive_number",
+		"class primitive_floating_point extends primitive_number",
+		"class byte extends primitive_integer",
+		"class short extends primitive_integer",
+		"class char extends primitive_integer",
+		"class int extends primitive_integer",
+		"class long extends primitive_integer",
+		"class float extends primitive_floating_point",
+		"class double extends primitive_floating_point",
+		"class void extends root",
+		"final class Boolean extends Object implements Comparable",
+		"final class Byte extends Number implements Comparable",
+		"final class Short extends Number implements Comparable",
+		"final class Character extends Object implements Comparable",
+		"final class Integer extends Number implements Comparable",
+		"final class Long extends Number implements Comparable",
+		"final class Float extends Number implements Comparable",
+		"final class Double extends Number implements Comparable",
+		"final class Void extends Object",
+		"class Object extends value",
+		"abstract class Number extends Object",
+		"final class String extends Object implements Comparable",
+		"interface Comparable implements primitive_comparable",
+		"final class Class extends Object",
+		"record MinecraftVersion",
+		"abstract class Record extends Object"
+	]
+}

@@ -1,0 +1,124 @@
+{
+	"types": [
+		"abstract class Tag extends Object implements Iterable",
+		"class mc_reg_entry extends Object",
+		"class Block extends Object",
+		"class BlockTag extends Tag",
+		"class BlockState extends Object",
+		"class Biome extends mc_reg_entry",
+		"class BiomeTag extends Tag",
+		"class ConfiguredFeature extends mc_reg_entry",
+		"class ConfiguredFeatureTag extends Tag"
+	],
+	"environments": [
+		{
+			"name": "minecraft",
+			"types": [
+				{ "name": "Tag",                  "type": "Tag"                  },
+				{ "name": "Block",                "type": "Block"                },
+				{ "name": "BlockTag",             "type": "BlockTag"             },
+				{ "name": "BlockState",           "type": "BlockState"           },
+				{ "name": "Biome",                "type": "Biome"                },
+				{ "name": "BiomeTag",             "type": "BiomeTag"             },
+				{ "name": "ConfiguredFeature",    "type": "ConfiguredFeature"    },
+				{ "name": "ConfiguredFeatureTag", "type": "ConfiguredFeatureTag" },
+			],
+			"instance_fields": [
+				"int Tag.size",
+				"boolean Tag.isEmpty",
+				"String Block.id",
+				"String mc_reg_entry.id",
+				"float Biome.temperature",
+				"float Biome.downfall",
+				{
+					"owner": "BlockState",
+					"name": null,
+					"type": "Comparable"
+				}
+			],
+			"instance_methods": [
+				"BlockState Block.getDefaultState()",
+				"BlockState Block.getRandomState(Random random)",
+				"BlockState Block.getRandomState(long seed)",
+				"Block BlockTag.random(Random random)",
+				"Block BlockTag.random(long seed)",
+				"Block BlockState.getBlock()",
+				"boolean BlockState.isAir()",
+				"boolean BlockState.isReplaceable()",
+				"boolean BlockState.hasWater()",
+				"boolean BlockState.hasLava()",
+				"boolean BlockState.hasSoulLava()",
+				"boolean BlockState.hasFluid()",
+				"boolean BlockState.blocksLight()",
+				"boolean BlockState.hasCollision()",
+				"boolean BlockState.hasFullCubeCollision()",
+				"boolean BlockState.hasFullCubeOutline()",
+				"BlockState BlockState.rotate(int angle)",
+				"BlockState BlockState.mirror(String axis)",
+				"BlockState BlockState.with(String property, Comparable value)",
+				"Biome BiomeTag.random(Random random)",
+				"Biome BiomeTag.random(long seed)",
+				"ConfiguredFeature ConfiguredFeatureTag.random(Random random)",
+				"ConfiguredFeature ConfiguredFeatureTag.random(long seed)",
+				"boolean BlockState.isIn(BlockTag tag)",
+				"boolean Block.isIn(BlockTag tag)",
+				"boolean Biome.isIn(BiomeTag tag)",
+				"boolean ConfiguredFeature.isIn(ConfiguredFeatureTag tag)"
+			],
+			"keywords": [
+				{ "name": "BlockTag",             "keyword": "tag_constructor", "color": "type" },
+				{ "name": "BiomeTag",             "keyword": "tag_constructor", "color": "type" },
+				{ "name": "ConfiguredFeatureTag", "keyword": "tag_constructor", "color": "type" }
+			],
+			"casters": [
+				"implicit String -> Block",
+				"implicit String -> BlockState",
+				"implicit String -> Biome",
+				"implicit String -> ConfiguredFeature",
+			]
+		},
+		{
+			"name": "minecraft/with_random",
+			"instance_methods": [
+				"BlockState Block.getRandomState()",
+				"Block BlockTag.random()",
+				"Biome BiomeTag.random()",
+				"ConfiguredFeature ConfiguredFeatureTag.random()"
+			]
+		},
+		{
+			"name": "minecraft/with_world",
+			"variables": [
+				{ "name": "worldSeed", "type": "long" },
+				{ "name": "minValidYLevel", "type": "int" },
+				{ "name": "maxValidYLevel", "type": "int" }
+			],
+			"functions": [
+				"BlockState getBlockState(int*(x, y, z))",
+				"boolean setBlockState(int*(x, y, z), BlockState state)",
+				"boolean setBlockStateReplaceable(int*(x, y, z), BlockState state)",
+				"boolean setBlockStateNonReplaceable(int*(x, y, z), BlockState state)",
+				"boolean updateBlockState(int*(x, y, z))",
+				"boolean placeBlockState(int*(x, y, z), BlockState state)",
+				"void fillBlockState(int*(minX, minY, minZ, maxX, maxY, maxZ), BlockState state)",
+				"void fillBlockStateReplaceable(int*(minX, minY, minZ, maxX, maxY, maxZ), BlockState state)",
+				"void fillBlockStateNonReplaceable(int*(minX, minY, minZ, maxX, maxY, maxZ), BlockState state)",
+				"void updateBlockStates(int*(minX, minY, minZ, maxX, maxY, maxZ))",
+				"boolean placeFeature(int*(x, y, z), ConfiguredFeature feature)",
+				"boolean isYLevelValid(int y)",
+				"boolean isPositionValid(int*(x, y, z))",
+				//todo: getBlockData(), setBlockData(), mergeBlockData(), summon().
+				"int transformX(int*(x, y, z))",
+				"int transformY(int*(x, y, z))",
+				"int transformZ(int*(x, y, z))",
+				"double transformX(double*(x, y, z))",
+				"double transformY(double*(x, y, z))",
+				"double transformZ(double*(x, y, z))"
+			],
+			"instance_methods": [
+				"boolean BlockState.canPlaceAt(int*(x, y, z))",
+				"boolean BlockState.canStayAt(int*(x, y, z))"
+			]
+		}
+	]
+}

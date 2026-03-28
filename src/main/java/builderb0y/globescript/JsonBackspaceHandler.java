@@ -9,6 +9,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions;
 import org.jetbrains.annotations.NotNull;
 
+import builderb0y.globescript.util.Util;
+
 public class JsonBackspaceHandler extends BackspaceHandlerDelegate {
 
 	@Override

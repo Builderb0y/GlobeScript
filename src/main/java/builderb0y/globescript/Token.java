@@ -1,5 +1,7 @@
 package builderb0y.globescript;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -9,7 +11,7 @@ import com.intellij.openapi.util.TextRange;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class Token {
+public class Token implements OneOrMoreTokens {
 
 	public static final Token[] EMPTY_ARRAY = {};
 
@@ -17,52 +19,66 @@ public class Token {
 	public int parentIndex = -1;
 	public TextRange range;
 	public TextAttributesKey color;
-	public @Nullable String tooltip;
+	public List<PsiErrorDisplay> tooltips = new ArrayList<>(2);
+	public TokenInfo info;
 	public Token[] children;
 
-	public Token(@NotNull CharSequence text, int start, int end, @NotNull TextAttributesKey color) {
-		this.range = new TextRange(start, end);
-		this.color = color;
+	public Token(@NotNull CharSequence text, int start, int end, TokenInfo info) {
 		this.parent = text;
+		this.range = new TextRange(start, end);
+		this.info = info;
 		this.children = EMPTY_ARRAY;
 	}
 
-	public Token(@NotNull CharSequence text, @NotNull Token @NotNull ... children) {
+	public Token(@NotNull CharSequence text, TokenInfo info, @Nullable Token @NotNull ... children) {
 		this.parent = text;
+		this.info = info;
+
+		int length = children.length, count = 0;
+		for (int index = 0; index < length; index++) {
+			Token child = children[index];
+			if (child != null) {
+				count++;
+				if (child.parent instanceof Token) {
+					throw new IllegalArgumentException("Changing parent of " + child + " from " + child.parent + " to " + this);
+				}
+				else {
+					child.parent = this;
+					child.parentIndex = index; //optimistic.
+				}
+			}
+		}
+
+		if (count < length) {
+			Token[] newChildren = new Token[count];
+			int writeIndex = 0;
+			for (Token child : children) {
+				if (child != null) {
+					(newChildren[writeIndex] = child).parentIndex = writeIndex++;
+				}
+			}
+			children = newChildren;
+		}
+
 		this.range = new TextRange(
 			children[0].range.getStartOffset(),
 			children[children.length - 1].range.getEndOffset()
 		);
 		this.children = children;
-
-		for (int index = 0, length = children.length; index < length; index++) {
-			Token child = children[index];
-			if (child.parent instanceof Token) {
-				throw new IllegalArgumentException("Changing parent of " + child + " from " + child.parent + " to " + this);
-			}
-			else {
-				child.parent = this;
-				child.parentIndex = index;
-			}
-		}
 	}
 
-	public Token(CharSequence text, @NotNull List<@NotNull Token> children) {
-		this(text, children.toArray(EMPTY_ARRAY));
+	public Token(CharSequence text, TokenInfo info, @NotNull List<@Nullable Token> children) {
+		this(text, info, children.toArray(EMPTY_ARRAY));
 	}
 
-	public static @NotNull Token @NotNull [] filterNulls(@Nullable Token @NotNull ... tokens) {
-		int count = 0;
-		for (Token token : tokens) {
-			if (token != null) count++;
+	public Token[] disownChildren() {
+		CharSequence text = this.getEntireText();
+		Token[] children = this.children;
+		this.children = EMPTY_ARRAY;
+		for (Token child : children) {
+			child.parent = text;
 		}
-		if (count == tokens.length) return tokens;
-		Token[] result = new Token[count];
-		int index = 0;
-		for (Token token : tokens) {
-			if (token != null) result[index++] = token;
-		}
-		return result;
+		return children;
 	}
 
 	public CharSequence getEntireText() {
@@ -100,9 +116,26 @@ public class Token {
 		return this;
 	}
 
-	public Token withTooltip(String tooltip) {
-		this.tooltip = tooltip;
+	public Token withInfo(TokenInfo info) {
+		this.info = info;
 		return this;
+	}
+
+	public Token initIdentifier(TextAttributesKey color, TokenInfo info) {
+		return this.withColor(color).withInfo(info);
+	}
+
+	public Token withTooltip(String tooltip) {
+		return this.withError(new PsiErrorDisplay(this.range.getStartOffset(), this.range.getEndOffset(), tooltip));
+	}
+
+	public Token withError(PsiErrorDisplay error) {
+		this.tooltips.add(error);
+		return this;
+	}
+
+	public Token error(String tooltip) {
+		return this.withColor(Colors.ERROR).withInfo(TokenInfo.ERROR).withTooltip(tooltip);
 	}
 
 	public boolean isLeaf() {
@@ -113,6 +146,26 @@ public class Token {
 		Token token = this;
 		while (!token.isLeaf()) token = token.children[0];
 		return token;
+	}
+
+	public static List<Token> typesOnly(Token... tokens) {
+		List<Token> list = new ArrayList<>(tokens.length);
+		for (Token child : tokens) {
+			if (child.info.type() != null) list.add(child);
+		}
+		return list;
+	}
+
+	public static List<Token> typesOnly(List<Token> tokens) {
+		List<Token> list = new ArrayList<>(tokens.size());
+		for (Token child : tokens) {
+			if (child.info.type() != null) list.add(child);
+		}
+		return list;
+	}
+
+	public List<Token> getChildrenWithTypes() {
+		return typesOnly(this.children);
 	}
 
 	public Stream<Token> streamLeaves() {
@@ -128,6 +181,37 @@ public class Token {
 
 	@Override
 	public String toString() {
-		return (this.color != null ? this.color.getExternalName() : "<no color>") + " " + this.getText() + " " + this.range;
+		return (this.color != null ? this.color.getExternalName() : "<no color>") + " " + this.info.type() + " " + this.getText() + " " + this.range;
+	}
+
+	@Override
+	public void addTo(List<Token> list) {
+		list.add(this);
+	}
+
+	@Override
+	public Token group() {
+		return this;
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder extends ArrayList<Token> {
+
+		public Token build(CharSequence entireText, TokenInfo info) {
+			return new Token(entireText, info, this);
+		}
+
+		public Builder with(OneOrMoreTokens tokens) {
+			if (tokens != null) this.add(tokens.group());
+			return this;
+		}
+
+		public Builder withAll(OneOrMoreTokens tokens) {
+			if (tokens != null) tokens.addTo(this);
+			return this;
+		}
 	}
 }

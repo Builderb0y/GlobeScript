@@ -29,6 +29,7 @@ public class Instances {
 	public static final IElementType ELEMENT_TYPE = new IElementType("Instances.ELEMENT_TYPE", LANGUAGE);
 	public static final LanguageFileType FILE_TYPE = GlobeScriptFileType.INSTANCE;
 	public static final IFileElementType FILE_ELEMENT_TYPE = new IFileElementType(LANGUAGE);
+	public static final String ERROR_NOTIFICATION = "GlobeScript Error";
 	public static final Icon ICON = IconLoader.getIcon("/icons/globe.png", Instances.class);
 
 	public static class GlobeScriptLanguage extends Language {

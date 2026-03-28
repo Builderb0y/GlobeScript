@@ -7,6 +7,8 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 public class Colors {
 
 	public static final TextAttributesKey
+		JSON_HIDDEN        = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_JSON_HIDDEN",        DefaultLanguageHighlighterColors.STRING),
+
 		LINE_COMMENT       = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_LINE_COMMENT",       DefaultLanguageHighlighterColors.LINE_COMMENT),
 		BLOCK_COMMENT      = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_BLOCK_COMMENT",      DefaultLanguageHighlighterColors.BLOCK_COMMENT),
 		SCOPED_COMMENT     = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_SCOPED_COMMENT",     DefaultLanguageHighlighterColors.BLOCK_COMMENT),
@@ -21,9 +23,12 @@ public class Colors {
 		LOCAL              = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_LOCAL",              DefaultLanguageHighlighterColors.LOCAL_VARIABLE),
 		GLOBAL             = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_GLOBAL",             DefaultLanguageHighlighterColors.GLOBAL_VARIABLE),
 		PARAMETER          = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_PARAMETER",          DefaultLanguageHighlighterColors.PARAMETER),
-		FIELD              = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_FIELD",              DefaultLanguageHighlighterColors.INSTANCE_FIELD),
+		INSTANCE_FIELD     = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_INSTANCE_FIELD",     DefaultLanguageHighlighterColors.INSTANCE_FIELD),
+		STATIC_FIELD       = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_TYPE_FIELD",         DefaultLanguageHighlighterColors.STATIC_FIELD),
 		FUNCTION           = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_FUNCTION",           DefaultLanguageHighlighterColors.STATIC_METHOD),
-		METHOD             = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_METHOD",             DefaultLanguageHighlighterColors.INSTANCE_METHOD),
+		INSTANCE_METHOD    = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_INSTANCE_METHOD",    DefaultLanguageHighlighterColors.INSTANCE_METHOD),
+		STATIC_METHOD      = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_STATIC_METHOD",      DefaultLanguageHighlighterColors.STATIC_METHOD),
 		KEYWORD            = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_KEYWORD",            DefaultLanguageHighlighterColors.KEYWORD),
-		TYPE               = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_TYPE",               DefaultLanguageHighlighterColors.CLASS_NAME);
+		TYPE               = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_TYPE",               DefaultLanguageHighlighterColors.CLASS_NAME),
+		LABEL              = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_LABEL",              DefaultLanguageHighlighterColors.LABEL);
 }

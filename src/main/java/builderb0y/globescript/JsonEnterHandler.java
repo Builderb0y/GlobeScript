@@ -20,6 +20,8 @@ import com.intellij.util.DocumentUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import builderb0y.globescript.util.Util;
+
 public class JsonEnterHandler implements EnterHandlerDelegate {
 
 	@Override

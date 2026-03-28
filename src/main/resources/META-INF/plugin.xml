@@ -56,5 +56,15 @@
 		<customPasteProvider
 			implementation="builderb0y.globescript.JsonPasteHandler"
 		/>
+		<notificationGroup
+			displayType="BALLOON"
+			id="GlobeScript Parsing Error"
+		/>
 	</extensions>
+	<applicationListeners>
+		<listener
+			class="builderb0y.globescript.datadriven.DataContextReloader"
+			topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+		/>
+	</applicationListeners>
 </idea-plugin>

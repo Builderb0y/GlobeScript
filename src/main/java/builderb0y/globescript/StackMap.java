@@ -2,12 +2,17 @@ package builderb0y.globescript;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.HashCommon;
+import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import builderb0y.globescript.util.Util;
+
+@Debug.Renderer(hasChildren = "nodeCount != 0", childrenArray = "debug$childrenArray()")
 public class StackMap<K, V> {
 
 	public final Hash.Strategy<K> strategy;
@@ -24,14 +29,33 @@ public class StackMap<K, V> {
 		this.strategy = strategy;
 	}
 
-	public void putAll(StackMap<K, V> that) {
-		if (that.frameCount != 1) throw new IllegalArgumentException("Iteration only supported on fresh maps");
-		for (Node<K, V> node : that.table) {
+	public Object[] debug$childrenArray() {
+		int index = 0;
+		Object[] children = new Object[this.nodeCount];
+		for (Node<K, V> node : this.table) {
 			while (node != null) {
-				this.put(node.getKey(), node.getValue());
+				children[index++] = node;
 				node = node.up;
 			}
 		}
+		assert index == children.length;
+		return children;
+	}
+
+	public void putAll(StackMap<K, V> that) {
+		if (that.frameCount != 1) throw new IllegalArgumentException("Iteration only supported on fresh maps");
+		if (that.nodeCount != 0) {
+			for (Node<K, V> node : that.table) {
+				while (node != null) {
+					this.put(node.getKey(), node.getValue());
+					node = node.up;
+				}
+			}
+		}
+	}
+
+	public static <K, V> StackMap<K, V> withFallback(V fallback) {
+		return withFallback(Util.defaultHashStrategy(), fallback);
 	}
 
 	public static <K, V> StackMap<K, V> withFallback(Hash.Strategy<K> strategy, V fallback) {
@@ -100,7 +124,7 @@ public class StackMap<K, V> {
 	}
 
 	public void pop() {
-		while (true) {
+		if (this.nodeCount != 0) while (true) {
 			Node<K, V> toRemove = this.rightMost;
 			assert toRemove.right == null;
 			if (toRemove.stackFrame < this.frameCount) break;
@@ -204,8 +228,44 @@ public class StackMap<K, V> {
 		return existing != null ? existing.getValue() : this.getFallback(key);
 	}
 
+	public V computeIfAbsent(K key, Function<? super K, ? extends V> valueComputer) {
+		Node<K, V> node = this.getNode(key);
+		if (node != null) return node.value;
+		V value = valueComputer.apply(key);
+		this.put(key, value);
+		return value;
+	}
+
 	public V getFallback(K key) {
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		if (this.nodeCount == 0) return "{}";
+		StringBuilder builder = new StringBuilder();
+		for (Node<K, V> node : this.table) {
+			while (node != null) {
+				builder.append(node).append(", ");
+				node = node.up;
+			}
+		}
+		builder.setLength(builder.length() - 2);
+		return builder.append(" }").toString();
+	}
+
+	public String toIndentedString(int indent) {
+		String indentStr = "\t".repeat(indent);
+		if (this.nodeCount == 0) return indentStr + "<empty>";
+		StringBuilder builder = new StringBuilder();
+		for (Node<K, V> node : this.table) {
+			while (node != null) {
+				builder.append(indentStr).append(node).append('\n');
+				node = node.up;
+			}
+		}
+		builder.setLength(builder.length() - 1);
+		return builder.toString();
 	}
 
 	public static class Node<K, V> implements Map.Entry<K, V> {
@@ -255,7 +315,7 @@ public class StackMap<K, V> {
 
 		@Override
 		public String toString() {
-			return this.key + " -> " + this.value;
+			return this.key + " -> " + this.value + " @ " + this.stackFrame;
 		}
 	}
 }

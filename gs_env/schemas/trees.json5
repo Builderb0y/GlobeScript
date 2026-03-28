@@ -1,0 +1,60 @@
+{
+	"environments": [
+		{
+			"name": "tree_trunk_thickness",
+			"variables": [
+				{ "name": "height",       "type": "double", "color": "parameter" },
+				{ "name": "fraction",     "type": "double", "color": "parameter" },
+				{ "name": "minThickness", "type": "double" }
+			]
+		},
+		{
+			"name": "tree_branch_shape",
+			"variables": [
+				{ "name": "fraction", "type": "double", "color": "parameter" }
+			]
+		}
+	],
+	"schemas": [
+		{
+			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"when": {
+				"type": "bigglobe:natural_tree"
+			},
+			"json_path": "^config>trunk>thickness$",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"tree_trunk_thickness"
+			]
+		},
+		{
+			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"when": {
+				"type": "bigglobe:natural_tree"
+			},
+			"json_path": "^config>height$",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"random/instance"
+			]
+		},
+		{
+			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"when": {
+				"type": "bigglobe:natural_tree"
+			},
+			"json_path": "^config>branches>(length|height)_function$",
+			"environments": [
+				"builtin",
+				"math",
+				"random/instance",
+				"stateless_random",
+				"tree_branch_shape"
+			]
+		}
+	]
+}

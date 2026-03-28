@@ -1,5 +1,7 @@
 package builderb0y.globescript;
 
+import builderb0y.globescript.util.Util;
+
 public class JsonExpressionReader extends ExpressionReader {
 
 	public JsonExpressionReader(CharSequence input, int bufferStart, int bufferEnd) {

@@ -1,0 +1,28 @@
+{
+	"environments": [
+		{
+			"name": "origin_pos",
+			"variables": [
+				{ "name": "originX", "type": "int", "color": "parameter" },
+				{ "name": "originY", "type": "int", "color": "parameter" },
+				{ "name": "originZ", "type": "int", "color": "parameter" }
+			]
+		}
+	],
+	"schemas": [
+		{
+			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"when": {
+				"type": "bigglobe:script"
+			},
+			"json_path": "^script$",
+			"environments": [
+				"builtin",
+				"math",
+				"random/instance",
+				"stateless_random",
+				"origin_pos"
+			]
+		}
+	]
+}

@@ -2,6 +2,8 @@ package builderb0y.globescript;
 
 import java.util.*;
 
+import builderb0y.globescript.util.Util;
+
 public class StackMapTest {
 
 	public static void main(String[] args) {

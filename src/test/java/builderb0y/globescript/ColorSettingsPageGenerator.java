@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 
 public class ColorSettingsPageGenerator {
 
+	/*
 	public static void main(String[] args) {
 		String text = """
 		;line comment
@@ -30,4 +31,5 @@ public class ColorSettingsPageGenerator {
 			prev = token;
 		}
 	}
+	*/
 }

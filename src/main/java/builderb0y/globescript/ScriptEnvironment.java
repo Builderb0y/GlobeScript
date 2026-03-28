@@ -1,146 +1,296 @@
 package builderb0y.globescript;
 
-import com.intellij.openapi.editor.colors.TextAttributesKey;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ScriptEnvironment {
+import org.jetbrains.annotations.Nullable;
 
-	public static final ScriptEnvironment BUILTIN = (
-		new ScriptEnvironment()
-		.addType("boolean")
-		.addType("byte")
-		.addType("short")
-		.addType("int")
-		.addType("long")
-		.addType("float")
-		.addType("double")
-		.addType("char")
-		.addType("void")
+import builderb0y.globescript.datadriven.DataContext.StandardTypes;
+import builderb0y.globescript.datadriven.EnvironmentModel;
+import builderb0y.globescript.datadriven.RawTypeModel;
 
-		.addType("Boolean")
-		.addType("Byte")
-		.addType("Short")
-		.addType("Integer")
-		.addType("Long")
-		.addType("Float")
-		.addType("Double")
-		.addType("Character")
-		.addType("Void")
-		.addType("Number")
+public class ScriptEnvironment extends EnvironmentModel {
 
-		.addType("Object")
-		.addType("Comparable")
-		.addType("String")
-		//.addType("Throwable")
-		.addType("Class")
+	public final StandardTypes standardTypes;
+	public final List<LoopLabel> loopLabels = new ArrayList<>();
+	public int loopLabelCount = 0;
 
-		.addType("MinecraftVersion")
-
-		.addGlobal("true")
-		.addGlobal("false")
-		.addGlobal("yes")
-		.addGlobal("no")
-		.addGlobal("null")
-
-		.addKeyword("if",     Keywords::parseIf)
-		.addKeyword("unless", Keywords::parseIf)
-		.addKeyword("while",  Keywords::parseWhile)
-		.addKeyword("until",  Keywords::parseWhile)
-		.addKeyword("repeat", Keywords::parseWhile)
-		.addKeyword("do",     Keywords::parseDo)
-		.addKeyword("class",  Keywords::parseClass)
-	);
-
-	public StackMap<CharSequence, IdentifierHandler> identifierTypes = StackMap.withFallback(Util.CHAR_SEQUENCE_STRATEGY, IdentifierTypes.UNKNOWN);
-
-	public ScriptEnvironment addLocal(String name) {
-		this.identifierTypes.put(name, IdentifierTypes.LOCAL);
-		return this;
+	public ScriptEnvironment(StandardTypes standardTypes, ScriptEnvironment that) {
+		super(that);
+		this.standardTypes = standardTypes;
 	}
 
-	public ScriptEnvironment addGlobal(String name) {
-		this.identifierTypes.put(name, IdentifierTypes.GLOBAL);
-		return this;
+	public ScriptEnvironment(StandardTypes standardTypes, EnvironmentModel... models) {
+		super(models);
+		this.standardTypes = standardTypes;
 	}
 
-	public ScriptEnvironment addParameter(String name) {
-		this.identifierTypes.put(name, IdentifierTypes.PARAMETER);
-		return this;
+	public void addUserLocal(String name, TokenInfo type) {
+		this.addVariable(new VariableData(name, Colors.LOCAL, type));
 	}
 
-	public ScriptEnvironment addField(String name) {
-		this.identifierTypes.put(name, IdentifierTypes.FIELD);
-		return this;
+	public void addUserParameter(String name, TokenInfo type) {
+		this.addVariable(new VariableData(name, Colors.PARAMETER, type));
 	}
 
-	public ScriptEnvironment addType(String name) {
-		this.identifierTypes.put(name, IdentifierTypes.TYPE);
-		return this;
+	public void addUserInstanceField(RawTypeModel owner, String name, TokenInfo type) {
+		this.addInstanceField(new FieldData(owner, name, Colors.INSTANCE_FIELD, type));
 	}
 
-	public ScriptEnvironment addKeyword(String name, Keyword keyword) {
-		this.identifierTypes.put(name, keyword);
-		return this;
+	public void addUserStaticField(RawTypeModel owner, String name, TokenInfo type) {
+		this.addStaticField(new FieldData(owner, name, Colors.STATIC_FIELD, type));
 	}
 
-	public ScriptEnvironment addEnvironment(ScriptEnvironment that) {
-		this.identifierTypes.putAll(that.identifierTypes);
-		return this;
+	public void addUserType(String name, TokenInfo type) {
+		this.addType(new TypeData(name, Colors.TYPE, type));
+	}
+
+	public void addUserFunction(String name, TokenInfo returnType, ParameterModel... parameters) {
+		this.addFunction(new FunctionData(name, Colors.FUNCTION, returnType, parameters));
+	}
+
+	public void addUserInstanceMethod(RawTypeModel owner, String name, TokenInfo returnType, ParameterModel... parameters) {
+		this.addInstanceMethod(new MethodData(name, Colors.INSTANCE_METHOD, owner, returnType, parameters));
+	}
+
+	public void addUserStaticMethod(RawTypeModel owner, String name, TokenInfo returnType, ParameterModel... parameters) {
+		this.addStaticMethod(new MethodData(name, Colors.STATIC_METHOD, owner, returnType, parameters));
+	}
+
+	public void addUserConstructor(RawTypeModel owner, String name, TokenInfo returnType, ParameterModel... parameters) {
+		this.addStaticMethod(new MethodData(name, Colors.KEYWORD, owner, returnType, parameters));
+	}
+
+	public void addLoopLabel(@Nullable String name) {
+		this.loopLabels.add(new LoopLabel(name, this.loopLabelCount));
 	}
 
 	public void push() {
-		this.identifierTypes.push();
+		this.types.push();
+		this.variables.push();
+		this.staticFields.push();
+		this.instanceFields.push();
+		this.keywords.push();
+		this.memberKeywords.push();
+		this.functions.push();
+		this.staticMethods.push();
+		this.instanceMethods.push();
+		this.casters.push();
+		this.loopLabelCount++;
 	}
 
 	public void pop() {
-		this.identifierTypes.pop();
+		this.types.pop();
+		this.variables.pop();
+		this.staticFields.pop();
+		this.instanceFields.pop();
+		this.keywords.pop();
+		this.memberKeywords.pop();
+		this.functions.pop();
+		this.staticMethods.pop();
+		this.instanceMethods.pop();
+		this.casters.pop();
+		while (!this.loopLabels.isEmpty() && this.loopLabels.getLast().frame >= this.loopLabelCount) {
+			this.loopLabels.removeLast();
+		}
+		this.loopLabelCount--;
 	}
 
-	public static interface IdentifierHandler {
-
-		public abstract TextAttributesKey color();
-
-		public abstract Token handle(ExpressionParser parser, Token word, boolean member);
+	public @Nullable TypeData getType(String name) {
+		return this.types.get(new TypeData.Key(name));
 	}
 
-	public static enum IdentifierTypes implements IdentifierHandler {
-		LOCAL(Colors.LOCAL, false),
-		GLOBAL(Colors.GLOBAL, false),
-		PARAMETER(Colors.PARAMETER, false),
-		FIELD(Colors.FIELD, true),
-		TYPE(Colors.TYPE, false) {
+	public @Nullable VariableData getVariable(String name) {
+		return this.variables.get(new VariableData.Key(name));
+	}
 
-			@Override
-			public Token handle(ExpressionParser parser, Token word, boolean member) {
-				return parser.handleTypeIdentifier(word);
+	public @Nullable FieldData getInstanceField(RawTypeModel receiver, String name) {
+		for (RawTypeModel type : receiver.getAssignableTypes()) {
+			FieldData data = this.instanceFields.get(new FieldData.Key(type, name));
+			if (data != null) return data;
+			data = this.instanceFields.get(new FieldData.Key(type, null));
+			if (data != null) return data;
+		}
+		return null;
+	}
+
+	public @Nullable FieldData getStaticField(RawTypeModel receiver, String name) {
+		FieldData data = this.staticFields.get(new FieldData.Key(receiver, name));
+		if (data != null) return data;
+		return this.staticFields.get(new FieldData.Key(receiver, null));
+	}
+
+	public @Nullable KeywordData getKeyword(String name) {
+		return this.keywords.get(new KeywordData.Key(name));
+	}
+
+	public @Nullable MemberKeywordData getMemberKeyword(RawTypeModel receiver, String name) {
+		for (RawTypeModel type : receiver.getAssignableTypes()) {
+			MemberKeywordData data = this.memberKeywords.get(new MemberKeywordData.Key(type, name));
+			if (data != null) return data;
+		}
+		return null;
+	}
+
+	public @Nullable FunctionData getFunction(String name, List<Token> parameters) {
+		List<FunctionData> functions = this.functions.get(new FunctionData.Key(name));
+		if (!functions.isEmpty()) {
+			List<FunctionData> best = new ArrayList<>(4);
+			CallableEligibility bestEligibility = CallableEligibility.INVALID;
+			for (FunctionData function : functions) {
+				CallableEligibility eligibility = function.getEligibility(this, parameters);
+				if (eligibility.ordinal() > bestEligibility.ordinal()) {
+					best.clear();
+					bestEligibility = eligibility;
+				}
+				if (eligibility == bestEligibility) {
+					best.add(function);
+				}
 			}
-		},
-		UNKNOWN(Colors.ERROR, false);
+			return switch (best.size()) {
+				case 0 -> null;
+				case 1 -> best.get(0);
+				default -> new AmbiguousFunctionData(name, parameters, best);
+			};
+		}
+		return null;
+	}
 
-		public final TextAttributesKey color;
-		public final boolean member;
+	public static class AmbiguousFunctionData extends FunctionData {
 
-		IdentifierTypes(TextAttributesKey color, boolean member) {
-			this.color = color;
-			this.member = member;
+		public final List<FunctionData> candidates;
+
+		public AmbiguousFunctionData(String name, List<Token> parameters, List<FunctionData> candidates) {
+			super(
+				name,
+				Colors.ERROR,
+				new TokenInfo(RawTypeModel.ERROR),
+				parameters
+				.stream()
+				.map((Token token) -> new ParameterModel(
+					"_",
+					token.info.type(),
+					false
+				))
+				.toArray(ParameterModel[]::new)
+			);
+			this.candidates = candidates;
 		}
 
 		@Override
-		public TextAttributesKey color() {
-			return this.color;
-		}
-
-		@Override
-		public Token handle(ExpressionParser parser, Token word, boolean member) {
-			word.color = (this.member == member) ? this.color : Colors.ERROR;
-			return word;
+		public Token applyColor(Token identifier) {
+			super.applyColor(identifier).withTooltip("Ambiguous function call could refer to:");
+			for (FunctionData function : this.candidates) {
+				identifier.withTooltip(function.toString());
+			}
+			return identifier.withTooltip("Actual form: " + this);
 		}
 	}
 
-	public static interface Keyword extends IdentifierHandler {
+	public @Nullable MethodData getInstanceMethod(RawTypeModel receiver, String name, List<Token> arguments) {
+		List<MethodData> candidates = new ArrayList<>(4);
+		String[] names = { name, null };
+		for (RawTypeModel receiverType : receiver.getAssignableTypes()) {
+			for (String actualName : names) {
+				List<MethodData> methods = this.instanceMethods.get(new MethodData.Key(receiverType, actualName));
+				if (!methods.isEmpty()) {
+					CallableEligibility bestEligibility = CallableEligibility.INVALID;
+					for (MethodData method : methods) {
+						CallableEligibility eligibility = method.getEligibility(this, arguments);
+						if (eligibility.ordinal() > bestEligibility.ordinal()) {
+							candidates.clear();
+							bestEligibility = eligibility;
+						}
+						if (eligibility == bestEligibility) {
+							candidates.add(method);
+						}
+					}
+					switch (candidates.size()) {
+						case 0 -> candidates.clear();
+						case 1 -> { return candidates.get(0); }
+						default -> { return new AmbiguousMethodData(actualName, receiverType, arguments, candidates); }
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public static class AmbiguousMethodData extends MethodData {
+
+		public final List<MethodData> candidates;
+
+		public AmbiguousMethodData(
+			String name,
+			RawTypeModel receiverType,
+			List<Token> arguments,
+			List<MethodData> candidates
+		) {
+			super(
+				name,
+				Colors.ERROR,
+				receiverType,
+				new TokenInfo(RawTypeModel.ERROR),
+				arguments
+				.stream()
+				.map((Token token) -> new ParameterModel(
+					"_",
+					token.info.type(),
+					false
+				))
+				.toArray(ParameterModel[]::new)
+			);
+			this.candidates = candidates;
+		}
 
 		@Override
-		public default TextAttributesKey color() {
-			return Colors.KEYWORD;
+		public Token applyColor(Token identifier) {
+			super.applyColor(identifier).withTooltip("Ambiguous method call could refer to:");
+			for (MethodData method : this.candidates) {
+				identifier.withTooltip(method.toString());
+			}
+			return identifier.withTooltip("Actual form: " + this);
 		}
 	}
+
+	public @Nullable MethodData getStaticMethod(RawTypeModel receiverType, String name, List<Token> arguments) {
+		List<MethodData> candidates = new ArrayList<>(4);
+		String[] names = { name, null };
+		for (String actualName : names) {
+			List<MethodData> methods = this.staticMethods.get(new MethodData.Key(receiverType, actualName));
+			if (!methods.isEmpty()) {
+				CallableEligibility bestEligibility = CallableEligibility.INVALID;
+				for (MethodData method : methods) {
+					CallableEligibility eligibility = method.getEligibility(this, arguments);
+					if (eligibility.ordinal() > bestEligibility.ordinal()) {
+						candidates.clear();
+						bestEligibility = eligibility;
+					}
+					if (eligibility == bestEligibility) {
+						candidates.add(method);
+					}
+				}
+				switch (candidates.size()) {
+					case 0 -> candidates.clear();
+					case 1 -> { return candidates.get(0); }
+					default -> { return new AmbiguousMethodData(actualName, receiverType, arguments, candidates); }
+				}
+			}
+		}
+		return null;
+	}
+
+	public List<CastData> getCasts(RawTypeModel from, RawTypeModel to) {
+		return this.casters.get(new CastData.Key(from, to));
+	}
+
+	public boolean hasLoopLabel(@Nullable String name) {
+		if (name == null) return !this.loopLabels.isEmpty();
+		for (LoopLabel label : this.loopLabels) {
+			if (name.equals(label.name)) return true;
+		}
+		return false;
+	}
+
+	public static record LoopLabel(@Nullable String name, int frame) {}
 }

@@ -1,0 +1,41 @@
+{
+	"environments": [
+		{
+			"name": "stateless_random",
+			"instance_methods": [
+				{
+					"owner": "long",
+					"name": "newSeed",
+					"type": "long",
+					"parameters": [
+						{ "name": "salt", "type": "int", "repeatable": true }
+					]
+				},
+				"int long.nextInt()",
+				"int long.nextInt(int max)",
+				"int long.nextInt(int*(min, max))",
+				"long long.nextLong()",
+				"long long.nextLong(long max)",
+				"long long.nextLong(long*(min, max))",
+				"float long.nextFloat()",
+				"float long.nextFloat(float max)",
+				"float long.nextFloat(float*(min, max))",
+				"double long.nextDouble()",
+				"double long.nextDouble(double max)",
+				"double long.nextDouble(double*(min, max))",
+				"boolean long.nextBoolean()",
+				"boolean long.nextBoolean(float chance)",
+				"boolean long.nextBoolean(double chance)",
+				"int long.roundInt(float number)",
+				"int long.roundInt(double number)",
+				"long long.roundLong(float number)",
+				"long long.roundLong(double number)"
+			],
+			"instance_keywords": [
+				{ "owner": "long", "name": "if",     "keyword": "random_if"     },
+				{ "owner": "long", "name": "unless", "keyword": "random_if"     },
+				//{ "owner": "long", "name": "switch", "keyword": "random_switch" }
+			]
+		}
+	]
+}

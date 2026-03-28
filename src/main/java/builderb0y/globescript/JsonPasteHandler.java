@@ -20,6 +20,8 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions;
 import com.intellij.util.Producer;
 import org.jetbrains.annotations.NotNull;
 
+import builderb0y.globescript.util.Util;
+
 public class JsonPasteHandler implements PasteProvider {
 
 	@Override
@@ -41,7 +43,15 @@ public class JsonPasteHandler implements PasteProvider {
 		IndentOptions indentOptions = CodeStyle.getIndentOptions(file);
 		String tab = indentOptions.USE_TAB_CHARACTER ? "\t" : " ".repeat(indentOptions.INDENT_SIZE);
 		Caret caret = dataContext.getData(CommonDataKeys.CARET);
-		int pos = caret.getOffset();
+		int pos;
+		if (caret.hasSelection()) {
+			file.getFileDocument().deleteString(pos = caret.getSelectionStart(), caret.getSelectionEnd());
+			caret.moveToOffset(pos);
+			caret.removeSelection();
+		}
+		else {
+			pos = caret.getOffset();
+		}
 		ApplicationManager.getApplication().runWriteAction(() -> {
 			if (file.getLanguage() == JsonLanguage.INSTANCE) {
 				JsonStringLiteral string = (JsonStringLiteral)(file.findElementAt(pos).getParent());
