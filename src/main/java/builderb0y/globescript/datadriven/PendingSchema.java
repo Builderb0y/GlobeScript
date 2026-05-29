@@ -2,10 +2,12 @@ package builderb0y.globescript.datadriven;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Predicates;
 import com.intellij.json.psi.*;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +28,7 @@ public class PendingSchema extends PendingElement {
 
 			@Override
 			public void inject(PendingSchema self, PendingDataContext context, @Nullable PsiElement value) {
-				self.jsonPath = pattern(context, value);
+				self.jsonPath = JsonPath.parse(context, value);
 			}
 		},
 		new FieldInjector<PendingSchema>("when", false) {
@@ -45,7 +47,8 @@ public class PendingSchema extends PendingElement {
 		}
 	);
 
-	public Pattern filePath, jsonPath;
+	public Pattern filePath;
+	public JsonPath jsonPath;
 	public When when;
 	public PendingEnvironmentReference[] environments;
 
@@ -73,6 +76,67 @@ public class PendingSchema extends PendingElement {
 			context.addError(element, "Expected JsonStringLiteral");
 		}
 		return null;
+	}
+
+	public record JsonPath(Predicate<String>[] parts) {
+
+		public static JsonPath parse(PendingDataContext context, @Nullable PsiElement element) {
+			if (element instanceof JsonStringLiteral string) {
+				String[] parts = string.getValue().split(">");
+				@SuppressWarnings("unchecked")
+				Predicate<String>[] predicates = new Predicate[parts.length];
+				for (int index = 0; index < parts.length; index++) {
+					String[] alt = parts[index].split("\\|");
+					if (alt.length == 1) {
+						if (alt[0].equals("*")) {
+							predicates[index] = Predicates.alwaysTrue();
+						}
+						else {
+							predicates[index] = alt[0]::equals;
+						}
+					}
+					else {
+						predicates[index] = (String test) -> {
+							for (String compare : alt) {
+								if (compare.equals(test)) return true;
+							}
+							return false;
+						};
+					}
+				}
+				return new JsonPath(predicates);
+			}
+			else {
+				context.addError(element, "Expected string.");
+				return null;
+			}
+		}
+
+		public @Nullable PsiElement getRootFor(PsiElement self) {
+			for (int index = this.parts.length; --index >= 0;) {
+				PsiElement parent = self.getParent();
+				if (parent instanceof JsonProperty property) {
+					if (this.parts[index].test(property.getName())) {
+						self = parent.getParent();
+					}
+					else {
+						return null;
+					}
+				}
+				else if (parent instanceof JsonArray array) {
+					if (this.parts[index].test(Integer.toString(array.getValueList().indexOf(self)))) {
+						self = parent;
+					}
+					else {
+						return null;
+					}
+				}
+				else {
+					return null;
+				}
+			}
+			return self;
+		}
 	}
 
 	public static interface When {
@@ -103,7 +167,7 @@ public class PendingSchema extends PendingElement {
 						array
 						.getValueList()
 						.stream()
-						.map((JsonValue value) -> parse(context, element))
+						.map((JsonValue value) -> parse(context, value))
 						.toArray(When[]::new)
 					);
 				}
@@ -115,32 +179,15 @@ public class PendingSchema extends PendingElement {
 		}
 	}
 
-	public static class StringWhen implements When {
-
-		public final String value;
-
-		public StringWhen(String value) {
-			this.value = value;
-		}
+	public static record StringWhen(String value) implements When {
 
 		@Override
 		public boolean test(PsiElement element) {
 			return element instanceof JsonStringLiteral literal && literal.getValue().equals(this.value);
 		}
-
-		@Override
-		public String toString() {
-			return "StringWhen: " + this.value;
-		}
 	}
 
-	public static class CompoundWhen implements When {
-
-		public final Map<String, When> conditions;
-
-		public CompoundWhen(Map<String, When> conditions) {
-			this.conditions = conditions;
-		}
+	public static record CompoundWhen(Map<String, When> conditions) implements When {
 
 		@Override
 		public boolean test(PsiElement element) {
@@ -153,20 +200,9 @@ public class PendingSchema extends PendingElement {
 			}
 			return false;
 		}
-
-		@Override
-		public String toString() {
-			return "CompoundWhen: " + this.conditions;
-		}
 	}
 
-	public static class OrWhen implements When {
-
-		public When[] conditions;
-
-		public OrWhen(When... conditions) {
-			this.conditions = conditions;
-		}
+	public static record OrWhen(When... conditions) implements When {
 
 		@Override
 		public boolean test(PsiElement element) {
@@ -179,6 +215,15 @@ public class PendingSchema extends PendingElement {
 		@Override
 		public String toString() {
 			return "OrWhen: " + Arrays.toString(this.conditions);
+		}
+	}
+
+	public static enum AnyWhen implements When {
+		INSTANCE;
+
+		@Override
+		public boolean test(PsiElement element) {
+			return true;
 		}
 	}
 }

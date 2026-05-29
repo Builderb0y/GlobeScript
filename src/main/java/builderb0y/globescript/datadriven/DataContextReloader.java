@@ -18,7 +18,7 @@ public class DataContextReloader implements BulkFileListener {
 			if (event.getPath().contains("/gs_env/")) {
 				for (Project project : ProjectManager.getInstance().getOpenProjects()) {
 					for (Module module : ModuleManager.getInstance(project).getModules()) {
-						DataContext.invalidateInstance(module);
+						DataContext.invalidateInstance(module, true);
 					}
 				}
 				return;

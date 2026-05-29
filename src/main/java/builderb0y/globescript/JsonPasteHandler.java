@@ -43,16 +43,16 @@ public class JsonPasteHandler implements PasteProvider {
 		IndentOptions indentOptions = CodeStyle.getIndentOptions(file);
 		String tab = indentOptions.USE_TAB_CHARACTER ? "\t" : " ".repeat(indentOptions.INDENT_SIZE);
 		Caret caret = dataContext.getData(CommonDataKeys.CARET);
-		int pos;
-		if (caret.hasSelection()) {
-			file.getFileDocument().deleteString(pos = caret.getSelectionStart(), caret.getSelectionEnd());
-			caret.moveToOffset(pos);
-			caret.removeSelection();
-		}
-		else {
-			pos = caret.getOffset();
-		}
 		ApplicationManager.getApplication().runWriteAction(() -> {
+			int pos;
+			if (caret.hasSelection()) {
+				file.getFileDocument().deleteString(pos = caret.getSelectionStart(), caret.getSelectionEnd());
+				caret.moveToOffset(pos);
+				caret.removeSelection();
+			}
+			else {
+				pos = caret.getOffset();
+			}
 			if (file.getLanguage() == JsonLanguage.INSTANCE) {
 				JsonStringLiteral string = (JsonStringLiteral)(file.findElementAt(pos).getParent());
 				if (pasted.indexOf('\n') >= 0 || pasted.indexOf('\r') >= 0) {

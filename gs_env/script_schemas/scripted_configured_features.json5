@@ -9,13 +9,13 @@
 			]
 		}
 	],
-	"schemas": [
+	"script_schemas": [
 		{
 			"file_path": "/data/[^/]+/worldgen/configured_feature/",
 			"when": {
 				"type": "bigglobe:script"
 			},
-			"json_path": "^script$",
+			"json_path": "config>script",
 			"environments": [
 				"builtin",
 				"math",

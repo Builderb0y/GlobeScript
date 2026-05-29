@@ -36,7 +36,7 @@
 			implementationClass="builderb0y.globescript.GlobeScriptParserDefinition"
 		/>
 		<colorSettingsPage
-			implementation="builderb0y.globescript.GlobescriptColorSettingsPage"
+			implementation="builderb0y.globescript.GlobeScriptColorSettingsPage"
 		/>
 		<annotator
 			language="GlobeScript"
@@ -60,11 +60,28 @@
 			displayType="BALLOON"
 			id="GlobeScript Parsing Error"
 		/>
+		<psi.referenceContributor
+			implementation="builderb0y.globescript.TagReferencer"
+			language="JSON"
+		/>
+		<completion.contributor
+			implementationClass="builderb0y.globescript.TagCompleter"
+			language="JSON"
+		/>
+	</extensions>
+	<extensions defaultExtensionNs="JavaScript.JsonSchema">
+		<ProviderFactory
+			implementation="builderb0y.globescript.FileSchemaProviderFactory"
+		/>
 	</extensions>
 	<applicationListeners>
 		<listener
 			class="builderb0y.globescript.datadriven.DataContextReloader"
 			topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"
+		/>
+		<listener
+			class="builderb0y.globescript.datadriven.DataDisposer"
+			topic="com.intellij.ide.plugins.DynamicPluginListener"
 		/>
 	</applicationListeners>
 </idea-plugin>

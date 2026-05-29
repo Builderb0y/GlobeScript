@@ -1,10 +1,16 @@
 package builderb0y.globescript;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Predicates;
+import com.intellij.codeInsight.daemon.quickFix.CreateFilePathFix;
+import com.intellij.codeInsight.daemon.quickFix.NewFileLocation;
+import com.intellij.codeInsight.daemon.quickFix.TargetDirectory;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.json.psi.*;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
@@ -12,12 +18,12 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiFile;
+import com.intellij.psi.*;
+import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.annotations.NotNull;
 
 import builderb0y.globescript.StructureParser.Structure;
+import builderb0y.globescript.TagReferencer.TagReference;
 import builderb0y.globescript.datadriven.*;
 import builderb0y.globescript.datadriven.EnvironmentModel.TypeData;
 import builderb0y.globescript.datadriven.PendingElement.ShorthandParser;
@@ -78,12 +84,23 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 
 		@Override
 		public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-			String fileText = element.getContainingFile().getText();
-			String filePath = element.getContainingFile().getVirtualFile().getPath();
+			if (!(element instanceof JsonElement jsonElement)) return;
+			for (PsiReference reference : jsonElement.getReferences()) {
+				if (reference instanceof TagReference myReference && myReference.resolve() == null) {
+					holder
+					.newAnnotation(HighlightSeverity.ERROR, myReference.getErrorMessage())
+					.highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
+					.withFix(myReference.createQuickFix())
+					.create();
+					return;
+				}
+			}
+			String fileText = jsonElement.getContainingFile().getText();
+			String filePath = jsonElement.getContainingFile().getVirtualFile().getPath();
 			boolean isEnvironment = filePath.contains("/gs_env/");
 			boolean annotated = false;
 			if (isEnvironment) {
-				if (element instanceof JsonStringLiteral string && !string.isPropertyName()) {
+				if (jsonElement instanceof JsonStringLiteral string && !string.isPropertyName()) {
 					ShorthandParser<?, ?> parser = switch (getPathNoArrays(string)) {
 						case "types"                         -> PendingType       .Shorthand.PARSER;
 						case "environments>types"            -> PendingExposedType.Shorthand.PARSER;
@@ -100,8 +117,8 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 					if (parser != null) {
 						JsonExpressionReader reader = new JsonExpressionReader(
 							fileText,
-							maybeIncrement(fileText, element.getTextRange().getStartOffset()),
-							maybeDecrement(fileText, element.getTextRange().getEndOffset())
+							maybeIncrement(fileText, jsonElement.getTextRange().getStartOffset()),
+							maybeDecrement(fileText, jsonElement.getTextRange().getEndOffset())
 						);
 						Structure structure;
 						try {
@@ -119,12 +136,27 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 					}
 				}
 			}
-			Module module = ModuleUtil.findModuleForPsiElement(element);
+			Module module = ModuleUtil.findModuleForPsiElement(jsonElement);
 			if (module != null) {
 				DataContext context = DataContext.getOrCreateInstance(module);
 				if (!isEnvironment && context.isValid()) {
+					if (jsonElement instanceof JsonFile file) {
+						JsonValue top = file.getTopLevelValue();
+						String path = file.getOriginalFile().getVirtualFile().getPath();
+						for (RequiredTagModel requiredTag : context.requiredTags) {
+							if (requiredTag.filePath.matcher(path).find() && requiredTag.when.test(top)) {
+								if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
+									break;
+								}
+								else {
+									holder.newAnnotation(HighlightSeverity.WARNING, "This file must be added to a tag to function properly.").fileLevel().create();
+									return;
+								}
+							}
+						}
+					}
 					int start, end;
-					if (element instanceof JsonArray array) {
+					if (jsonElement instanceof JsonArray array) {
 						List<JsonValue> values = array.getValueList();
 						if (values.isEmpty()) return;
 						for (JsonValue value : values) {
@@ -133,20 +165,20 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 						start = maybeIncrement(fileText, values.getFirst().getTextOffset());
 						end = maybeDecrement(fileText, values.getLast().getTextRange().getEndOffset());
 					}
-					else if (element instanceof JsonStringLiteral string && !string.isPropertyName() && !(string.getParent() instanceof JsonArray)) {
-						start = maybeIncrement(fileText, element.getTextOffset());
-						end = maybeDecrement(fileText, element.getTextRange().getEndOffset());
+					else if (jsonElement instanceof JsonStringLiteral string && !string.isPropertyName() && !(string.getParent() instanceof JsonArray)) {
+						start = maybeIncrement(fileText, jsonElement.getTextOffset());
+						end = maybeDecrement(fileText, jsonElement.getTextRange().getEndOffset());
 					}
 					else {
 						return;
 					}
 
-					JsonElement root = (JsonElement)(element);
+					JsonElement root = jsonElement;
 					String jsonPath = getPath(root);
 					while (root.getParent() instanceof JsonElement parent && !(parent instanceof PsiFile)) {
 						root = parent;
 					}
-					String text = element.getContainingFile().getText();
+					String text = jsonElement.getContainingFile().getText();
 					if (SCRIPT_TEMPLATE_PATH.matcher(filePath).find()) {
 						if (jsonPath.equals("script")) {
 							ScriptEnvironment environment = new ScriptEnvironment(
@@ -178,7 +210,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 					}
 					else {
 						for (SchemaModel schema : context.schemas) {
-							if (schema.matches(filePath, jsonPath, root)) {
+							if (schema.matches(filePath, jsonElement)) {
 								ExpressionParser parser = new ExpressionParser(
 									new JsonExpressionReader(text, start, end),
 									schema.copyEnvironment(context.standardTypes)
@@ -191,16 +223,16 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 					}
 				}
 				else {
-					List<PsiErrorDisplay> errors = context.errors.get(element);
+					List<PsiErrorDisplay> errors = context.errors.get(jsonElement);
 					if (errors != null) {
 						for (PsiErrorDisplay error : errors) {
-							error.addTo(element, holder);
+							error.addTo(jsonElement, holder);
 						}
 					}
 				}
 			}
 			if (annotated) {
-				element.accept(new PsiElementVisitor() {
+				jsonElement.accept(new PsiElementVisitor() {
 
 					@Override
 					public void visitElement(@NotNull PsiElement element) {
@@ -257,7 +289,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 		else if (parent instanceof JsonArray array) {
 			appendPath(array, builder);
 			if (!builder.isEmpty()) builder.append('>');
-			builder.append(array.getValueList().indexOf(parent));
+			builder.append(array.getValueList().indexOf(element));
 		}
 	}
 

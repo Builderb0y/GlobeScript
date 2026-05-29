@@ -43,6 +43,8 @@ public class PendingDataContext {
 	public Map<String, PendingType> types = new Object2ObjectOpenHashMap<>();
 	public Map<String, PendingEnvironment> environments = new Object2ObjectOpenHashMap<>();
 	public List<PendingSchema> schemas = new ArrayList<>();
+	public List<PendingReference> references = new ArrayList<>();
+	public List<PendingRequiredTag> requiredTags = new ArrayList<>();
 
 	public PendingDataContext(Module module) {
 		this.module = module;
@@ -70,6 +72,9 @@ public class PendingDataContext {
 			if (psiFile != null) try {
 				for (PsiElement root : psiFile.getChildren()) {
 					if (root instanceof JsonObject object) {
+						if (object.findProperty("$schema") != null) {
+							return true;
+						}
 						for (JsonProperty property : object.getPropertyList()) {
 							JsonValue value = property.getValue();
 							switch (property.getName()) {
@@ -81,9 +86,9 @@ public class PendingDataContext {
 									PendingEnvironment old = this.environments.putIfAbsent(environment.name, environment);
 									if (old != null) this.addError(environment.element, "Environment '" + environment.name + "' is already defined.");
 								});
-								case "schemas" -> this.expectArray(value, PendingSchema::new).forEach((PendingSchema schema) -> {
-									this.schemas.add(schema);
-								});
+								case "script_schemas" -> this.expectArray(value, PendingSchema::new).forEach(this.schemas::add);
+								case "references" -> this.expectArray(value, PendingReference::new).forEach(this.references::add);
+								case "required_tags" -> this.expectArray(value, PendingRequiredTag::new).forEach(this.requiredTags::add);
 								default -> this.addError(property.getNameElement(), "Expected one of: { types, environments, schemas }");
 							}
 						}

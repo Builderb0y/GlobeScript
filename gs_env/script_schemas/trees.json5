@@ -15,13 +15,13 @@
 			]
 		}
 	],
-	"schemas": [
+	"script_schemas": [
 		{
 			"file_path": "/data/[^/]+/worldgen/configured_feature/",
 			"when": {
 				"type": "bigglobe:natural_tree"
 			},
-			"json_path": "^config>trunk>thickness$",
+			"json_path": "config>trunk>thickness",
 			"environments": [
 				"builtin",
 				"math",
@@ -34,7 +34,7 @@
 			"when": {
 				"type": "bigglobe:natural_tree"
 			},
-			"json_path": "^config>height$",
+			"json_path": "config>height",
 			"environments": [
 				"builtin",
 				"math",
@@ -47,7 +47,7 @@
 			"when": {
 				"type": "bigglobe:natural_tree"
 			},
-			"json_path": "^config>branches>(length|height)_function$",
+			"json_path": "config>branches>length_function|height_function",
 			"environments": [
 				"builtin",
 				"math",

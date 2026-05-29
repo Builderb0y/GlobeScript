@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.Instances.DummySyntaxHighlighter;
 
-public class GlobescriptColorSettingsPage implements ColorSettingsPage {
+public class GlobeScriptColorSettingsPage implements ColorSettingsPage {
 
 	public static final AttributesDescriptor[] ATTRIbUTES = {
 		new AttributesDescriptor("Hidden json character", Colors.JSON_HIDDEN),

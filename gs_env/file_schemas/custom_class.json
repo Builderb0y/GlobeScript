@@ -1,0 +1,341 @@
+{
+	"$schema": "http://json-schema.org/draft-06/schema#",
+	"$defs": {
+		"identifier_name": {
+			"type": "string",
+			"pattern": "[a-zA-Z_][a-zA-Z0-9_]*"
+		},
+		"string_or_list_of_strings": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"parameters": {
+			"type": "array",
+			"items": {
+				"properties": {
+					"name": {
+						"$ref": "#/$defs/identifier_name"
+					},
+					"type": {
+						"type": "string"
+					}
+				},
+				"required": [ "name", "type" ]
+			}
+		}
+	},
+	"type": "object",
+	"anyOf": [
+		{
+			"properties": {
+				"element_type": {
+					"const": "class/builtin"
+				},
+				"java_type": {
+					"enum": [
+						"byte",
+						"short",
+						"int",
+						"long",
+						"float",
+						"double",
+						"boolean",
+						"void",
+
+						"iterator",
+						"list_iterator",
+						"map",
+						"map_entry",
+						"sorted_map",
+						"navigable_map",
+						"tree_map",
+						"hash_map",
+						"linked_hash_map",
+						"constant_map",
+						"iterable",
+						"collection",
+						"set",
+						"sorted_set",
+						"navigable_set",
+						"tree_set",
+						"hash_set",
+						"linked_hash_set",
+						"constant_set",
+						"list",
+						"linked_list",
+						"array_list",
+						"constant_list",
+						"queue",
+						"deque",
+						"array_deque",
+						"priority_queue",
+						"random_list",
+						"random_array_list",
+
+						"block",
+						"block_tag",
+						"block_state",
+						"biome",
+						"biome_tag",
+						"configured_feature",
+						"configured_feature_tag",
+						"wood_palette",
+						"wood_palette_tag",
+						"string_or_list_of_strings",
+
+						"column_storage",
+						"voronoi"
+					]
+				}
+			},
+			"required": [ "element_type", "java_type" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "class/normal"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"abstract": {
+					"type": "boolean"
+				},
+				"extends": {
+					"type": "string"
+				}
+			},
+			"required": [ "element_type", "name" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "class/enum"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"abstract": {
+					"type": "boolean"
+				},
+				"extends": {
+					"type": "string"
+				}
+			},
+			"required": [ "element_type", "name" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "field/normal"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"field_type": {
+					"type": "string"
+				},
+				"default": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				}
+			},
+			"required": [ "element_type", "owner", "name", "field_type" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "field/constant"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"field_type": {
+					"type": "string"
+				},
+				"default": true
+			},
+			"required": [ "element_type", "owner", "name", "field_type" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "field/enum"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"impl_type": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"field_values": {
+					"type": "object"
+				}
+			},
+			"required": [ "element_type", "owner", "impl_type", "name" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "method/static"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"return_type": {
+					"type": "string"
+				},
+				"parameters": {
+					"$ref": "#/$defs/parameters"
+				},
+				"code": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				}
+			},
+			"required": [ "element_type", "owner", "name", "return_type", "parameters", "code" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "method/normal"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"return_type": {
+					"type": "string"
+				},
+				"parameters": {
+					"$ref": "#/$defs/parameters"
+				},
+				"code": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				}
+			},
+			"required": [ "element_type", "owner", "name", "return_type", "parameters", "code" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "method/override"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"override": {
+					"type": "string"
+				},
+				"code": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				}
+			},
+			"required": [ "element_type", "owner", "override", "code" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "method/abstract"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"return_type": {
+					"type": "string"
+				},
+				"parameters": {
+					"$ref": "#/$defs/parameters"
+				}
+			},
+			"required": [ "element_type", "owner", "name", "return_type", "parameters" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "property/normal"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"property_type": {
+					"type": "string"
+				},
+				"get": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				},
+				"set": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				}
+			},
+			"required": [ "element_type", "owner", "name", "property_type", "get" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "property/override"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"override": {
+					"type": "string"
+				},
+				"get": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				},
+				"set": {
+					"$ref": "#/$defs/string_or_list_of_strings"
+				}
+			},
+			"required": [ "element_type", "owner", "override", "get" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "property/abstract"
+				},
+				"owner": {
+					"type": "string"
+				},
+				"name": {
+					"$ref": "#/$defs/identifier_name"
+				},
+				"property_type": {
+					"type": "string"
+				},
+				"settable": {
+					"type": "boolean"
+				}
+			},
+			"required": [ "element_type", "owner", "name", "property_type", "settable" ]
+		}
+	]
+}

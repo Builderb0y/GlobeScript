@@ -1,8 +1,10 @@
 package builderb0y.globescript.datadriven;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
@@ -18,6 +20,9 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.Hash.Strategy;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -37,6 +42,21 @@ public class DataContext {
 	public Map<String, RawTypeModel> types = new Object2ObjectOpenHashMap<>();
 	public Map<String, EnvironmentModel> environments = new Object2ObjectOpenHashMap<>();
 	public List<SchemaModel> schemas = new ObjectArrayList<>();
+	public Map<Pattern, List<ReferenceModel>> references = new Object2ObjectOpenCustomHashMap<>(new Strategy<Pattern>() {
+
+		@Override
+		public int hashCode(Pattern o) {
+			return o == null ? 0 : o.pattern().hashCode();
+		}
+
+		@Override
+		public boolean equals(Pattern a, Pattern b) {
+			if (a == b) return true;
+			if (a == null || b == null) return false;
+			return a.pattern().equals(b.pattern());
+		}
+	});
+	public List<RequiredTagModel> requiredTags = new ObjectArrayList<>();
 	public StandardTypes standardTypes;
 
 	public DataContext(Module module) {
@@ -93,6 +113,7 @@ public class DataContext {
 		this.types.clear();
 		this.environments.clear();
 		this.schemas.clear();
+		this.references.clear();
 		this.standardTypes = null;
 		PendingDataContext pending = new PendingDataContext(this.module);
 		pending.scan();
@@ -114,12 +135,19 @@ public class DataContext {
 					this.schemas.add(schema.resolve(converting));
 				}
 				if (this.checkErrors(pending)) break done;
+				for (PendingReference reference : pending.references) {
+					this.references.computeIfAbsent(reference.filePath, (Pattern $) -> new ArrayList<>()).add(reference.resolve());
+				}
+				for (PendingRequiredTag requiredTag : pending.requiredTags) {
+					this.requiredTags.add(requiredTag.resolve());
+				}
 				this.standardTypes = this.new StandardTypes();
 			}
 			catch (Exception exception) {
 				this.types.clear();
 				this.environments.clear();
 				this.schemas.clear();
+				this.references.clear();
 				Notifications.Bus.notify(
 					new Notification(
 						Instances.ERROR_NOTIFICATION,
@@ -147,10 +175,10 @@ public class DataContext {
 		}
 	}
 
-	public static void invalidateInstance(Module module) {
+	public static void invalidateInstance(Module module, boolean analyze) {
 		synchronized (KEY) {
 			module.putUserData(KEY, null);
-			DaemonCodeAnalyzer.getInstance(module.getProject()).restart();
+			if (analyze) DaemonCodeAnalyzer.getInstance(module.getProject()).restart();
 		}
 	}
 

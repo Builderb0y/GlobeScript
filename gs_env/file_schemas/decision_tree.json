@@ -1,0 +1,193 @@
+{
+	"$schema": "http://json-schema.org/draft-06/schema#",
+	"type": "object",
+	"$defs": {
+		"string_or_list_of_strings": {
+			"anyOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			]
+		},
+		"condition": {
+			"anyOf": [
+				{
+					"type": "number",
+					"minimum": 0.0,
+					"maximum": 1.0
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "constant"
+						},
+						"chance": {
+							"type": "number",
+							"minimum": 0.0,
+							"maximum": 1.0
+						}
+					},
+					"required": [ "type", "chance" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "column_value"
+						},
+						"column_value": {
+							"type": "string"
+						}
+					},
+					"required": [ "type", "column_value" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "world_trait"
+						},
+						"world_trait": {
+							"type": "string"
+						}
+					},
+					"required": [ "type", "world_trait" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "script"
+						},
+						"script": {
+							"$ref": "#/$defs/string_or_list_of_strings"
+						}
+					},
+					"required": [ "type", "script" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "curve_range"
+						},
+						"value": {
+							"$ref": "#/$defs/condition"
+						},
+						"min": {
+							"$ref": "#/$defs/condition"
+						},
+						"max": {
+							"$ref": "#/$defs/condition"
+						},
+						"smooth_min": {
+							"type": "integer",
+							"minimum": 0
+						},
+						"smooth_max": {
+							"type": "integer",
+							"minimum": 0
+						}
+					},
+					"required": [ "type", "value", "min", "max" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "and"
+						},
+						"conditions": {
+							"type": "array",
+							"items": {
+								"$ref": "#/$defs/condition"
+							},
+							"minItems": 1
+						}
+					},
+					"required": [ "type", "conditions" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "or"
+						},
+						"conditions": {
+							"type": "array",
+							"items": {
+								"$ref": "#/$defs/condition"
+							},
+							"minItems": 1
+						}
+					},
+					"required": [ "type", "conditions" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "not"
+						},
+						"condition": {
+							"$ref": "#/$defs/condition"
+						}
+					},
+					"required": [ "type", "condition" ]
+				}
+			]
+		}
+	},
+	"anyOf": [
+		{
+			"properties": {
+				"condition": {
+					"$ref": "#/$defs/condition"
+				},
+				"if_true": {
+					"type": "string"
+				},
+				"if_false": {
+					"type": "string"
+				}
+			},
+			"required": [ "condition", "if_true", "if_false" ]
+		},
+		{
+			"properties": {
+				"result": {
+					"type": "object",
+					"anyOf": [
+						{
+							"properties": {
+								"type": {
+									"const": "constant"
+								},
+								"value": true
+							},
+							"required": [ "type", "value" ]
+						},
+						{
+							"properties": {
+								"type": {
+									"const": "script"
+								},
+								"script": {
+									"$ref": "#/$defs/string_or_list_of_strings"
+								}
+							},
+							"required": [ "type", "script" ]
+						}
+					]
+				}
+			}
+		}
+	]
+}
