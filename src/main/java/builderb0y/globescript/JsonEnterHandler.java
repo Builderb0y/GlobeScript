@@ -11,7 +11,9 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler;
+import com.intellij.openapi.editor.ex.util.EditorUtil;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -51,7 +53,7 @@ public class JsonEnterHandler implements EnterHandlerDelegate {
 				}
 				if (isArray) {
 					char atCaret = editor.getDocument().getImmutableCharSequence().charAt(caret.getOffset());
-					insertNewLine(editor.getDocument(), caret, tab, true, atCaret == ')' || atCaret == ']' || atCaret == '}' ? -1 : 0);
+					insertNewLine(editor, editor.getDocument(), caret, tab, true, atCaret == ')' || atCaret == ']' || atCaret == '}' ? -1 : 0);
 					return Result.Stop;
 				}
 			}
@@ -59,7 +61,7 @@ public class JsonEnterHandler implements EnterHandlerDelegate {
 		return Result.Continue;
 	}
 
-	public static void insertNewLine(Document document, Caret caret, String tab, boolean isJson, int extraIndent) {
+	public static void insertNewLine(Editor editor, Document document, Caret caret, String tab, boolean isJson, int extraIndent) {
 		CharSequence documentText = document.getImmutableCharSequence();
 		int pos = caret.getOffset();
 		int lineStart = DocumentUtil.getLineStartOffset(pos, document);
@@ -94,6 +96,7 @@ public class JsonEnterHandler implements EnterHandlerDelegate {
 		if (isJson) toInsert.append('"');
 		document.insertString(pos, toInsert);
 		caret.moveToOffset(pos + toInsert.length());
+		if (editor != null) EditorModificationUtil.scrollToCaret(editor);
 	}
 
 	public static void ensureArray(Document document, Caret caret, JsonStringLiteral string, String tab) {

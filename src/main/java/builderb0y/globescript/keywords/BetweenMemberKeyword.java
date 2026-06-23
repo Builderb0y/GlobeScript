@@ -19,6 +19,7 @@ public class BetweenMemberKeyword extends MemberKeywordData {
 
 	@Override
 	public Token handle(ExpressionParser parser, Token receiver, Token dot, Token between) {
+		this.applyColor(between).withInfo(TokenInfo.NON_VALUE);
 		IntervalStructure interval = new IntervalParser().parse(parser);
 		if (interval != null) {
 			if (!interval.lowerBound().info.isAssignableToOrCanCast(parser.environment, receiver.info.type(), Plicity.IMPLICIT)) {

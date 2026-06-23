@@ -20,6 +20,7 @@ public abstract class IsOrAsMemberKeyword extends MemberKeywordData {
 
 	@Override
 	public Token handle(ExpressionParser parser, Token receiver, Token dot, Token is) {
+		this.applyColor(is).withInfo(TokenInfo.NON_VALUE);
 		Token open = parser.reader.hasAfterWhitespace('(', Colors.GROUP);
 		if (open != null) {
 			Token type = parser.reader.nextIdentifierAfterWhitespace();

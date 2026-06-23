@@ -1,6 +1,5 @@
 {
 	"$schema": "http://json-schema.org/draft-06/schema#",
-	"type": "object",
 	"$defs": {
 		"string_or_list_of_strings": {
 			"anyOf": [
@@ -18,9 +17,7 @@
 		"condition": {
 			"anyOf": [
 				{
-					"type": "number",
-					"minimum": 0.0,
-					"maximum": 1.0
+					"type": "number"
 				},
 				{
 					"type": "object",
@@ -143,10 +140,125 @@
 					"required": [ "type", "condition" ]
 				}
 			]
+		},
+		"border": {
+			"anyOf": [
+				{
+					"type": "number"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "constant"
+						},
+						"value": {
+							"type": "number"
+						}
+					},
+					"required": [ "type", "value" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "column_value"
+						},
+						"column_value": {
+							"type": "string"
+						}
+					},
+					"required": [ "type", "column_value" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "world_trait"
+						},
+						"world_trait": {
+							"type": "string"
+						}
+					},
+					"required": [ "type", "world_trait" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "script"
+						},
+						"script": {
+							"$ref": "#/$defs/string_or_list_of_strings"
+						}
+					},
+					"required": [ "type", "script" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "saturate"
+						},
+						"value": {
+							"$ref": "#/$defs/border"
+						},
+						"offset": {
+							"$ref": "#/$defs/border"
+						},
+						"scalar": {
+							"$ref": "#/$defs/border"
+						},
+						"curve": {
+							"type": "boolean"
+						}
+					},
+					"required": [ "type", "value" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "negate"
+						},
+						"value": {
+							"$ref": "#/$defs/border"
+						}
+					},
+					"required": [ "type", "value" ]
+				}
+			]
+		},
+		"result": {
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "constant"
+						},
+						"value": true
+					},
+					"required": [ "type", "value" ]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"const": "script"
+						},
+						"script": {
+							"$ref": "#/$defs/string_or_list_of_strings"
+						}
+					},
+					"required": [ "type", "script" ]
+				}
+			]
 		}
 	},
 	"anyOf": [
 		{
+			"type": "object",
 			"properties": {
 				"condition": {
 					"$ref": "#/$defs/condition"
@@ -161,33 +273,28 @@
 			"required": [ "condition", "if_true", "if_false" ]
 		},
 		{
+			"type": "object",
+			"properties": {
+				"border": {
+					"$ref": "#/$defs/border"
+				},
+				"if_positive": {
+					"type": "string"
+				},
+				"if_negative": {
+					"type": "string"
+				}
+			},
+			"required": [ "border", "if_positive", "if_negative" ]
+		},
+		{
+			"type": "object",
 			"properties": {
 				"result": {
-					"type": "object",
-					"anyOf": [
-						{
-							"properties": {
-								"type": {
-									"const": "constant"
-								},
-								"value": true
-							},
-							"required": [ "type", "value" ]
-						},
-						{
-							"properties": {
-								"type": {
-									"const": "script"
-								},
-								"script": {
-									"$ref": "#/$defs/string_or_list_of_strings"
-								}
-							},
-							"required": [ "type", "script" ]
-						}
-					]
+					"$ref": "#/$defs/result"
 				}
-			}
+			},
+			"required": [ "result" ]
 		}
 	]
 }

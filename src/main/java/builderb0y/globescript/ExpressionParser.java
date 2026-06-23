@@ -479,7 +479,7 @@ public class ExpressionParser {
 			Token dot = this.reader.hasOperatorAfterWhitespace(MEMBERS.keySet(), Colors.OPERATOR);
 			if (dot != null) {
 				Token memberName = this.reader.nextIdentifierAfterWhitespace();
-				if (memberName == null) memberName = this.error("Expected instance member name");
+				if (memberName == null) memberName = new Token(this.reader.input, this.reader.cursor, this.reader.cursor, TokenInfo.UNKNOWN);
 				String memberNameText = memberName.getIdentifierText().toString();
 				MemberKeywordData keyword = this.environment.getMemberKeyword(left.info.type(), memberNameText);
 				if (keyword != null) {

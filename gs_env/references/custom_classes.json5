@@ -129,6 +129,15 @@
 		},
 		{
 			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/decision_tree/",
+			"json_path": "if_positive|if_negative",
+			"registry": "bigglobe/worldgen/decision_tree",
+			"when": {
+				"border": {}
+			},
+			"reference_type": "element"
+		},
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/decision_tree/",
 			"json_path": "world_trait",
 			"registry": "bigglobe/worldgen/world_trait",
 			"when": {
@@ -173,6 +182,13 @@
 					"bigglobe:decision_tree"
 				]
 			}
+		},
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/mob_spawn_tweaker/",
+			"json_path": "biomes>*",
+			"registry": "worldgen/biome",
+			"default_namespace": "minecraft",
+			"when": {}
 		}
 	],
 	"required_tags": []

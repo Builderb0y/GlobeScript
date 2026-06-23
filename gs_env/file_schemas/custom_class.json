@@ -27,6 +27,9 @@
 					},
 					"type": {
 						"type": "string"
+					},
+					"import": {
+						"type": "boolean"
 					}
 				},
 				"required": [ "name", "type" ]
@@ -41,60 +44,7 @@
 					"const": "class/builtin"
 				},
 				"java_type": {
-					"enum": [
-						"byte",
-						"short",
-						"int",
-						"long",
-						"float",
-						"double",
-						"boolean",
-						"void",
-
-						"iterator",
-						"list_iterator",
-						"map",
-						"map_entry",
-						"sorted_map",
-						"navigable_map",
-						"tree_map",
-						"hash_map",
-						"linked_hash_map",
-						"constant_map",
-						"iterable",
-						"collection",
-						"set",
-						"sorted_set",
-						"navigable_set",
-						"tree_set",
-						"hash_set",
-						"linked_hash_set",
-						"constant_set",
-						"list",
-						"linked_list",
-						"array_list",
-						"constant_list",
-						"queue",
-						"deque",
-						"array_deque",
-						"priority_queue",
-						"random_list",
-						"random_array_list",
-
-						"block",
-						"block_tag",
-						"block_state",
-						"biome",
-						"biome_tag",
-						"configured_feature",
-						"configured_feature_tag",
-						"wood_palette",
-						"wood_palette_tag",
-						"string_or_list_of_strings",
-
-						"column_storage",
-						"voronoi"
-					]
+					"type": "string"
 				}
 			},
 			"required": [ "element_type", "java_type" ]
@@ -147,6 +97,9 @@
 				"field_type": {
 					"type": "string"
 				},
+				"import": {
+					"type": "boolean"
+				},
 				"default": {
 					"$ref": "#/$defs/string_or_list_of_strings"
 				}
@@ -166,6 +119,9 @@
 				},
 				"field_type": {
 					"type": "string"
+				},
+				"import": {
+					"type": "boolean"
 				},
 				"default": true
 			},
@@ -190,6 +146,17 @@
 				}
 			},
 			"required": [ "element_type", "owner", "impl_type", "name" ]
+		},
+		{
+			"properties": {
+				"element_type": {
+					"const": "method/builtin"
+				},
+				"java_method": {
+					"type": "string"
+				}
+			},
+			"required": [ "element_type", "java_method" ]
 		},
 		{
 			"properties": {

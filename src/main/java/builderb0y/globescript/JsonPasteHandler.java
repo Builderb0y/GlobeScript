@@ -8,11 +8,14 @@ import com.intellij.ide.PasteProvider;
 import com.intellij.json.JsonLanguage;
 import com.intellij.json.psi.JsonProperty;
 import com.intellij.json.psi.JsonStringLiteral;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.editor.actions.PasteAction;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -43,6 +46,7 @@ public class JsonPasteHandler implements PasteProvider {
 		IndentOptions indentOptions = CodeStyle.getIndentOptions(file);
 		String tab = indentOptions.USE_TAB_CHARACTER ? "\t" : " ".repeat(indentOptions.INDENT_SIZE);
 		Caret caret = dataContext.getData(CommonDataKeys.CARET);
+		Editor editor = dataContext.getData(CommonDataKeys.EDITOR);
 		ApplicationManager.getApplication().runWriteAction(() -> {
 			int pos;
 			if (caret.hasSelection()) {
@@ -54,17 +58,22 @@ public class JsonPasteHandler implements PasteProvider {
 				pos = caret.getOffset();
 			}
 			if (file.getLanguage() == JsonLanguage.INSTANCE) {
-				JsonStringLiteral string = (JsonStringLiteral)(file.findElementAt(pos).getParent());
-				if (pasted.indexOf('\n') >= 0 || pasted.indexOf('\r') >= 0) {
-					if (string.getParent() instanceof JsonProperty) {
-						JsonEnterHandler.ensureArray(file.getFileDocument(), caret, string, tab);
+				if (file.findElementAt(pos).getParent() instanceof JsonStringLiteral string) {
+					if (pasted.indexOf('\n') >= 0 || pasted.indexOf('\r') >= 0) {
+						if (string.getParent() instanceof JsonProperty) {
+							JsonEnterHandler.ensureArray(file.getFileDocument(), caret, string, tab);
+						}
+						insertMultiLine(pasted, file, caret, tab, true);
 					}
-					insertMultiLine(pasted, file, caret, tab, true);
+					else {
+						CharSequence trimmed = toJson(pasted, looksLikeJson(pasted, true, true));
+						file.getFileDocument().insertString(pos, trimmed);
+						caret.moveToOffset(pos + trimmed.length());
+					}
 				}
 				else {
-					CharSequence trimmed = toJson(pasted, looksLikeJson(pasted, true, true));
-					file.getFileDocument().insertString(pos, trimmed);
-					caret.moveToOffset(pos + trimmed.length());
+					file.getFileDocument().insertString(pos, pasted);
+					caret.moveToOffset(pos + pasted.length());
 				}
 			}
 			else if (file.getLanguage() == Instances.LANGUAGE) {
@@ -81,6 +90,7 @@ public class JsonPasteHandler implements PasteProvider {
 					caret.moveToOffset(pos + toInsert.length());
 				}
 			}
+			if (editor != null) EditorModificationUtil.scrollToCaret(editor);
 		});
 	}
 
@@ -95,7 +105,7 @@ public class JsonPasteHandler implements PasteProvider {
 		for (int index = 1; index < lines.length; index++) {
 			CharSequence line = toJson(lines[index], looksLikeJson);
 			char firstChar = line.isEmpty() ? 0 : line.charAt(0);
-			JsonEnterHandler.insertNewLine(document, caret, tab, isJson, firstChar == ')' || firstChar == ']' || firstChar == '}' ? -1 : 0);
+			JsonEnterHandler.insertNewLine(null, document, caret, tab, isJson, firstChar == ')' || firstChar == ']' || firstChar == '}' ? -1 : 0);
 			pos = caret.getOffset();
 			document.insertString(pos, line);
 			caret.moveToOffset(pos + line.length());

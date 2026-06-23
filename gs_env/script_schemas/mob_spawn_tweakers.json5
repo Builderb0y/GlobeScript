@@ -1,0 +1,17 @@
+{
+	"script_schemas": [
+		{
+			"file_path": "/data/[^/]+/bigglobe/mob_spawn_tweaker/",
+			"when": {},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"random/instance",
+				"stateless_random",
+				"minecraft",
+				"mob_spawn_tweaker"
+			]
+		}
+	]
+}

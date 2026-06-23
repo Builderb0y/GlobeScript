@@ -716,6 +716,7 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 			super(context);
 			this.element = element;
 			this.name = shorthand.name;
+			this.repeatable = shorthand.repeatable;
 			this.type = new PendingTypeReference(context, element, shorthand.type);
 		}
 
@@ -917,9 +918,10 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 					PendingTypeReference.Shorthand type = PendingTypeReference.Shorthand.PARSER.parse(reader);
 					PendingTypeReference.Shorthand owner = PendingTypeReference.Shorthand.PARSER.parse(reader);
 					Token dot = reader.hasOperatorAfterWhitespace(".", Colors.OPERATOR).withInfo(TokenInfo.NON_VALUE);
-					Token name = reader.nextIdentifierAfterWhitespace(meta != null && meta.color != null ? meta.color : this.isStatic ? Colors.STATIC_METHOD : Colors.INSTANCE_METHOD).withInfo(TokenInfo.NON_VALUE);
+					Token name = reader.nextIdentifierAfterWhitespace(meta != null && meta.color != null ? meta.color : this.isStatic ? Colors.STATIC_METHOD : Colors.INSTANCE_METHOD);
+					if (name != null) name.info = TokenInfo.NON_VALUE;
 					PendingParameter.MultiShorthand parameters = PendingParameter.MultiShorthand.PARSER.parse(reader);
-					return new Shorthand(Token.builder().with(meta).with(type).with(owner).with(dot).with(name).withAll(parameters), meta, type, owner, name.getIdentifierText().toString(), parameters);
+					return new Shorthand(Token.builder().with(meta).with(type).with(owner).with(dot).with(name).withAll(parameters), meta, type, owner, name != null ? name.getIdentifierText().toString() : "", parameters);
 				}
 
 				@Override

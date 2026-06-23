@@ -1,0 +1,32 @@
+{
+	"types": [
+		"class SpawnMap extends Object",
+		"class SpawnParams extends Object"
+	],
+	"environments": [
+		{
+			"name": "mob_spawn_tweaker",
+			"types": [
+				{ "name": "SpawnMap", "type": "SpawnMap" },
+				{ "name": "SpawnParams", "type": "SpawnParams" }
+			],
+			"variables": [
+				"int y",
+				"Biome biome",
+				"SpawnMap spawnMap",
+				"SpawnParams spawnParams"
+			],
+			"instance_fields": [
+				"double SpawnParams.weight",
+				"int SpawnParams.count"
+			],
+			"instance_methods": [
+				"SpawnParams SpawnMap.get(EntityType type)",
+				"SpawnParams SpawnMap.put(EntityType type, SpawnParams params)",
+				"SpawnParams SpawnMap.remove(EntityType type)",
+				"void SpawnMap.clear()",
+				"meta(assignable = true) SpawnParams SpawnMap.(EntityType type)"
+			]
+		}
+	]
+}

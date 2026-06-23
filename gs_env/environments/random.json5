@@ -54,8 +54,9 @@
 				"long Random.roundLong(double number)"
 			],
 			"instance_keywords": [
-				{ "owner": "Random", "name": "if",     "keyword": "random_if"     },
-				{ "owner": "Random", "name": "unless", "keyword": "random_if"     },
+				{ "owner": "Random", "name": "if",          "keyword": "random_if"      },
+				{ "owner": "Random", "name": "unless",      "keyword": "random_if"      },
+				{ "owner": "Random", "name": "nextBetween", "keyword": "random_between", "color": "instance_method" },
 				//{ "owner": "Random", "name": "switch", "keyword": "random_switch" }
 			]
 		}

@@ -1,20 +1,22 @@
 {
 	"types": [
-		"abstract class Tag extends Object implements Iterable",
-		"class mc_reg_entry extends Object",
+		"abstract class MC_Tag extends Object implements Iterable",
+		"class MC_Holder extends Object",
 		"class Block extends Object",
-		"class BlockTag extends Tag",
+		"class BlockTag extends MC_Tag",
 		"class BlockState extends Object",
-		"class Biome extends mc_reg_entry",
-		"class BiomeTag extends Tag",
-		"class ConfiguredFeature extends mc_reg_entry",
-		"class ConfiguredFeatureTag extends Tag"
+		"class Biome extends MC_Holder",
+		"class BiomeTag extends MC_Tag",
+		"class ConfiguredFeature extends MC_Holder",
+		"class ConfiguredFeatureTag extends MC_Tag",
+		"class EntityType extends MC_Holder",
+		"class EntityTypeTag extends MC_Tag"
 	],
 	"environments": [
 		{
 			"name": "minecraft",
 			"types": [
-				{ "name": "Tag",                  "type": "Tag"                  },
+				{ "name": "MC_Tag",                  "type": "MC_Tag"                  },
 				{ "name": "Block",                "type": "Block"                },
 				{ "name": "BlockTag",             "type": "BlockTag"             },
 				{ "name": "BlockState",           "type": "BlockState"           },
@@ -22,12 +24,14 @@
 				{ "name": "BiomeTag",             "type": "BiomeTag"             },
 				{ "name": "ConfiguredFeature",    "type": "ConfiguredFeature"    },
 				{ "name": "ConfiguredFeatureTag", "type": "ConfiguredFeatureTag" },
+				{ "name": "EntityType",           "type": "EntityType"           },
+				{ "name": "EntityTypeTag",        "type": "EntityTypeTag"        },
 			],
 			"instance_fields": [
-				"int Tag.size",
-				"boolean Tag.isEmpty",
+				"int MC_Tag.size",
+				"boolean MC_Tag.isEmpty",
 				"String Block.id",
-				"String mc_reg_entry.id",
+				"String MC_Holder.id",
 				"float Biome.temperature",
 				"float Biome.downfall",
 				{
@@ -60,21 +64,26 @@
 				"Biome BiomeTag.random(long seed)",
 				"ConfiguredFeature ConfiguredFeatureTag.random(Random random)",
 				"ConfiguredFeature ConfiguredFeatureTag.random(long seed)",
+				"EntityType EntityTypeTag.random(Random random)",
+				"EntityType EntityTypeTag.random(long seed)",
 				"boolean BlockState.isIn(BlockTag tag)",
 				"boolean Block.isIn(BlockTag tag)",
 				"boolean Biome.isIn(BiomeTag tag)",
-				"boolean ConfiguredFeature.isIn(ConfiguredFeatureTag tag)"
+				"boolean ConfiguredFeature.isIn(ConfiguredFeatureTag tag)",
+				"boolean EntityType.isIn(EntityTypeTag tag)"
 			],
 			"keywords": [
 				{ "name": "BlockTag",             "keyword": "tag_constructor", "color": "type" },
 				{ "name": "BiomeTag",             "keyword": "tag_constructor", "color": "type" },
-				{ "name": "ConfiguredFeatureTag", "keyword": "tag_constructor", "color": "type" }
+				{ "name": "ConfiguredFeatureTag", "keyword": "tag_constructor", "color": "type" },
+				{ "name": "EntityTypeTag",        "keyword": "tag_constructor", "color": "type" },
 			],
 			"casters": [
 				"implicit String -> Block",
 				"implicit String -> BlockState",
 				"implicit String -> Biome",
 				"implicit String -> ConfiguredFeature",
+				"implicit String -> EntityType",
 			]
 		},
 		{

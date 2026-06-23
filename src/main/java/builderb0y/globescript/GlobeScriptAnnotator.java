@@ -43,7 +43,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			holder.newAnnotation(HighlightSeverity.ERROR, "Parser failed to assign info to " + token.getText() + "! This is a bug!").range(token.range).textAttributes(Colors.ERROR).create();
 		}
 		else {
-			if (token.color != null) {
+			if (token.color != null && !token.range.isEmpty()) {
 				holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(token.range).textAttributes(token.color).create();
 			}
 			for (PsiErrorDisplay error : token.tooltips) {
@@ -80,7 +80,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 
 	public static class JsonAnnotator extends GlobeScriptAnnotator {
 
-		public static final Pattern SCRIPT_TEMPLATE_PATH = Pattern.compile("/data/[^/]+/bigglobe_script_templates/");
+		public static final Pattern SCRIPT_TEMPLATE_PATH = Pattern.compile("/data/[^/]+/bigglobe/script_template/");
 
 		@Override
 		public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {

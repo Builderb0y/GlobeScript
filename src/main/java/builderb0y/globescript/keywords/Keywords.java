@@ -26,11 +26,12 @@ public class Keywords {
 	);
 
 	public static final Map<String, MemberKeywordFactory> MEMBER_KEYWORDS = Map.of(
-		"receiver_if", ReceiverIfKeyword::new,
-		"random_if",     RandomIfKeyword::new,
-		"is",            IsMemberKeyword::new,
-		"as",            AsMemberKeyword::new,
-		"between",  BetweenMemberKeyword::new
+		"receiver_if",     ReceiverIfKeyword::new,
+		"random_if",         RandomIfKeyword::new,
+		"random_between", NextBetweenKeyword::new,
+		"is",                IsMemberKeyword::new,
+		"as",                AsMemberKeyword::new,
+		"between",      BetweenMemberKeyword::new
 	);
 
 	public static interface KeywordFactory {
