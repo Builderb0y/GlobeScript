@@ -5,7 +5,14 @@
 			"variables": [
 				{ "name": "originX", "type": "int", "color": "parameter" },
 				{ "name": "originY", "type": "int", "color": "parameter" },
-				{ "name": "originZ", "type": "int", "color": "parameter" }
+				{ "name": "originZ", "type": "int", "color": "parameter" },
+				{ "name": "placementX", "type": "int", "color": "parameter" },
+				{ "name": "placementY", "type": "int", "color": "parameter" },
+				{ "name": "placementZ", "type": "int", "color": "parameter" }
+			],
+			"functions": [
+				"meta(jumps = true, color = keyword) void abort()",
+				"meta(jumps = true, color = keyword) void finish()"
 			]
 		}
 	],
@@ -21,7 +28,8 @@
 				"math",
 				"random/instance",
 				"stateless_random",
-				"origin_pos"
+				"origin_pos",
+				"minecraft/with_world"
 			]
 		}
 	]

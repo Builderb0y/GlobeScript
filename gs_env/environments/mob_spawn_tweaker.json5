@@ -16,6 +16,9 @@
 				"SpawnMap spawnMap",
 				"SpawnParams spawnParams"
 			],
+			"functions": [
+				"void apply(SpawnTweakerTag tag)"
+			],
 			"instance_fields": [
 				"double SpawnParams.weight",
 				"int SpawnParams.count"

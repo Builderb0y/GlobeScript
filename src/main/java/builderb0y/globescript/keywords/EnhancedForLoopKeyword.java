@@ -81,11 +81,13 @@ public class EnhancedForLoopKeyword extends KeywordData {
 						type.withTooltip("All iteration variables must be of the same type for range iteration");
 					}
 				}
-				if (!range.interval().lowerBound().info.isAssignableToOrCanCast(parser.environment, first, Plicity.IMPLICIT)) {
-					range.interval().lowerBound().withTooltip("Range bound type (" + range.interval().lowerBound().info.type() + ") must match variable type (" + first + ")");
-				}
-				if (!range.interval().upperBound().info.isAssignableToOrCanCast(parser.environment, first, Plicity.IMPLICIT)) {
-					range.interval().upperBound().withTooltip("Range bound type (" + range.interval().upperBound().info.type() + ") must match variable type (" + first + ")");
+				if (range.interval() != null) {
+					if (!range.interval().lowerBound().info.isAssignableToOrCanCast(parser.environment, first, Plicity.IMPLICIT)) {
+						range.interval().lowerBound().withTooltip("Range bound type (" + range.interval().lowerBound().info.type() + ") must match variable type (" + first + ")");
+					}
+					if (!range.interval().upperBound().info.isAssignableToOrCanCast(parser.environment, first, Plicity.IMPLICIT)) {
+						range.interval().upperBound().withTooltip("Range bound type (" + range.interval().upperBound().info.type() + ") must match variable type (" + first + ")");
+					}
 				}
 				builder.with(range);
 			}

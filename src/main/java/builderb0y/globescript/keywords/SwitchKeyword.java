@@ -44,7 +44,7 @@ public class SwitchKeyword extends KeywordData {
 			RawTypeModel finalType;
 			if (cases != null) {
 				builder.withAll(cases);
-				List<RawTypeModel> bodyTypes = new ArrayList<>();
+				List<TokenInfo> bodyTypes = new ArrayList<>();
 				if (target.isEnum()) {
 					Set<String> seen = new HashSet<>();
 					for (ICaseStructure iCase : cases.values()) {
@@ -63,7 +63,7 @@ public class SwitchKeyword extends KeywordData {
 								else defaultCase = default_;
 							}
 						}
-						if (iCase.body() != null) bodyTypes.add(iCase.body().info.type());
+						if (iCase.body() != null) bodyTypes.add(iCase.body().info);
 					}
 				}
 				else {
@@ -111,7 +111,7 @@ public class SwitchKeyword extends KeywordData {
 								else defaultCase = default_;
 							}
 						}
-						if (iCase.body() != null) bodyTypes.add(iCase.body().info.type());
+						if (iCase.body() != null) bodyTypes.add(iCase.body().info);
 					}
 				}
 				if (bodyTypes.isEmpty()) {

@@ -189,6 +189,7 @@ public class DataContext {
 			value                  = this.get("value"),
 			object                 = this.get("Object"),
 			string                 = this.get("String"),
+			primitiveBitwise       = this.get("primitive_bitwise"),
 			primitiveNumber        = this.get("primitive_number"),
 			primitiveInteger       = this.get("primitive_integer"),
 			primitiveFloatingPoint = this.get("primitive_floating_point"),

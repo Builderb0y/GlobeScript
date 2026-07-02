@@ -41,13 +41,13 @@ public class BodyIfKeyword extends KeywordData {
 					elseBody = parser.nextNullableScript();
 					if (elseBody == null) elseBody = parser.error("Expected body");
 					Token elseClose = parser.closeGroup();
-					TokenInfo info = new TokenInfo(mergeTypes(condition, body, elseBody), getFlags(condition, body, elseBody));
+					TokenInfo info = new TokenInfo(mergeTypes(condition, body, elseBody), getFlags(condition, body, elseBody) & ~TokenInfo.FLAG_ASSIGNABLE);
 					return new Token(parser.reader.input, info, if_, open, condition, colon, body, close, else_, elseOpen, elseBody, elseClose);
 				}
 				else {
 					elseBody = parser.nextNullableSingleExpression();
 					if (elseBody == null) elseBody = parser.error("Expected body");
-					TokenInfo info = new TokenInfo(mergeTypes(condition, body, elseBody), getFlags(condition, body, elseBody));
+					TokenInfo info = new TokenInfo(mergeTypes(condition, body, elseBody), getFlags(condition, body, elseBody) & ~TokenInfo.FLAG_ASSIGNABLE);
 					return new Token(parser.reader.input, info, if_, open, condition, colon, body, close, else_, elseBody);
 				}
 			}
@@ -74,31 +74,17 @@ public class BodyIfKeyword extends KeywordData {
 		}
 		else {
 			return new NonConstantValue(
-				RawTypeModel.commonAncestor(
-					body.info.type(),
-					elseBody.info.type()
-				)
+				RawTypeModel.commonAncestor(body.info, elseBody.info)
 			);
 		}
 	}
 
 	public static int getFlags(Token condition, Token body, Token elseBody) {
-		int flags = TokenInfo.FLAG_STATEMENT;
-		if (
+		return (
 			condition.info.constant() instanceof BooleanConstantValue bool
-				? (bool.value() ? body.info.jumps() : elseBody.info.jumps())
-				: (body.info.jumps() && elseBody.info.jumps())
-		) {
-			flags |= TokenInfo.FLAG_JUMPS;
-		}
-		if (
-			condition.info.constant() instanceof BooleanConstantValue bool
-				? (bool.value() ? body.info.generic() : elseBody.info.generic())
-				: (body.info.generic() && elseBody.info.generic())
-		) {
-			flags |= TokenInfo.FLAG_GENERIC;
-		}
-		return flags;
+			? (bool.value() ? body.info.flags() : elseBody.info.flags())
+			: (body.info.flags() & elseBody.info.flags())
+		);
 	}
 
 	@Override

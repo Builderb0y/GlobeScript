@@ -157,10 +157,10 @@ public class ConstantFolding {
 			}
 			else {
 				if (!left.info.isAssignableToOrCanCast(environment, environment.standardTypes.primitiveNumber, Plicity.IMPLICIT)) {
-					left.withTooltip("Can't implicitly cast " + left.info.type() + " to " + environment.standardTypes.primitiveNumber + " for arithmetic operation");
+					left.withTooltip("Can't implicitly cast " + left.info.type() + " to " + environment.standardTypes.primitiveNumber + " for " + this + " operation");
 				}
 				if (!right.info.isAssignableToOrCanCast(environment, environment.standardTypes.primitiveNumber, Plicity.IMPLICIT)) {
-					right.withTooltip("Can't implicitly cast " + right.info.type() + " to " + environment.standardTypes.primitiveNumber + " for arithmetic operation");
+					right.withTooltip("Can't implicitly cast " + right.info.type() + " to " + environment.standardTypes.primitiveNumber + " for " + this + " operation");
 				}
 				return new TokenInfo(
 					this.merge(environment, left.info, right.info),
@@ -278,11 +278,12 @@ public class ConstantFolding {
 		XOR;
 
 		public RawTypeModel merge(ScriptEnvironment environment, TokenInfo left, TokenInfo right) {
-			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.byte_, Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.byte_, Plicity.IMPLICIT)) return environment.standardTypes.byte_;
-			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.char_, Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.char_, Plicity.IMPLICIT)) return environment.standardTypes.char_;
-			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.short_, Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.short_, Plicity.IMPLICIT)) return environment.standardTypes.short_;
-			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.int_, Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.int_, Plicity.IMPLICIT)) return environment.standardTypes.int_;
-			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.long_, Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.long_, Plicity.IMPLICIT)) return environment.standardTypes.long_;
+			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.boolean_, Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.boolean_, Plicity.IMPLICIT)) return environment.standardTypes.boolean_;
+			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.byte_,    Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.byte_,    Plicity.IMPLICIT)) return environment.standardTypes.byte_;
+			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.char_,    Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.char_,    Plicity.IMPLICIT)) return environment.standardTypes.char_;
+			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.short_,   Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.short_,   Plicity.IMPLICIT)) return environment.standardTypes.short_;
+			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.int_,     Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.int_,     Plicity.IMPLICIT)) return environment.standardTypes.int_;
+			if (left.isAssignableToOrCanCast(environment, environment.standardTypes.long_,    Plicity.IMPLICIT) || right.isAssignableToOrCanCast(environment, environment.standardTypes.long_,    Plicity.IMPLICIT)) return environment.standardTypes.long_;
 			return environment.standardTypes.byte_;
 		}
 
@@ -301,11 +302,11 @@ public class ConstantFolding {
 				});
 			}
 			else {
-				if (!left.info.isAssignableToOrCanCast(environment, environment.standardTypes.primitiveInteger, Plicity.IMPLICIT)) {
-					left.withTooltip("Can't implicitly cast " + left.info.type() + " to " + environment.standardTypes.primitiveInteger + " for bitwise operation");
+				if (!left.info.isAssignableToOrCanCast(environment, environment.standardTypes.primitiveBitwise, Plicity.IMPLICIT)) {
+					left.withTooltip("Can't implicitly cast " + left.info.type() + " to " + environment.standardTypes.primitiveBitwise + " for " + this + " operation");
 				}
-				if (!right.info.isAssignableToOrCanCast(environment, environment.standardTypes.primitiveInteger, Plicity.IMPLICIT)) {
-					right.withTooltip("Can't implicitly cast " + right.info.type() + " to " + environment.standardTypes.primitiveInteger + " for bitwise operation");
+				if (!right.info.isAssignableToOrCanCast(environment, environment.standardTypes.primitiveBitwise, Plicity.IMPLICIT)) {
+					right.withTooltip("Can't implicitly cast " + right.info.type() + " to " + environment.standardTypes.primitiveBitwise + " for " + this + " operation");
 				}
 				return new TokenInfo(
 					this.merge(environment, left.info, right.info),

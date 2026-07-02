@@ -256,7 +256,7 @@ public interface StructureParser<T extends OneOrMoreTokens> {
 		}
 	}
 
-	public static record RangeStructure(List<Token> tokens, @Nullable Token backwards, IntervalStructure interval, @Nullable Token step) implements ListBackedStructure {
+	public static record RangeStructure(List<Token> tokens, @Nullable Token backwards, @Nullable IntervalStructure interval, @Nullable Token step) implements ListBackedStructure {
 
 	}
 

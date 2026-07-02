@@ -85,8 +85,8 @@ public class RandomIfKeyword extends MemberKeywordData {
 		else {
 			return new NonConstantValue(
 				RawTypeModel.commonAncestor(
-					body.info.type(),
-					elseBody.info.type()
+					body.info,
+					elseBody.info
 				)
 			);
 		}

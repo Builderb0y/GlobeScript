@@ -410,7 +410,7 @@ public class ExpressionParser {
 		if (elvis != null) {
 			Token right = this.nextElvis();
 			TokenInfo info = new TokenInfo(
-				RawTypeModel.commonAncestor(left.info.type(), right.info.type()),
+				RawTypeModel.commonAncestor(left.info, right.info),
 				(left.info.flags() | right.info.flags()) & (TokenInfo.FLAG_JUMPS | TokenInfo.FLAG_GENERIC)
 			);
 			return new Token(this.reader.input, info, left, elvis, right);

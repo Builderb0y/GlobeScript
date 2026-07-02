@@ -10,13 +10,15 @@
 		"class ConfiguredFeature extends MC_Holder",
 		"class ConfiguredFeatureTag extends MC_Tag",
 		"class EntityType extends MC_Holder",
-		"class EntityTypeTag extends MC_Tag"
+		"class EntityTypeTag extends MC_Tag",
+		"class SpawnTweaker extends MC_Holder",
+		"class SpawnTweakerTag extends MC_Holder"
 	],
 	"environments": [
 		{
 			"name": "minecraft",
 			"types": [
-				{ "name": "MC_Tag",                  "type": "MC_Tag"                  },
+				{ "name": "MC_Tag",               "type": "MC_Tag"               },
 				{ "name": "Block",                "type": "Block"                },
 				{ "name": "BlockTag",             "type": "BlockTag"             },
 				{ "name": "BlockState",           "type": "BlockState"           },
@@ -26,6 +28,8 @@
 				{ "name": "ConfiguredFeatureTag", "type": "ConfiguredFeatureTag" },
 				{ "name": "EntityType",           "type": "EntityType"           },
 				{ "name": "EntityTypeTag",        "type": "EntityTypeTag"        },
+				{ "name": "MobSpawnTweaker",      "type": "SpawnTweaker"         },
+				{ "name": "MobSpawnTweakerTag",   "type": "SpawnTweakerTag"      },
 			],
 			"instance_fields": [
 				"int MC_Tag.size",
@@ -88,6 +92,9 @@
 		},
 		{
 			"name": "minecraft/with_random",
+			"includes": [
+				"minecraft"
+			],
 			"instance_methods": [
 				"BlockState Block.getRandomState()",
 				"Block BlockTag.random()",
@@ -97,6 +104,9 @@
 		},
 		{
 			"name": "minecraft/with_world",
+			"includes": [
+				"minecraft/with_random"
+			],
 			"variables": [
 				{ "name": "worldSeed", "type": "long" },
 				{ "name": "minValidYLevel", "type": "int" },

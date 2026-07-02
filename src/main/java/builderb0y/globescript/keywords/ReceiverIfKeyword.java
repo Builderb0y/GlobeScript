@@ -30,15 +30,15 @@ public class ReceiverIfKeyword extends MemberKeywordData {
 					Token elseBody = parser.nextNullableScript();
 					if (elseBody == null) elseBody = parser.error("Expected body");
 					Token elseClose = parser.closeGroup();
-					int flags = BodyIfKeyword.getFlags(condition, body, elseBody);
-					TokenInfo info = new TokenInfo(RawTypeModel.commonAncestor(body.info.type(), elseBody.info.type()), flags);
+					int flags = (BodyIfKeyword.getFlags(condition, body, elseBody) | (condition.info.flags() & TokenInfo.FLAG_JUMPS)) & ~TokenInfo.FLAG_ASSIGNABLE;
+					TokenInfo info = new TokenInfo(condition.info.type(), flags);
 					return new Token(parser.reader.input, info, condition, dot, if_, open, body, close, else_, elseOpen, elseBody, elseClose);
 				}
 				else {
 					Token elseBody = parser.nextNullableSingleExpression();
 					if (elseBody == null) elseBody = parser.error("Expected body");
-					int flags = BodyIfKeyword.getFlags(condition, body, elseBody);
-					TokenInfo info = new TokenInfo(RawTypeModel.commonAncestor(body.info.type(), elseBody.info.type()), flags);
+					int flags = (BodyIfKeyword.getFlags(condition, body, elseBody) | (condition.info.flags() & TokenInfo.FLAG_JUMPS)) & ~TokenInfo.FLAG_ASSIGNABLE;
+					TokenInfo info = new TokenInfo(condition.info.type(), flags);
 					return new Token(parser.reader.input, info, condition, dot, if_, open, body, close, else_, elseBody);
 				}
 			}

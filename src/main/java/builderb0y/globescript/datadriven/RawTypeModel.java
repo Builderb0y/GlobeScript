@@ -1,12 +1,11 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.SequencedSet;
-import java.util.Set;
+import java.util.*;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
+
+import builderb0y.globescript.TokenInfo;
 
 public class RawTypeModel implements TypeModifiersModel {
 
@@ -54,20 +53,34 @@ public class RawTypeModel implements TypeModifiersModel {
 		return this.getAssignableTypes().contains(that);
 	}
 
-	public static RawTypeModel commonAncestor(RawTypeModel... types) {
-		SequencedSet<RawTypeModel> set = new ObjectLinkedOpenHashSet<>(types[0].getAssignableTypes());
-		for (int index = 1; index < types.length; index++) {
-			set.retainAll(types[index].getAssignableTypes());
+	public static RawTypeModel commonAncestor(TokenInfo... infos) {
+		SequencedSet<RawTypeModel> set = null;
+		for (TokenInfo info : infos) {
+			if ((info.flags() & TokenInfo.FLAG_JUMPS) == 0) {
+				if (set == null) {
+					set = new LinkedHashSet<>(info.type().getAssignableTypes());
+				}
+				else {
+					set.retainAll(info.type().getAssignableTypes());
+				}
+			}
 		}
-		return set.isEmpty() ? ERROR : set.getFirst();
+		return set == null || set.isEmpty() ? ERROR : set.getFirst();
 	}
 
-	public static RawTypeModel commonAncestor(List<RawTypeModel> types) {
-		SequencedSet<RawTypeModel> set = new ObjectLinkedOpenHashSet<>(types.get(0).getAssignableTypes());
-		for (int index = 1; index < types.size(); index++) {
-			set.retainAll(types.get(index).getAssignableTypes());
+	public static RawTypeModel commonAncestor(List<TokenInfo> infos) {
+		SequencedSet<RawTypeModel> set = null;
+		for (TokenInfo info : infos) {
+			if ((info.flags() & TokenInfo.FLAG_JUMPS) == 0) {
+				if (set == null) {
+					set = new LinkedHashSet<>(info.type().getAssignableTypes());
+				}
+				else {
+					set.retainAll(info.type().getAssignableTypes());
+				}
+			}
 		}
-		return set.isEmpty() ? ERROR : set.getFirst();
+		return set == null || set.isEmpty() ? ERROR : set.getFirst();
 	}
 
 	@Override
