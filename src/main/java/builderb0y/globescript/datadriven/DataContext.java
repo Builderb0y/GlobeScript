@@ -34,7 +34,9 @@ import builderb0y.globescript.PsiErrorDisplay;
 
 public class DataContext {
 
-	public static final String ENV_NAME = "gs_env";
+	public static final String
+		ENV_NAME = "gs_env",
+		HARD_CODED = "hard_coded";
 	public static final Key<DataContext> KEY = Key.create("GlobeScript.DataContext");
 
 	public final Module module;

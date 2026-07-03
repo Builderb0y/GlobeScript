@@ -54,8 +54,9 @@ public class PendingDataContext {
 		for (VirtualFile root : ModuleRootManager.getInstance(this.module).getContentRoots()) {
 			VirtualFile environmentFolder = root.findChild(DataContext.ENV_NAME);
 			if (environmentFolder != null) {
-				VfsUtilCore.iterateChildrenRecursively(
-					environmentFolder,
+				VirtualFile hardCoded = environmentFolder.findChild(DataContext.HARD_CODED);
+				if (hardCoded != null) VfsUtilCore.iterateChildrenRecursively(
+					hardCoded,
 					(VirtualFile file) -> switch (file.getExtension()) {
 						case "json", "json5" -> true;
 						case null, default -> file.isDirectory();
@@ -72,9 +73,6 @@ public class PendingDataContext {
 			if (psiFile != null) try {
 				for (PsiElement root : psiFile.getChildren()) {
 					if (root instanceof JsonObject object) {
-						if (object.findProperty("$schema") != null) {
-							return true;
-						}
 						for (JsonProperty property : object.getPropertyList()) {
 							JsonValue value = property.getValue();
 							switch (property.getName()) {
