@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import com.intellij.json.psi.*;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -38,7 +39,8 @@ public class PendingDataContext {
 		"type",            Colors.TYPE
 	);
 
-	public Module module;
+	public final ProjectData projectData;
+	public final VirtualFile envFolder;
 	public Map<PsiElement, List<PsiErrorDisplay>> errors = new Reference2ObjectOpenHashMap<>();
 	public Map<String, PendingType> types = new Object2ObjectOpenHashMap<>();
 	public Map<String, PendingEnvironment> environments = new Object2ObjectOpenHashMap<>();
@@ -46,30 +48,27 @@ public class PendingDataContext {
 	public List<PendingReference> references = new ArrayList<>();
 	public List<PendingRequiredTag> requiredTags = new ArrayList<>();
 
-	public PendingDataContext(Module module) {
-		this.module = module;
+	public PendingDataContext(ProjectData projectData, VirtualFile envFolder) {
+		this.projectData = projectData;
+		this.envFolder = envFolder;
 	}
 
 	public void scan() {
-		for (VirtualFile root : ModuleRootManager.getInstance(this.module).getContentRoots()) {
-			VirtualFile environmentFolder = root.findChild(DataContext.ENV_NAME);
-			if (environmentFolder != null) {
-				VirtualFile hardCoded = environmentFolder.findChild(DataContext.HARD_CODED);
-				if (hardCoded != null) VfsUtilCore.iterateChildrenRecursively(
-					hardCoded,
-					(VirtualFile file) -> switch (file.getExtension()) {
-						case "json", "json5" -> true;
-						case null, default -> file.isDirectory();
-					},
-					this::scan
-				);
-			}
-		}
+		VirtualFile hardCoded = this.envFolder.findChild("hard_coded");
+		if (hardCoded != null) VfsUtilCore.iterateChildrenRecursively(
+			hardCoded,
+			(VirtualFile file) -> {
+				if (file.isDirectory()) return true;
+				String extension = file.getExtension();
+				return "json5".equals(extension) || "json".equals(extension);
+			},
+			this::scan
+		);
 	}
 
 	public boolean scan(VirtualFile file) {
 		if (!file.isDirectory()) {
-			PsiFile psiFile = PsiManager.getInstance(this.module.getProject()).findFile(file);
+			PsiFile psiFile = PsiManager.getInstance(this.projectData.project).findFile(file);
 			if (psiFile != null) try {
 				for (PsiElement root : psiFile.getChildren()) {
 					if (root instanceof JsonObject object) {

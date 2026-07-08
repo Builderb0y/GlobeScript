@@ -12,8 +12,6 @@ import com.intellij.codeInsight.daemon.quickFix.CreateFilePathFix;
 import com.intellij.codeInsight.daemon.quickFix.NewFileLocation;
 import com.intellij.codeInsight.daemon.quickFix.TargetDirectory;
 import com.intellij.json.psi.*;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
@@ -22,7 +20,7 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import builderb0y.globescript.datadriven.DataContext;
+import builderb0y.globescript.datadriven.GsEnv;
 import builderb0y.globescript.datadriven.PendingReference;
 import builderb0y.globescript.datadriven.ReferenceModel;
 
@@ -51,10 +49,10 @@ public class TagReferencer extends PsiReferenceContributor {
 							return new PsiReference[] { new TagReference(jsonElement, directory, registry, "minecraft", PendingReference.Type.EITHER) };
 						}
 					}
-					Module module = ModuleUtil.findModuleForPsiElement(element);
-					if (module != null) {
+					GsEnv env = GsEnv.find(element.getContainingFile().getVirtualFile());
+					if (env != null) {
 						String filePath = directory.getPath();
-						for (Map.Entry<Pattern, List<ReferenceModel>> entry : DataContext.getOrCreateInstance(module).references.entrySet()) {
+						for (Map.Entry<Pattern, List<ReferenceModel>> entry : env.references.entrySet()) {
 							Matcher matcher = entry.getKey().matcher(filePath);
 							if (matcher.find()) {
 								int start = matcher.start() + "/data".length();

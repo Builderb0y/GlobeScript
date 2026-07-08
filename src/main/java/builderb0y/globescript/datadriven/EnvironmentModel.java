@@ -4,12 +4,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import builderb0y.globescript.*;
 
-public class EnvironmentModel {
+public class EnvironmentModel extends EnvironmentConfigurator {
 
-	public final String name;
 	public final StackMap<         TypeData.Key,          TypeData > types           = new StackMap<>();
 	public final StackMap<     VariableData.Key,      VariableData > variables       = new StackMap<>();
 	public final StackMap<        FieldData.Key,         FieldData > staticFields    = new StackMap<>();
@@ -22,24 +22,29 @@ public class EnvironmentModel {
 	public final StackMap<         CastData.Key, List<    CastData>> casters         = StackMap.withFallback(Collections.emptyList());
 
 	public EnvironmentModel(String name) {
-		this.name = name;
+		super(name);
 	}
 
-	public EnvironmentModel(EnvironmentModel from) {
-		this.name = from.name;
-		this.addAll(from);
+	public EnvironmentModel(VirtualFile source, EnvironmentConfigurator from) {
+		super(from.name);
+		from.configure(source, this);
 	}
 
-	public EnvironmentModel(EnvironmentModel... from) {
-		this.name = (
+	public EnvironmentModel(VirtualFile source, EnvironmentConfigurator... from) {
+		super(
 			Arrays
 			.stream(from)
-			.map((EnvironmentModel model) -> model.name)
-			.collect(Collectors.joining(", ", this.getClass().getSimpleName() + "[ ", " ]"))
+			.map((EnvironmentConfigurator model) -> model.name)
+			.collect(Collectors.joining(", ", "[ ", " ]"))
 		);
-		for (EnvironmentModel model : from) {
-			this.addAll(model);
+		for (EnvironmentConfigurator configurator : from) {
+			configurator.configure(source, this);
 		}
+	}
+
+	@Override
+	public void configure(VirtualFile source, EnvironmentModel environment) {
+		environment.addAll(this);
 	}
 
 	public void addAll(EnvironmentModel model) {

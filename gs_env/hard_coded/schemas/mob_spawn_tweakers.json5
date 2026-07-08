@@ -10,6 +10,7 @@
 				"random/instance",
 				"stateless_random",
 				"minecraft",
+				"custom_class",
 				"mob_spawn_tweaker"
 			]
 		}

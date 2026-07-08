@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.json.psi.JsonElement;
 import com.intellij.json.psi.JsonStringLiteral;
@@ -22,7 +21,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
-import builderb0y.globescript.datadriven.DataContext;
+import builderb0y.globescript.datadriven.GsEnv;
 import builderb0y.globescript.datadriven.ReferenceModel;
 import builderb0y.globescript.util.StringSimilarity;
 
@@ -64,26 +63,24 @@ public class TagCompleter extends CompletionContributor {
 						this.search(text, registry, directory, results, jsonString.getProject());
 					}
 				}
-				Module module = ModuleUtil.findModuleForPsiElement(jsonString);
-				if (module != null) {
-					String filePath = directory.getPath();
-					JsonElement root = jsonString;
-					while (root.getParent() instanceof JsonElement parent && !(parent instanceof PsiFile)) {
-						root = parent;
-					}
-					for (Map.Entry<Pattern, List<ReferenceModel>> entry : DataContext.getOrCreateInstance(module).references.entrySet()) {
-						Matcher matcher = entry.getKey().matcher(filePath);
-						if (matcher.find()) {
-							int start = matcher.start() + "/data".length();
-							while (directory.getPath().length() > start) directory = directory.getParent();
-							for (ReferenceModel model : entry.getValue()) {
-								PsiElement startingPoint;
-								if (
-									(startingPoint = model.jsonPath.getRootFor(jsonString)) != null &&
-									model.when.test(startingPoint)
-								) {
-									this.search(text, model.registry, directory, results, jsonString.getProject());
-								}
+				String filePath = directory.getPath();
+				JsonElement root = jsonString;
+				while (root.getParent() instanceof JsonElement parent && !(parent instanceof PsiFile)) {
+					root = parent;
+				}
+				GsEnv metadata = GsEnv.find(root.getContainingFile().getVirtualFile());
+				if (metadata != null) for (Map.Entry<Pattern, List<ReferenceModel>> entry : metadata.references.entrySet()) {
+					Matcher matcher = entry.getKey().matcher(filePath);
+					if (matcher.find()) {
+						int start = matcher.start() + "/data".length();
+						while (directory.getPath().length() > start) directory = directory.getParent();
+						for (ReferenceModel model : entry.getValue()) {
+							PsiElement startingPoint;
+							if (
+								(startingPoint = model.jsonPath.getRootFor(jsonString)) != null &&
+								model.when.test(startingPoint)
+							) {
+								this.search(text, model.registry, directory, results, jsonString.getProject());
 							}
 						}
 					}

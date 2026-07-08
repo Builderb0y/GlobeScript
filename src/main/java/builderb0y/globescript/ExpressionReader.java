@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.ConstantValue.*;
-import builderb0y.globescript.datadriven.DataContext.StandardTypes;
+import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 
 @SuppressWarnings({ "unused", "DeprecatedIsStillUsed", "ImplicitNumericConversion" })
 public class ExpressionReader {

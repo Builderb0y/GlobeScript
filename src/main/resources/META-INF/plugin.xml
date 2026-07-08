@@ -84,4 +84,10 @@
 			topic="com.intellij.ide.plugins.DynamicPluginListener"
 		/>
 	</applicationListeners>
+	<projectListeners>
+		<listener
+			class="builderb0y.globescript.datadriven.ProjectDataManager$Invalidator"
+			topic="com.intellij.openapi.roots.ModuleRootListener"
+		/>
+	</projectListeners>
 </idea-plugin>

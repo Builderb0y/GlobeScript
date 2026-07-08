@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -15,13 +14,10 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -32,19 +28,14 @@ import builderb0y.globescript.DisplayErrorAction;
 import builderb0y.globescript.Instances;
 import builderb0y.globescript.PsiErrorDisplay;
 
-public class DataContext {
+public class GsEnv {
 
-	public static final String
-		ENV_NAME = "gs_env",
-		HARD_CODED = "hard_coded";
-	public static final Key<DataContext> KEY = Key.create("GlobeScript.DataContext");
-
-	public final Module module;
+	public final ProjectData projectData;
 	public Map<PsiElement, List<PsiErrorDisplay>> errors = new Reference2ObjectOpenHashMap<>();
 	public Map<String, RawTypeModel> types = new Object2ObjectOpenHashMap<>();
-	public Map<String, EnvironmentModel> environments = new Object2ObjectOpenHashMap<>();
+	public Map<String, EnvironmentConfigurator> environments = new Object2ObjectOpenHashMap<>();
 	public List<SchemaModel> schemas = new ObjectArrayList<>();
-	public Map<Pattern, List<ReferenceModel>> references = new Object2ObjectOpenCustomHashMap<>(new Strategy<Pattern>() {
+	public Map<Pattern, List<ReferenceModel>> references = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<>() {
 
 		@Override
 		public int hashCode(Pattern o) {
@@ -61,8 +52,13 @@ public class DataContext {
 	public List<RequiredTagModel> requiredTags = new ObjectArrayList<>();
 	public StandardTypes standardTypes;
 
-	public DataContext(Module module) {
-		this.module = module;
+	public GsEnv(ProjectData projectData) {
+		this.projectData = projectData;
+	}
+
+	public static GsEnv find(VirtualFile file) {
+		ProjectData projectData = ProjectData.find(file);
+		return projectData != null ? projectData.environment() : null;
 	}
 
 	public boolean isValid() {
@@ -70,7 +66,7 @@ public class DataContext {
 	}
 
 	public PsiFile findUnopenFile(Set<PsiFile> files) {
-		FileEditorManager manager = FileEditorManager.getInstance(this.module.getProject());
+		FileEditorManager manager = FileEditorManager.getInstance(this.projectData.project);
 		FileEditor editor = manager.getFocusedEditor();
 		VirtualFile current = editor != null ? editor.getFile() : null;
 		for (PsiFile file : files) {
@@ -110,6 +106,10 @@ public class DataContext {
 		return true;
 	}
 
+	public VirtualFile envFolder() {
+		return this.projectData.contentRoot.findChild("gs_env");
+	}
+
 	public void reload() {
 		this.errors.clear();
 		this.types.clear();
@@ -117,70 +117,50 @@ public class DataContext {
 		this.schemas.clear();
 		this.references.clear();
 		this.standardTypes = null;
-		PendingDataContext pending = new PendingDataContext(this.module);
+		VirtualFile envFolder = this.envFolder();
+		if (envFolder == null) return;
+		PendingDataContext pending = new PendingDataContext(this.projectData, envFolder);
 		pending.scan();
-		done: {
+		done:
+		try {
 			if (this.checkErrors(pending)) break done;
-			try {
-				ConvertingDataContext converting = new ConvertingDataContext(pending);
-				for (PendingType type : pending.types.values()) {
-					RawTypeModel resolution = converting.getType(type.name, type.element);
-					if (resolution != null) this.types.put(type.name, resolution);
-				}
-				if (this.checkErrors(pending)) break done;
-				for (PendingEnvironment environment : pending.environments.values()) {
-					EnvironmentModel resolution = converting.getEnvironment(environment.name, environment.element);
-					if (resolution != null) this.environments.put(environment.name, resolution);
-				}
-				if (this.checkErrors(pending)) break done;
-				for (PendingSchema schema : pending.schemas) {
-					this.schemas.add(schema.resolve(converting));
-				}
-				if (this.checkErrors(pending)) break done;
-				for (PendingReference reference : pending.references) {
-					this.references.computeIfAbsent(reference.filePath, (Pattern $) -> new ArrayList<>()).add(reference.resolve());
-				}
-				for (PendingRequiredTag requiredTag : pending.requiredTags) {
-					this.requiredTags.add(requiredTag.resolve());
-				}
-				this.standardTypes = this.new StandardTypes();
+			ConvertingDataContext converting = new ConvertingDataContext(pending);
+			for (PendingType type : pending.types.values()) {
+				RawTypeModel resolution = converting.getType(type.name, type.element);
+				if (resolution != null) this.types.put(type.name, resolution);
 			}
-			catch (Exception exception) {
-				this.types.clear();
-				this.environments.clear();
-				this.schemas.clear();
-				this.references.clear();
-				Notifications.Bus.notify(
-					new Notification(
-						Instances.ERROR_NOTIFICATION,
-						"Uncaught exception in gs_env:",
-						exception.toString(),
-						NotificationType.WARNING
-					)
-					.addAction(new DisplayErrorAction(exception))
-				);
+			if (this.checkErrors(pending)) break done;
+			for (PendingEnvironment environment : pending.environments.values()) {
+				EnvironmentConfigurator resolution = converting.getEnvironment(environment.name, environment.element);
+				if (resolution != null) this.environments.put(environment.name, resolution);
 			}
+			if (this.checkErrors(pending)) break done;
+			for (PendingSchema schema : pending.schemas) {
+				this.schemas.add(schema.resolve(converting));
+			}
+			if (this.checkErrors(pending)) break done;
+			for (PendingReference reference : pending.references) {
+				this.references.computeIfAbsent(reference.filePath, (Pattern $) -> new ArrayList<>()).add(reference.resolve());
+			}
+			for (PendingRequiredTag requiredTag : pending.requiredTags) {
+				this.requiredTags.add(requiredTag.resolve());
+			}
+			this.standardTypes = this.new StandardTypes();
 		}
-		DaemonCodeAnalyzer.getInstance(this.module.getProject()).restart();
-	}
-
-	public static DataContext getOrCreateInstance(Module module) {
-		synchronized (KEY) {
-			DataContext context = module.getUserData(KEY);
-			if (context != null) {
-				return context;
-			}
-			context = new DataContext(module);
-			context.reload();
-			module.putUserData(KEY, context);
-			return context;
-		}
-	}
-
-	public static void invalidateInstance(Module module, boolean analyze) {
-		synchronized (KEY) {
-			module.putUserData(KEY, null);
-			if (analyze) DaemonCodeAnalyzer.getInstance(module.getProject()).restart();
+		catch (Exception exception) {
+			this.types.clear();
+			this.environments.clear();
+			this.schemas.clear();
+			this.references.clear();
+			Notifications.Bus.notify(
+				new Notification(
+					Instances.ERROR_NOTIFICATION,
+					"Uncaught exception in gs_env:",
+					exception.toString(),
+					NotificationType.WARNING
+				)
+				.addAction(new DisplayErrorAction(exception))
+			);
 		}
 	}
 
@@ -211,7 +191,7 @@ public class DataContext {
 			map                    = this.get("Map");
 
 		public RawTypeModel get(String name) {
-			RawTypeModel model = DataContext.this.types.get(name);
+			RawTypeModel model = GsEnv.this.types.get(name);
 			if (model != null) return model;
 			else throw new IllegalStateException("Missing essential type " + name);
 		}

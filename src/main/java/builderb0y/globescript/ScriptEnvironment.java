@@ -3,9 +3,11 @@ package builderb0y.globescript;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 
-import builderb0y.globescript.datadriven.DataContext.StandardTypes;
+import builderb0y.globescript.datadriven.EnvironmentConfigurator;
+import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 import builderb0y.globescript.datadriven.EnvironmentModel;
 import builderb0y.globescript.datadriven.RawTypeModel;
 
@@ -15,13 +17,13 @@ public class ScriptEnvironment extends EnvironmentModel {
 	public final List<LoopLabel> loopLabels = new ArrayList<>();
 	public int loopLabelCount = 0;
 
-	public ScriptEnvironment(StandardTypes standardTypes, ScriptEnvironment that) {
-		super(that);
+	public ScriptEnvironment(StandardTypes standardTypes, VirtualFile source, EnvironmentConfigurator from) {
+		super(source, from);
 		this.standardTypes = standardTypes;
 	}
 
-	public ScriptEnvironment(StandardTypes standardTypes, EnvironmentModel... models) {
-		super(models);
+	public ScriptEnvironment(StandardTypes standardTypes, VirtualFile source, EnvironmentConfigurator... from) {
+		super(source, from);
 		this.standardTypes = standardTypes;
 	}
 

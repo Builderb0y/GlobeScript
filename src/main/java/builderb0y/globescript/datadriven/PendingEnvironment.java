@@ -161,7 +161,7 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 			}
 		}
 
-		public EnvironmentModel resolve(ConvertingDataContext context) {
+		public EnvironmentConfigurator resolve(ConvertingDataContext context) {
 			return context.getEnvironment(this.name, this.element);
 		}
 	}
@@ -286,31 +286,28 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 			return Shorthand.PARSER;
 		}
 
-		public static record Shorthand(PendingTypeReference.Shorthand type) implements Structure {
+		public static record Shorthand(List<Token> tokens, String type, String name) implements ListBackedStructure {
 
 			public static final ShorthandParser<PendingExposedType, Shorthand> PARSER = new ShorthandParser<>() {
 
 				@Override
 				public Shorthand parse(ExpressionReader reader) {
-					return new Shorthand(PendingTypeReference.Shorthand.PARSER.parse(reader));
+					Token type = reader.nextIdentifierAfterWhitespace();
+					Token name = reader.nextIdentifierAfterWhitespace();
+					if (name != null) {
+						return new Shorthand(List.of(type.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE), name.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE)), type.getIdentifierText().toString(), name.getIdentifierText().toString());
+					}
+					else {
+						return new Shorthand(Collections.singletonList(type.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE)), type.getIdentifierText().toString(), type.getIdentifierText().toString());
+					}
 				}
 
 				@Override
 				public void inject(PendingExposedType self, PendingDataContext context, JsonStringLiteral element, Shorthand shorthand) {
-					self.name = shorthand.type.name;
-					self.type = new PendingTypeReference(context, element, shorthand.type);
+					self.name = shorthand.name;
+					self.type = new PendingTypeReference(context, element, new PendingTypeReference.Shorthand(Collections.emptyList(), shorthand.type, false));
 				}
 			};
-
-			@Override
-			public void addTo(List<Token> list) {
-				this.type.addTo(list);
-			}
-
-			@Override
-			public Token group() {
-				return this.type.group();
-			}
 		}
 	}
 

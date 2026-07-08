@@ -168,6 +168,9 @@
 		},
 		{
 			"name": "java_util/immutable",
+			"includes": [
+				"java_util/base_immutable"
+			],
 			"instance_fields": [
 				"meta(assignable = false) generic Object MapEntry.value",
 			],
@@ -195,6 +198,7 @@
 				"generic Object MapEntry.setValue(Object newValue)",
 				"generic MapEntry NavigableMap.pollFirstEntry()",
 				"generic MapEntry NavigableMap.pollLastEntry()",
+				"boolean Collection.add(Object element)",
 				"boolean List.add(int index, Object element)",
 				"generic Object List.set(int index, Object element)",
 				"generic Object List.removeIndex(int index)",
@@ -253,6 +257,9 @@
 		},
 		{
 			"name": "java_util/mutable",
+			"includes": [
+				"java_util/base_mutable"
+			],
 			"instance_fields": [
 				"generic Object MapEntry.value",
 			],
@@ -263,6 +270,9 @@
 		},
 		{
 			"name": "java_util/mutable_with_random",
+			"includes": [
+				"java_util/mutable"
+			],
 			"instance_methods": [
 				"void List.shuffle()",
 			]

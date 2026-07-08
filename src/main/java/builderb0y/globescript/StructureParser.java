@@ -62,8 +62,13 @@ public interface StructureParser<T extends OneOrMoreTokens> {
 
 		@Override
 		public Token group() {
-			Token content = this.content.group();
-			return new Token(this.open.getEntireText(), content.info, this.open, content, this.close);
+			if (this.content != null) {
+				Token content = this.content.group();
+				return new Token(this.open.getEntireText(), content.info, this.open, content, this.close);
+			}
+			else {
+				return new Token(this.open.getEntireText(), TokenInfo.NON_VALUE, this.open, this.close);
+			}
 		}
 	}
 

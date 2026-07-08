@@ -165,7 +165,7 @@ public class ExpressionParser {
 			if (!left.info.assignable()) {
 				left.withTooltip("Non-assignable value");
 			}
-			Token right = this.nextSingleExpression();
+			Token right = this.nextRhsOfAssignment(left.info);
 			if (!right.info.isAssignableToOrCanCast(this.environment, left.info.type(), Plicity.IMPLICIT)) {
 				assignOp.withTooltip("Can't implicitly cast " + right.info.type() + " to " + left.info.type() + " for assignment.");
 			}

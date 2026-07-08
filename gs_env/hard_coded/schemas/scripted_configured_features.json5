@@ -28,6 +28,8 @@
 				"math",
 				"random/instance",
 				"stateless_random",
+				"java_util/mutable_with_random",
+				"custom_class",
 				"origin_pos",
 				"minecraft/with_world"
 			]

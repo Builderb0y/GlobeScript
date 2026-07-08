@@ -26,6 +26,7 @@
 				"builtin",
 				"math",
 				"stateless_random",
+				"custom_class",
 				"tree_trunk_thickness"
 			]
 		},
@@ -39,7 +40,8 @@
 				"builtin",
 				"math",
 				"stateless_random",
-				"random/instance"
+				"random/instance",
+				"custom_class"
 			]
 		},
 		{
@@ -53,6 +55,7 @@
 				"math",
 				"random/instance",
 				"stateless_random",
+				"custom_class",
 				"tree_branch_shape"
 			]
 		}

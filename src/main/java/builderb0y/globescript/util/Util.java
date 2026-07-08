@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
+import com.intellij.json.psi.JsonObject;
+import com.intellij.json.psi.JsonProperty;
+import com.intellij.json.psi.JsonValue;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
@@ -48,6 +51,11 @@ public class Util {
 			return true;
 		}
 	};
+
+	public static JsonValue findProperty(JsonObject object, String name) {
+		JsonProperty property = object.findProperty(name);
+		return property != null ? property.getValue() : null;
+	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> Hash.Strategy<T> defaultHashStrategy() {

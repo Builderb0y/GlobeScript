@@ -13,6 +13,7 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.datadriven.PendingEnvironment.PendingEnvironmentReference;
+import builderb0y.globescript.util.Util;
 
 public class PendingSchema extends PendingElement {
 
@@ -193,8 +194,8 @@ public class PendingSchema extends PendingElement {
 		public boolean test(PsiElement element) {
 			if (element instanceof JsonObject object) {
 				for (Map.Entry<String, When> entry : this.conditions.entrySet()) {
-					JsonProperty property = object.findProperty(entry.getKey());
-					if (property == null || !entry.getValue().test(property.getValue())) return false;
+					JsonValue property = Util.findProperty(object, entry.getKey());
+					if (property == null || !entry.getValue().test(property)) return false;
 				}
 				return true;
 			}

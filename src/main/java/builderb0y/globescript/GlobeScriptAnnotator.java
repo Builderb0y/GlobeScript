@@ -1,15 +1,10 @@
 package builderb0y.globescript;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Predicates;
-import com.intellij.codeInsight.daemon.quickFix.CreateFilePathFix;
-import com.intellij.codeInsight.daemon.quickFix.NewFileLocation;
-import com.intellij.codeInsight.daemon.quickFix.TargetDirectory;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.json.psi.*;
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -18,6 +13,8 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.annotations.NotNull;
@@ -57,22 +54,16 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 		@Override
 		public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
 			if (!(element instanceof PsiFile)) {
-				Module module = ModuleUtil.findModuleForPsiElement(element);
-				if (module != null) {
-					DataContext context = DataContext.getOrCreateInstance(module);
-					if (context.isValid()) {
-						String text = element.getText();
-						ExpressionParser parser = new ExpressionParser(
-							new ExpressionReader(text, 0, text.length()),
-							new ScriptEnvironment(
-								context.standardTypes,
-								context.environments.values().toArray(
-									new EnvironmentModel[context.environments.size()]
-								)
-							)
-						);
-						this.annotate(parser, holder);
-					}
+				VirtualFile file = element.getContainingFile().getVirtualFile();
+				ProjectData data = ProjectData.find(file);
+				if (data != null) {
+					String text = element.getText();
+					ExpressionParser parser = new ExpressionParser(
+						new ExpressionReader(text, 0, text.length()),
+						data.combineAllEnvironments(file)
+					);
+					this.annotate(parser, holder);
+
 				}
 			}
 		}
@@ -82,181 +73,217 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 
 		public static final Pattern SCRIPT_TEMPLATE_PATH = Pattern.compile("/data/[^/]+/bigglobe/script_template/");
 
-		@Override
-		public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-			if (!(element instanceof JsonElement jsonElement)) return;
-			for (PsiReference reference : jsonElement.getReferences()) {
+		public boolean annotateEnvironment(JsonElement element, AnnotationHolder holder, GsEnv metadata) {
+			if (element instanceof JsonStringLiteral string && !string.isPropertyName()) {
+				ShorthandParser<?, ?> parser = switch (getPathNoArrays(string)) {
+					case "types"                         -> PendingType       .Shorthand.PARSER;
+					case "environments>types"            -> PendingExposedType.Shorthand.PARSER;
+					case "environments>variables"        -> PendingVariable   .Shorthand.PARSER;
+					case "environments>instance_fields"  -> PendingField      .Shorthand.INSTANCE_PARSER;
+					case "environments>static_fields"    -> PendingField      .Shorthand.STATIC_PARSER;
+					case "environments>functions"        -> PendingFunction   .Shorthand.PARSER;
+					case "environments>instance_methods" -> PendingMethod     .Shorthand.INSTANCE_PARSER;
+					case "environments>static_methods"   -> PendingMethod     .Shorthand.STATIC_PARSER;
+					case "environments>casters"          -> PendingCaster     .Shorthand.PARSER;
+					default                              -> null;
+				};
+				List<PsiErrorDisplay> errors = metadata.errors.get(element);
+				if (errors != null) {
+					for (PsiErrorDisplay error : errors) {
+						error.addTo(element, holder);
+					}
+				}
+				exit:
+				if (parser != null) {
+					String fileText = element.getContainingFile().getText();
+					JsonExpressionReader reader = new JsonExpressionReader(
+						fileText,
+						maybeIncrement(fileText, element.getTextRange().getStartOffset()),
+						maybeDecrement(fileText, element.getTextRange().getEndOffset())
+					);
+					Structure structure;
+					try {
+						structure = parser.parseAndCheckEOF(reader);
+					}
+					catch (RuntimeException exception) {
+						break exit;
+					}
+					Consumer<Token> action = (Token token) -> {
+						this.annotate(token, holder);
+					};
+					structure.group().forEach(action);
+					reader.comments.forEach(action);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public boolean checkInvalidReferences(JsonElement element, AnnotationHolder holder) {
+			for (PsiReference reference : element.getReferences()) {
 				if (reference instanceof TagReference myReference && myReference.resolve() == null) {
 					holder
 					.newAnnotation(HighlightSeverity.ERROR, myReference.getErrorMessage())
 					.highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
 					.withFix(myReference.createQuickFix())
 					.create();
-					return;
+					return true;
 				}
 			}
-			String fileText = jsonElement.getContainingFile().getText();
-			String filePath = jsonElement.getContainingFile().getVirtualFile().getPath();
-			boolean isEnvironment = filePath.contains("/gs_env/");
-			boolean annotated = false;
-			if (isEnvironment) {
-				if (jsonElement instanceof JsonStringLiteral string && !string.isPropertyName()) {
-					ShorthandParser<?, ?> parser = switch (getPathNoArrays(string)) {
-						case "types"                         -> PendingType       .Shorthand.PARSER;
-						case "environments>types"            -> PendingExposedType.Shorthand.PARSER;
-						case "environments>variables"        -> PendingVariable   .Shorthand.PARSER;
-						case "environments>instance_fields"  -> PendingField      .Shorthand.INSTANCE_PARSER;
-						case "environments>static_fields"    -> PendingField      .Shorthand.STATIC_PARSER;
-						case "environments>functions"        -> PendingFunction   .Shorthand.PARSER;
-						case "environments>instance_methods" -> PendingMethod     .Shorthand.INSTANCE_PARSER;
-						case "environments>static_methods"   -> PendingMethod     .Shorthand.STATIC_PARSER;
-						case "environments>casters"          -> PendingCaster     .Shorthand.PARSER;
-						default                              -> null;
-					};
-					exit:
-					if (parser != null) {
-						JsonExpressionReader reader = new JsonExpressionReader(
-							fileText,
-							maybeIncrement(fileText, jsonElement.getTextRange().getStartOffset()),
-							maybeDecrement(fileText, jsonElement.getTextRange().getEndOffset())
-						);
-						Structure structure;
-						try {
-							structure = parser.parseAndCheckEOF(reader);
-						}
-						catch (RuntimeException exception) {
-							break exit;
-						}
-						Consumer<Token> action = (Token token) -> {
-							this.annotate(token, holder);
-						};
-						structure.group().forEach(action);
-						reader.comments.forEach(action);
-						annotated = true;
-					}
-				}
-			}
-			Module module = ModuleUtil.findModuleForPsiElement(jsonElement);
-			if (module != null) {
-				DataContext context = DataContext.getOrCreateInstance(module);
-				if (!isEnvironment && context.isValid()) {
-					if (jsonElement instanceof JsonFile file) {
-						JsonValue top = file.getTopLevelValue();
-						String path = file.getOriginalFile().getVirtualFile().getPath();
-						for (RequiredTagModel requiredTag : context.requiredTags) {
-							if (requiredTag.filePath.matcher(path).find() && requiredTag.when.test(top)) {
-								if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
-									break;
-								}
-								else {
-									holder.newAnnotation(HighlightSeverity.WARNING, "This file must be added to a tag to function properly.").fileLevel().create();
-									return;
-								}
-							}
-						}
-					}
-					int start, end;
-					if (jsonElement instanceof JsonArray array) {
-						List<JsonValue> values = array.getValueList();
-						if (values.isEmpty()) return;
-						for (JsonValue value : values) {
-							if (!(value instanceof JsonStringLiteral)) return;
-						}
-						start = maybeIncrement(fileText, values.getFirst().getTextOffset());
-						end = maybeDecrement(fileText, values.getLast().getTextRange().getEndOffset());
-					}
-					else if (jsonElement instanceof JsonStringLiteral string && !string.isPropertyName() && !(string.getParent() instanceof JsonArray)) {
-						start = maybeIncrement(fileText, jsonElement.getTextOffset());
-						end = maybeDecrement(fileText, jsonElement.getTextRange().getEndOffset());
-					}
-					else {
-						return;
-					}
+			return false;
+		}
 
-					JsonElement root = jsonElement;
-					String jsonPath = getPath(root);
-					while (root.getParent() instanceof JsonElement parent && !(parent instanceof PsiFile)) {
-						root = parent;
-					}
-					String text = jsonElement.getContainingFile().getText();
-					if (SCRIPT_TEMPLATE_PATH.matcher(filePath).find()) {
-						if (jsonPath.equals("script")) {
-							ScriptEnvironment environment = new ScriptEnvironment(
-								context.standardTypes,
-								context.environments.values().toArray(
-									new EnvironmentModel[context.environments.size()]
-								)
-							);
-							if (root instanceof JsonObject object && getValue(object, "inputs") instanceof JsonArray inputs) {
-								for (JsonValue input : inputs.getValueList()) {
-									if (input instanceof JsonObject inputObject) {
-										String name = getValue(inputObject, "name") instanceof JsonStringLiteral string ? string.getValue() : null;
-										if (name == null) continue;
-										String typeName = getValue(inputObject, "type") instanceof JsonStringLiteral string ? string.getValue() : null;
-										if (typeName == null) continue;
-										TypeData typeData = environment.getType(typeName);
-										if (typeData == null) continue;
-										environment.addUserParameter(name, typeData.info.assignable(true));
-									}
-								}
-							}
-							ExpressionParser parser = new ExpressionParser(
-								new JsonExpressionReader(text, start, end),
-								environment
-							);
-							this.annotate(parser, holder);
-							annotated = true;
-						}
+		public boolean checkRequiredTags(JsonFile file, AnnotationHolder holder, GsEnv metadata) {
+			JsonValue top = file.getTopLevelValue();
+			String path = file.getOriginalFile().getVirtualFile().getPath();
+			for (RequiredTagModel requiredTag : metadata.requiredTags) {
+				if (requiredTag.filePath.matcher(path).find() && requiredTag.when.test(top)) {
+					if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
+						break;
 					}
 					else {
-						for (SchemaModel schema : context.schemas) {
-							if (schema.matches(filePath, jsonElement)) {
-								ExpressionParser parser = new ExpressionParser(
-									new JsonExpressionReader(text, start, end),
-									schema.copyEnvironment(context.standardTypes)
-								);
-								this.annotate(parser, holder);
-								annotated = true;
-								break;
-							}
+						holder.newAnnotation(HighlightSeverity.WARNING, "This file must be added to a tag to function properly.").fileLevel().create();
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public static TextRange getArrayRange(JsonElement jsonElement) {
+			String fileText = jsonElement.getContainingFile().getText();
+			int start, end;
+			if (jsonElement instanceof JsonArray array) {
+				List<JsonValue> values = array.getValueList();
+				if (values.isEmpty()) return null;
+				for (JsonValue value : values) {
+					if (!(value instanceof JsonStringLiteral)) return null;
+				}
+				start = maybeIncrement(fileText, values.getFirst().getTextOffset());
+				end = maybeDecrement(fileText, values.getLast().getTextRange().getEndOffset());
+			}
+			else if (jsonElement instanceof JsonStringLiteral string && !string.isPropertyName() && !(string.getParent() instanceof JsonArray)) {
+				start = maybeIncrement(fileText, jsonElement.getTextOffset());
+				end = maybeDecrement(fileText, jsonElement.getTextRange().getEndOffset());
+			}
+			else {
+				return null;
+			}
+			return end > start ? new TextRange(start, end) : null;
+		}
+
+		public boolean annotateScript(JsonElement jsonElement, AnnotationHolder holder, GsEnv metadata) {
+			TextRange range = getArrayRange(jsonElement);
+			if (range != null) {
+				PsiFile psiFile = jsonElement.getContainingFile();
+				VirtualFile virtualFile = psiFile.getVirtualFile();
+				String filePath = virtualFile.getPath();
+				for (SchemaModel schema : metadata.schemas) {
+					if (schema.matches(filePath, jsonElement)) {
+						String text = psiFile.getText();
+						ExpressionParser parser = new ExpressionParser(
+							new JsonExpressionReader(text, range.getStartOffset(), range.getEndOffset()),
+							schema.copyEnvironment(metadata.standardTypes, virtualFile)
+						);
+						this.annotate(parser, holder);
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public void grayOutQuotes(JsonElement element, AnnotationHolder holder) {
+			String fileText = element.getContainingFile().getText();
+			element.accept(new PsiElementVisitor() {
+
+				@Override
+				public void visitElement(@NotNull PsiElement element) {
+					super.visitElement(element);
+					TextRange range = element.getTextRange();
+					int start = range.getStartOffset();
+					int end = range.getEndOffset();
+					if (element instanceof JsonStringLiteral) {
+						if (fileText.charAt(start) == '"') {
+							holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(new TextRange(start, start + 1)).textAttributes(Colors.JSON_HIDDEN).create();
 						}
+						if (fileText.charAt(end - 1) == '"') {
+							holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(new TextRange(end - 1, end)).textAttributes(Colors.JSON_HIDDEN).create();
+						}
+					}
+					else if (element.getTextLength() == 1 && fileText.charAt(start) == ',') {
+						holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(new TextRange(start, start + 1)).textAttributes(Colors.JSON_HIDDEN).create();
+					}
+					else {
+						element.acceptChildren(this);
+					}
+				}
+			});
+		}
+
+		@Override
+		public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
+			if (!(element instanceof JsonElement jsonElement)) return;
+
+			VirtualFile file = element.getContainingFile().getVirtualFile();
+			ProjectData projectData = ProjectData.find(file);
+			GsEnv metadata = projectData != null ? projectData.environment() : null;
+			if (jsonElement instanceof JsonFile jsonFile) {
+				if (metadata != null) {
+					if (this.checkRequiredTags(jsonFile, holder, metadata)) return;
+				}
+			}
+			else {
+				if (this.checkInvalidReferences(jsonElement, holder)) return;
+				boolean annotated;
+				VirtualFile envFolder;
+				if (metadata != null) {
+					if (
+						(envFolder = metadata.envFolder()) != null &&
+						VfsUtil.isAncestor(envFolder, file, true)
+					) {
+						annotated = this.annotateEnvironment(jsonElement, holder, metadata);
+					}
+					else {
+						annotated = this.annotateScript(jsonElement, holder, metadata);
 					}
 				}
 				else {
-					List<PsiErrorDisplay> errors = context.errors.get(jsonElement);
-					if (errors != null) {
-						for (PsiErrorDisplay error : errors) {
-							error.addTo(jsonElement, holder);
+					annotated = false;
+				}
+				if (annotated) this.grayOutQuotes(jsonElement, holder);
+			}
+			/*
+			if (SCRIPT_TEMPLATE_PATH.matcher(filePath).find()) {
+				if (jsonPath.equals("script")) {
+					ScriptEnvironment environment = new ScriptEnvironment(
+						context.standardTypes,
+						context.environments.values().toArray(
+							new EnvironmentModel[context.environments.size()]
+						)
+					);
+					if (root instanceof JsonObject object && getValue(object, "inputs") instanceof JsonArray inputs) {
+						for (JsonValue input : inputs.getValueList()) {
+							if (input instanceof JsonObject inputObject) {
+								String name = getValue(inputObject, "name") instanceof JsonStringLiteral string ? string.getValue() : null;
+								if (name == null) continue;
+								String typeName = getValue(inputObject, "type") instanceof JsonStringLiteral string ? string.getValue() : null;
+								if (typeName == null) continue;
+								TypeData typeData = environment.getType(typeName);
+								if (typeData == null) continue;
+								environment.addUserParameter(name, typeData.info.assignable(true));
+							}
 						}
 					}
+					ExpressionParser parser = new ExpressionParser(
+						new JsonExpressionReader(text, start, end),
+						environment
+					);
+					this.annotate(parser, holder);
+					annotated = true;
 				}
 			}
-			if (annotated) {
-				jsonElement.accept(new PsiElementVisitor() {
-
-					@Override
-					public void visitElement(@NotNull PsiElement element) {
-						super.visitElement(element);
-						TextRange range = element.getTextRange();
-						int start = range.getStartOffset();
-						int end = range.getEndOffset();
-						if (element instanceof JsonStringLiteral) {
-							if (fileText.charAt(start) == '"') {
-								holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(new TextRange(start, start + 1)).textAttributes(Colors.JSON_HIDDEN).create();
-							}
-							if (fileText.charAt(end - 1) == '"') {
-								holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(new TextRange(end - 1, end)).textAttributes(Colors.JSON_HIDDEN).create();
-							}
-						}
-						else if (element.getTextLength() == 1 && fileText.charAt(start) == ',') {
-							holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES).range(new TextRange(start, start + 1)).textAttributes(Colors.JSON_HIDDEN).create();
-						}
-						else {
-							element.acceptChildren(this);
-						}
-					}
-				});
-			}
+			*/
 		}
 	}
 
@@ -266,11 +293,6 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 
 	public static int maybeDecrement(CharSequence text, int index) {
 		return text.charAt(index - 1) == '"' ? index - 1 : index;
-	}
-
-	public static JsonValue getValue(JsonObject object, String name) {
-		JsonProperty property = object.findProperty(name);
-		return property != null ? property.getValue() : null;
 	}
 
 	public static String getPath(JsonElement element) {
