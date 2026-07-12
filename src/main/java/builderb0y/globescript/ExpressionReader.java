@@ -525,6 +525,7 @@ public class ExpressionReader {
 				}
 				return true;
 			}
+			this.cursor = revert;
 		}
 		return false;
 	}
@@ -652,18 +653,24 @@ public class ExpressionReader {
 				this.skip();
 				boolean negative = this.has('-');
 				if (!negative) this.has('+');
-				BigInteger precision = BigInteger.valueOf(Math.max(firstPart.radixPosition, 0));
-				BigInteger toAddOrSubtract = this.nextRadixDecimal(errors, false).value;
-				if (negative) precision = precision.add(toAddOrSubtract);
-				else precision = precision.subtract(toAddOrSubtract);
-				//log2(Double.MIN_VALUE) = -1074, so 1080 is a good max precision.
-				if (precision.abs().compareTo(BigInteger.valueOf(1080)) <= 0) {
-					firstPart.radixPosition = precision.intValue();
+				c = this.peek();
+				if (asciiDigit(c, 10) >= 0) {
+					BigInteger precision = BigInteger.valueOf(Math.max(firstPart.radixPosition, 0));
+					BigInteger toAddOrSubtract = this.nextRadixDecimal(errors, false).value;
+					if (negative) precision = precision.add(toAddOrSubtract);
+					else precision = precision.subtract(toAddOrSubtract);
+					//log2(Double.MIN_VALUE) = -1074, so 1080 is a good max precision.
+					if (precision.abs().compareTo(BigInteger.valueOf(1080)) <= 0) {
+						firstPart.radixPosition = precision.intValue();
+					}
+					else {
+						firstPart.radixPosition = 1080 * precision.signum();
+					}
+					c = this.peek();
 				}
 				else {
-					firstPart.radixPosition = 1080 * precision.signum();
+					errors.add(new PsiErrorDisplay(this.cursor - 1, this.cursor - 1, "Expected exponent part of number"));
 				}
-				c = this.peek();
 			}
 			boolean unsigned = c == 'u' || c == 'U';
 			if (unsigned) {
@@ -777,18 +784,24 @@ public class ExpressionReader {
 		int c = this.peek();
 		if (c == 'x' || c == 'X') {
 			this.skip();
-			if (firstPart.radixPosition >= 0) {
-				errors.add(new PsiErrorDisplay(start, this.cursor - 1, "Can't have a fractional radix"));
-			}
 			int radix;
-			if (firstPart.value.compareTo(BigInteger.TWO) >= 0 && firstPart.value.compareTo(BigInteger.valueOf(16)) <= 0) {
+			if (firstPart.radixPosition > 0) {
+				errors.add(new PsiErrorDisplay(start, this.cursor - 1, "Can't have a fractional radix"));
+				radix = 10;
+			}
+			else if (firstPart.value.compareTo(BigInteger.TWO) >= 0 && firstPart.value.compareTo(BigInteger.valueOf(16)) <= 0) {
 				radix = firstPart.value.intValue();
 			}
 			else {
 				errors.add(new PsiErrorDisplay(start, this.cursor - 1, "Invalid radix: " + firstPart.value + " (must be between 2 and 16, inclusive)" + (firstPart.value.signum() == 0 ? "; hex literals use the prefix '16x', not '0x'." : "")));
 				radix = 10;
 			}
-			return this.nextDecimal(radix, errors, allowNonIntegers);
+			if (asciiDigit(this.peek(), radix) >= 0) {
+				return this.nextDecimal(radix, errors, allowNonIntegers);
+			}
+			else {
+				return new DecimalInfo(BigInteger.ZERO, radix, 0);
+			}
 		}
 		else {
 			return firstPart;

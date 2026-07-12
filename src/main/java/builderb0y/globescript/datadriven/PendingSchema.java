@@ -149,6 +149,9 @@ public class PendingSchema extends PendingElement {
 				case JsonStringLiteral string -> {
 					yield new StringWhen(string.getValue());
 				}
+				case JsonBooleanLiteral bool -> {
+					yield BooleanWhen.get(bool.getValue());
+				}
 				case JsonObject object -> {
 					record Entry(String key, When value) {}
 					yield new CompoundWhen(
@@ -185,6 +188,22 @@ public class PendingSchema extends PendingElement {
 		@Override
 		public boolean test(PsiElement element) {
 			return element instanceof JsonStringLiteral literal && literal.getValue().equals(this.value);
+		}
+	}
+
+	public static record BooleanWhen(boolean value) implements When {
+
+		public static final BooleanWhen
+			TRUE  = new BooleanWhen(true),
+			FALSE = new BooleanWhen(false);
+
+		public static BooleanWhen get(boolean value) {
+			return value ? TRUE : FALSE;
+		}
+
+		@Override
+		public boolean test(PsiElement element) {
+			return element instanceof JsonBooleanLiteral literal && literal.getValue() == this.value;
 		}
 	}
 

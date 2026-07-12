@@ -20,6 +20,7 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 	public final StackMap<       MethodData.Key, List<  MethodData>> staticMethods   = StackMap.withFallback(Collections.emptyList());
 	public final StackMap<       MethodData.Key, List<  MethodData>> instanceMethods = StackMap.withFallback(Collections.emptyList());
 	public final StackMap<         CastData.Key, List<    CastData>> casters         = StackMap.withFallback(Collections.emptyList());
+	public final      Map<     VariableData.Key,      VariableData > importedValues  = new HashMap<>();
 
 	public EnvironmentModel(String name) {
 		super(name);
@@ -102,6 +103,10 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 				this.casters.computeIfAbsent(new CastData.Key(cast.from, to), (CastData.Key $) -> new ArrayList<>()).add(cast);
 			}
 		}
+	}
+
+	public void addImportedValue(VariableData value) {
+		this.importedValues.put(value.key(), value);
 	}
 
 	@Override
@@ -291,6 +296,8 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 	}
 
 	public static class ParameterModel {
+
+		public static final ParameterModel[] EMPTY_ARRAY = {};
 
 		public final String name;
 		public final RawTypeModel type;

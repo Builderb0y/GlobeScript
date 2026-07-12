@@ -188,7 +188,9 @@ public class GsEnv {
 			iterable               = this.get("Iterable"),
 			iterator               = this.get("Iterator"),
 			list                   = this.get("List"),
-			map                    = this.get("Map");
+			map                    = this.get("Map"),
+			columnStorage          = this.get("column_storage"),
+			columnLookup           = this.get("column_lookup");
 
 		public RawTypeModel get(String name) {
 			RawTypeModel model = GsEnv.this.types.get(name);

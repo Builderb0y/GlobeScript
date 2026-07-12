@@ -1,0 +1,42 @@
+{
+	"script_schemas": [
+		{
+			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
+			"when": {
+				"type": "script",
+				"params": {
+					"is_3d": false
+				}
+			},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"random/base",
+				"stateless_random",
+				"minecraft",
+				"column_value/base"
+				"column_value/without_xyz"
+			]
+		},
+		{
+			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
+			"when": {
+				"type": "script",
+				"params": {
+					"is_3d": true
+				}
+			},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"random/base",
+				"stateless_random",
+				"minecraft",
+				"column_value/base"
+				"column_value/with_y"
+			]
+		}
+	]
+}

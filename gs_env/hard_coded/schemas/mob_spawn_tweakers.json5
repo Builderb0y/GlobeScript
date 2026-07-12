@@ -11,6 +11,7 @@
 				"stateless_random",
 				"minecraft",
 				"custom_class",
+				"column_value/with_xyz",
 				"mob_spawn_tweaker"
 			]
 		}

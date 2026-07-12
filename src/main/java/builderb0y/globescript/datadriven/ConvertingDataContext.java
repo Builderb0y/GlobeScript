@@ -1,14 +1,10 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SequencedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.xml.Convert;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
@@ -81,16 +77,35 @@ public class ConvertingDataContext {
 	}
 
 	public EnvironmentConfigurator getEnvironment(String name, PsiElement requester) {
+		class ColumnValueConfigurator extends EnvironmentConfigurator {
+
+			public final int flags;
+
+			public ColumnValueConfigurator(String name, int flags) {
+				super(name);
+				this.flags = flags;
+			}
+
+			@Override
+			public void configure(VirtualFile source, EnvironmentModel environment) {
+				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(source);
+				if (pack != null) pack.columnValues.setupEnvironment(environment, source, this.flags);
+			}
+		}
 		return switch (name) {
 			case null -> null;
-			case "custom_class" -> new EnvironmentConfigurator("custom_class") {
+			case "custom_class" -> new EnvironmentConfigurator(name) {
 
 				@Override
 				public void configure(VirtualFile source, EnvironmentModel environment) {
-					CustomClassEnvironment customClasses = ConvertingDataContext.this.pending.projectData.getCustomClasses(source);
-					if (customClasses != null) customClasses.setupEnvironment(environment);
+					PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(source);
+					if (pack != null) pack.customClasses.setupEnvironment(environment);
 				}
 			};
+			case "column_value/without_xyz" -> new ColumnValueConfigurator(name, 0);
+			case "column_value/with_y"      -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_Y_PROVIDED);
+			case "column_value/with_xz"     -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_XZ_PROVIDED);
+			case "column_value/with_xyz"    -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_XYZ_PROVIDED);
 			default -> {
 				if (this.environmentStack.add(name)) try {
 					EnvironmentConfigurator configurator = this.environments.get(name);
@@ -152,11 +167,14 @@ public class ConvertingDataContext {
 	public EnvironmentConfigurator[] getEnvironments(PendingEnvironmentReference[] references) {
 		int length = references.length;
 		EnvironmentConfigurator[] environments = new EnvironmentConfigurator[length];
-		for (int index = 0; index < length; index++) {
-			EnvironmentConfigurator environment = this.getEnvironment(references[index].name, references[index].element);
-			if (environment == null) throw new RuntimeException("Can't find environment named " + references[index].name);
-			environments[index] = environment;
+		int writeIndex = 0;
+		for (PendingEnvironmentReference reference : references) {
+			EnvironmentConfigurator environment = this.getEnvironment(reference.name, reference.element);
+			if (environment != null) environments[writeIndex++] = environment;
+			else if (reference.element != null) this.pending.addError(reference.element, "Can't find environment named " + reference.name);
+			else throw new RuntimeException("Can't find environment named " + reference.name);
 		}
+		if (writeIndex != length) environments = Arrays.copyOf(environments, writeIndex);
 		return environments;
 	}
 }

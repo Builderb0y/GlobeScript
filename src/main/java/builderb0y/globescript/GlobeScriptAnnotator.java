@@ -74,46 +74,48 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 		public static final Pattern SCRIPT_TEMPLATE_PATH = Pattern.compile("/data/[^/]+/bigglobe/script_template/");
 
 		public boolean annotateEnvironment(JsonElement element, AnnotationHolder holder, GsEnv metadata) {
-			if (element instanceof JsonStringLiteral string && !string.isPropertyName()) {
-				ShorthandParser<?, ?> parser = switch (getPathNoArrays(string)) {
-					case "types"                         -> PendingType       .Shorthand.PARSER;
-					case "environments>types"            -> PendingExposedType.Shorthand.PARSER;
-					case "environments>variables"        -> PendingVariable   .Shorthand.PARSER;
-					case "environments>instance_fields"  -> PendingField      .Shorthand.INSTANCE_PARSER;
-					case "environments>static_fields"    -> PendingField      .Shorthand.STATIC_PARSER;
-					case "environments>functions"        -> PendingFunction   .Shorthand.PARSER;
-					case "environments>instance_methods" -> PendingMethod     .Shorthand.INSTANCE_PARSER;
-					case "environments>static_methods"   -> PendingMethod     .Shorthand.STATIC_PARSER;
-					case "environments>casters"          -> PendingCaster     .Shorthand.PARSER;
-					default                              -> null;
-				};
+			if (element instanceof JsonStringLiteral string) {
 				List<PsiErrorDisplay> errors = metadata.errors.get(element);
 				if (errors != null) {
 					for (PsiErrorDisplay error : errors) {
 						error.addTo(element, holder);
 					}
 				}
-				exit:
-				if (parser != null) {
-					String fileText = element.getContainingFile().getText();
-					JsonExpressionReader reader = new JsonExpressionReader(
-						fileText,
-						maybeIncrement(fileText, element.getTextRange().getStartOffset()),
-						maybeDecrement(fileText, element.getTextRange().getEndOffset())
-					);
-					Structure structure;
-					try {
-						structure = parser.parseAndCheckEOF(reader);
-					}
-					catch (RuntimeException exception) {
-						break exit;
-					}
-					Consumer<Token> action = (Token token) -> {
-						this.annotate(token, holder);
+				if (!string.isPropertyName()) {
+					ShorthandParser<?, ?> parser = switch (getPathNoArrays(string)) {
+						case "types"                         -> PendingType       .Shorthand.PARSER;
+						case "environments>types"            -> PendingExposedType.Shorthand.PARSER;
+						case "environments>variables"        -> PendingVariable   .Shorthand.PARSER;
+						case "environments>instance_fields"  -> PendingField      .Shorthand.INSTANCE_PARSER;
+						case "environments>static_fields"    -> PendingField      .Shorthand.STATIC_PARSER;
+						case "environments>functions"        -> PendingFunction   .Shorthand.PARSER;
+						case "environments>instance_methods" -> PendingMethod     .Shorthand.INSTANCE_PARSER;
+						case "environments>static_methods"   -> PendingMethod     .Shorthand.STATIC_PARSER;
+						case "environments>casters"          -> PendingCaster     .Shorthand.PARSER;
+						default -> null;
 					};
-					structure.group().forEach(action);
-					reader.comments.forEach(action);
-					return true;
+					exit:
+					if (parser != null) {
+						String fileText = element.getContainingFile().getText();
+						JsonExpressionReader reader = new JsonExpressionReader(
+							fileText,
+							maybeIncrement(fileText, element.getTextRange().getStartOffset()),
+							maybeDecrement(fileText, element.getTextRange().getEndOffset())
+						);
+						Structure structure;
+						try {
+							structure = parser.parseAndCheckEOF(reader);
+						}
+						catch (RuntimeException exception) {
+							break exit;
+						}
+						Consumer<Token> action = (Token token) -> {
+							this.annotate(token, holder);
+						};
+						structure.group().forEach(action);
+						reader.comments.forEach(action);
+						return true;
+					}
 				}
 			}
 			return false;

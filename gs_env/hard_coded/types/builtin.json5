@@ -34,6 +34,7 @@
 		"interface Comparable implements primitive_comparable",
 		"final class Class extends Object",
 		"record MinecraftVersion",
-		"abstract class Record extends Object"
+		"abstract class Record extends Object",
+		"class Enum extends Object"
 	]
 }

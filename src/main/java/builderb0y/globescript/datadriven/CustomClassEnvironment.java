@@ -3,49 +3,23 @@ package builderb0y.globescript.datadriven;
 import java.util.*;
 
 import com.intellij.json.psi.*;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 
 import builderb0y.globescript.Colors;
 import builderb0y.globescript.TokenInfo;
+import builderb0y.globescript.datadriven.CustomClassEnvironment.CustomElement;
 import builderb0y.globescript.datadriven.EnvironmentModel.FieldData;
 import builderb0y.globescript.datadriven.EnvironmentModel.MethodData;
 import builderb0y.globescript.datadriven.EnvironmentModel.ParameterModel;
 import builderb0y.globescript.datadriven.EnvironmentModel.TypeData;
 import builderb0y.globescript.util.Util;
 
-public class CustomClassEnvironment {
+public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
-	public final ProjectData projectData;
-	public final VirtualFile dataFolder;
-	public final Map<ID, CustomElement> elements;
-
-	public CustomClassEnvironment(ProjectData projectData, VirtualFile dataFolder) {
-		this.projectData = projectData;
-		this.dataFolder = dataFolder;
-		this.elements = new HashMap<>();
-	}
-
-	public static record ID(String namespace, String path) {
-
-		public static ID parse(String combined, String defaultNamespace) {
-			int colon = combined.indexOf(':');
-			return (
-				colon >= 0
-				? new ID(combined.substring(0, colon), combined.substring(colon + 1))
-				: new ID(defaultNamespace, combined)
-			);
-		}
-
-		public static ID parseMC(String combined) {
-			return parse(combined, "minecraft");
-		}
-
-		public static ID parseBG(String combined) {
-			return parse(combined, "bigglobe");
-		}
+	public CustomClassEnvironment(PackData packData) {
+		super(packData, "bigglobe", "custom_class");
 	}
 
 	public void setupEnvironment(EnvironmentModel environment) {
@@ -54,69 +28,22 @@ public class CustomClassEnvironment {
 		}
 	}
 
-	public void scan() {
-		VirtualFile[] namespaces = this.dataFolder.getChildren();
-		if (namespaces != null) {
-			for (VirtualFile namespace : namespaces) {
-				VirtualFile bigglobe = namespace.findChild("bigglobe");
-				if (bigglobe != null) {
-					VirtualFile customClass = bigglobe.findChild("custom_class");
-					if (customClass != null) {
-						VfsUtilCore.iterateChildrenRecursively(
-							customClass,
-							(VirtualFile file) -> file.isDirectory() || "json".equals(file.getExtension()),
-							(VirtualFile fileOrDir) -> {
-								if (!fileOrDir.isDirectory()) {
-									String path = VfsUtilCore.getRelativePath(fileOrDir, customClass);
-									CustomElement element = this.compute(fileOrDir);
-									if (element != null) {
-										path = path.substring(0, path.length() - ".json".length());
-										this.elements.put(new ID(namespace.getName(), path), element);
-									}
-								}
-								return true;
-							}
-						);
-					}
-				}
-			}
-		}
-	}
-
-	public boolean fileChanged(VirtualFile file) {
-		String path = VfsUtilCore.getRelativePath(file, this.dataFolder);
-		if (path != null) {
-			int firstSlash = path.indexOf('/');
-			final String registry = "bigglobe/custom_class/";
-			if (firstSlash >= 0 && path.regionMatches(firstSlash + 1, registry, 0, registry.length())) {
-				String namespace = path.substring(0, firstSlash);
-				path = path.substring(firstSlash + 1 + registry.length(), path.length() - ".json".length());
-				ID id = new ID(namespace, path);
-				CustomElement element = this.compute(file);
-				if (element != null) this.elements.put(id, element);
-				else this.elements.remove(id);
-				this.elements.values().forEach(CustomElement::clearCaches);
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public CustomElement get(ID id) {
 		CustomElement element = this.elements.get(id);
+		return element == SpecialMarker.ABSENT ? null : element;
+		/*
 		if (element != null) {
 			if (element == SpecialMarker.ABSENT) return null;
-			return element;
 		}
 		else {
-			VirtualFile namespace = this.dataFolder.findChild(id.namespace);
+			VirtualFile namespace = this.dataFolder.findChild(id.namespace());
 			if (namespace != null) {
 				VirtualFile bigglobe = namespace.findChild("bigglobe");
 				if (bigglobe != null) {
 					VirtualFile customClasses = bigglobe.findChild("custom_class");
 					if (customClasses != null) {
 						VirtualFile elementFile = customClasses;
-						for (String part : id.path.split("/")) {
+						for (String part : id.path().split("/")) {
 							elementFile = elementFile.findChild(part);
 							if (elementFile == null) break;
 						}
@@ -127,12 +54,14 @@ public class CustomClassEnvironment {
 				}
 			}
 			this.elements.put(id, element == null ? SpecialMarker.ABSENT : element);
-			return element;
 		}
+		return element;
+		*/
 	}
 
+	@Override
 	public CustomElement compute(VirtualFile file) {
-		PsiFile psiFile = PsiManager.getInstance(this.projectData.project).findFile(file);
+		PsiFile psiFile = PsiManager.getInstance(this.packData.projectData.project).findFile(file);
 		if (
 			psiFile instanceof JsonFile jsonFile &&
 			jsonFile.getTopLevelValue() instanceof JsonObject root &&
@@ -323,7 +252,7 @@ public class CustomClassEnvironment {
 		return null;
 	}
 
-	public static abstract class CustomElement {
+	public static abstract class CustomElement extends DynamicRegistryElement {
 
 		public final String name;
 
@@ -332,8 +261,6 @@ public class CustomClassEnvironment {
 		}
 
 		public abstract void applyTo(EnvironmentModel environment);
-
-		public void clearCaches() {}
 	}
 
 	public static class SpecialMarker extends CustomElement {
@@ -392,7 +319,7 @@ public class CustomClassEnvironment {
 
 		@Override
 		public RawTypeModel resolve(Set<ID> seen) {
-			return CustomClassEnvironment.this.projectData.environment().types.get(this.name);
+			return CustomClassEnvironment.this.packData.projectData.environment().types.get(this.name);
 		}
 
 		@Override
@@ -439,7 +366,7 @@ public class CustomClassEnvironment {
 					}
 				}
 				else {
-					result = new RawTypeModel(this.abstract_ ? TypeModifiersModel.ABSTRACT : 0, this.name, CustomClassEnvironment.this.projectData.environment().standardTypes.object, RawTypeModel.EMPTY_ARRAY, Collections.emptySet());
+					result = new RawTypeModel(this.abstract_ ? TypeModifiersModel.ABSTRACT : 0, this.name, CustomClassEnvironment.this.packData.projectData.environment().standardTypes.object, RawTypeModel.EMPTY_ARRAY, Collections.emptySet());
 				}
 				this.resolution = result == null ? RawTypeModel.ERROR : result;
 			}

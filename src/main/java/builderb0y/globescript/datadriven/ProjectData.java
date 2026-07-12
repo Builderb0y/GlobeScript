@@ -14,7 +14,7 @@ public class ProjectData {
 	public final Project project;
 	public final VirtualFile contentRoot;
 	public GsEnv env;
-	public Map<VirtualFile /* data folder */, CustomClassEnvironment> customClasses = new HashMap<>();
+	public Map<VirtualFile /* data folder */, PackData> packs = new HashMap<>();
 
 	public ProjectData(Project project, VirtualFile contentRoot) {
 		this.project = project;
@@ -29,10 +29,10 @@ public class ProjectData {
 		return null;
 	}
 
-	public CustomClassEnvironment getCustomClasses(VirtualFile file) {
+	public PackData getPackData(VirtualFile file) {
 		while (file != null) {
-			CustomClassEnvironment customClasses = this.customClasses.get(file);
-			if (customClasses != null) return customClasses;
+			PackData pack = this.packs.get(file);
+			if (pack != null) return pack;
 			else file = file.getParent();
 		}
 		return null;
@@ -47,8 +47,8 @@ public class ProjectData {
 				new EnvironmentConfigurator[gsEnv.environments.size()]
 			)
 		);
-		CustomClassEnvironment classes = this.getCustomClasses(file);
-		if (classes != null) classes.setupEnvironment(environment);
+		PackData pack = this.getPackData(file);
+		if (pack != null) pack.setupEnvironment(environment, file, ColumnValueEnvironment.FLAG_XYZ_PROVIDED);
 		return environment;
 	}
 
@@ -58,8 +58,8 @@ public class ProjectData {
 		while (parent != null) {
 			switch (parent.getName()) {
 				case "data" -> {
-					CustomClassEnvironment customClasses = this.customClasses.get(parent);
-					if (customClasses != null) changed |= customClasses.fileChanged(file);
+					PackData pack = this.packs.get(parent);
+					if (pack != null) changed |= pack.fileChanged(file);
 				}
 				case "gs_env" -> {
 					this.env = null;
@@ -83,15 +83,18 @@ public class ProjectData {
 
 	public void reload() {
 		this.env = null;
-		this.customClasses.clear();
+		this.packs.clear();
 		VirtualFile src = this.contentRoot.findChild("src");
 		if (src != null) {
 			for (VirtualFile dataPack : src.getChildren()) {
-				VirtualFile dataFolder = dataPack.findChild("data");
-				if (dataFolder != null) {
-					CustomClassEnvironment customClasses = new CustomClassEnvironment(this, dataFolder);
-					customClasses.scan();
-					this.customClasses.put(dataFolder, customClasses);
+				VirtualFile resources = dataPack.findChild("resources");
+				if (resources != null) {
+					VirtualFile dataFolder = resources.findChild("data");
+					if (dataFolder != null) {
+						PackData customClasses = new PackData(this, dataFolder);
+						customClasses.scan();
+						this.packs.put(dataFolder, customClasses);
+					}
 				}
 			}
 		}

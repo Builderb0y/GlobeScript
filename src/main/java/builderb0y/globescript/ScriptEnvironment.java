@@ -103,7 +103,32 @@ public class ScriptEnvironment extends EnvironmentModel {
 	}
 
 	public @Nullable VariableData getVariable(String name) {
-		return this.variables.get(new VariableData.Key(name));
+		VariableData variable = this.variables.get(new VariableData.Key(name));
+		if (variable != null) {
+			return variable;
+		}
+		else {
+			FieldData field = null;
+			for (VariableData value : this.importedValues.values()) {
+				FieldData field2 = this.getInstanceField(value.info.type(), name);
+				if (field2 != null) {
+					if (field == null) {
+						field = field2;
+					}
+					else {
+						FieldData field_ = field;
+						return new VariableData(field.name, Colors.ERROR, TokenInfo.ERROR) {
+
+							@Override
+							public Token applyColor(Token identifier) {
+								return super.applyColor(identifier).withTooltip("Ambiguous field on imported value could refer to " + field_ + " or " + field2 + ". Specify one by qualifying it.");
+							}
+						};
+					}
+				}
+			}
+			return field != null ? new VariableData(field.name, field.color, field.info) : null;
+		}
 	}
 
 	public @Nullable FieldData getInstanceField(RawTypeModel receiver, String name) {
@@ -149,13 +174,32 @@ public class ScriptEnvironment extends EnvironmentModel {
 					best.add(function);
 				}
 			}
-			return switch (best.size()) {
-				case 0 -> null;
-				case 1 -> best.get(0);
-				default -> new AmbiguousFunctionData(name, parameters, best);
-			};
+			switch (best.size()) {
+				case 0 -> {}
+				case 1 -> { return best.get(0); }
+				default -> { return new AmbiguousFunctionData(name, parameters, best); }
+			}
 		}
-		return null;
+		MethodData method = null;
+		for (VariableData value : this.importedValues.values()) {
+			MethodData method2 = this.getInstanceMethod(value.info.type(), name, parameters);
+			if (method2 != null) {
+				if (method == null) {
+					method = method2;
+				}
+				else {
+					MethodData method_ = method;
+					return new FunctionData(method_.name, Colors.ERROR, TokenInfo.ERROR) {
+
+						@Override
+						public Token applyColor(Token identifier) {
+							return super.applyColor(identifier).withTooltip("Ambiguous method on imported value could refer to " + method_ + " or " + method2 + ". Specify one by qualifying it.");
+						}
+					};
+				}
+			}
+		}
+		return method != null ? new FunctionData(method.name, method.color, method.returnType, method.parameters) : null;
 	}
 
 	public static class AmbiguousFunctionData extends FunctionData {

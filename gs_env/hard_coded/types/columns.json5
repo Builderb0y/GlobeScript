@@ -1,0 +1,40 @@
+{
+	"types": [
+		"class column_storage extends Object",
+		"class column_lookup extends Object",
+		"record column_hints",
+		"class world_traits extends Object",
+		"enum column_usage(GENERIC, HEIGHTMAP, RAW_GENERATION, FEATURES)"
+	],
+	"environments": [
+		{
+			"name": "column_value/base",
+			"instance_fields": [
+				"int column_storage.x",
+				"int column_storage.z",
+				"int column_storage.minCachedYLevel",
+				"int column_storage.maxCachedYLevel",
+				"column_hints column_storage.hints",
+				"world_traits column_storage.world_traits",
+				"long column_storage.worldSeed",
+				"long column_storage.columnSeed",
+
+				"boolean column_hints.fill",
+				"boolean column_hints.carve",
+				"boolean column_hints.decorate",
+				"boolean column_hints.isLod",
+				"int column_hints.lod",
+				"int column_hints.distanceBetweenColumns",
+				"column_usage column_hints.usage"
+			],
+			"instance_methods": [
+				"long column_storage.worldSeed(long salt)",
+				"long column_storage.columnSeed(long salt)",
+				"column_storage column_lookup.columnAt(int*(x, z))"
+			],
+			"casters": [
+				"implicit String -> column_usage"
+			]
+		}
+	]
+}
