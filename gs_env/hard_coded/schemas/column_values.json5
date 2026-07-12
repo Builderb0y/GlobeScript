@@ -3,7 +3,10 @@
 		{
 			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
 			"when": {
-				"type": "script",
+				"type": [
+					"script",
+					"bigglobe:script"
+				],
 				"params": {
 					"is_3d": false
 				}
@@ -15,14 +18,18 @@
 				"random/base",
 				"stateless_random",
 				"minecraft",
-				"column_value/base"
-				"column_value/without_xyz"
+				"column_value/base",
+				"column_value/without_xyz",
+				"world_trait/without_xyz"
 			]
 		},
 		{
 			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
 			"when": {
-				"type": "script",
+				"type": [
+					"script",
+					"bigglobe:script"
+				],
 				"params": {
 					"is_3d": true
 				}
@@ -34,8 +41,24 @@
 				"random/base",
 				"stateless_random",
 				"minecraft",
-				"column_value/base"
-				"column_value/with_y"
+				"column_value/base",
+				"column_value/with_y",
+				"world_trait/with_y"
+			]
+		},
+		{
+			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
+			"when": {},
+			"json_path": "valid>where|min_y|max_y",
+			"environments": [
+				"builtin",
+				"math",
+				"random/base",
+				"stateless_random",
+				"minecraft",
+				"column_value/base",
+				"column_value/without_xyz",
+				"world_trait/without_xyz"
 			]
 		}
 	]

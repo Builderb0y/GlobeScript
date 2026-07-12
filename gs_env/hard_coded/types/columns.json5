@@ -1,10 +1,13 @@
 {
 	"types": [
-		"class column_storage extends Object",
-		"class column_lookup extends Object",
+		"class column_storage extends object",
+		"class column_lookup extends object",
 		"record column_hints",
-		"class world_traits extends Object",
-		"enum column_usage(GENERIC, HEIGHTMAP, RAW_GENERATION, FEATURES)"
+		"class world_traits extends object",
+		"class column_world_traits extends world_traits",
+		"class lookup_world_traits extends world_traits",
+		"enum column_usage(GENERIC, HEIGHTMAP, RAW_GENERATION, FEATURES)",
+		"class voronoi extends object"
 	],
 	"environments": [
 		{
@@ -15,9 +18,12 @@
 				"int column_storage.minCachedYLevel",
 				"int column_storage.maxCachedYLevel",
 				"column_hints column_storage.hints",
-				"world_traits column_storage.world_traits",
+				"column_world_traits column_storage.world_traits",
 				"long column_storage.worldSeed",
 				"long column_storage.columnSeed",
+
+				"column_hints column_lookup.hints",
+				"lookup_world_traits column_lookup.world_traits",
 
 				"boolean column_hints.fill",
 				"boolean column_hints.carve",
@@ -33,7 +39,7 @@
 				"column_storage column_lookup.columnAt(int*(x, z))"
 			],
 			"casters": [
-				"implicit String -> column_usage"
+				"implicit string -> column_usage"
 			]
 		}
 	]

@@ -169,8 +169,8 @@ public class GsEnv {
 		public final RawTypeModel
 			root                   = this.get("root"),
 			value                  = this.get("value"),
-			object                 = this.get("Object"),
-			string                 = this.get("String"),
+			object                 = this.get("object"),
+			string                 = this.get("string"),
 			primitiveBitwise       = this.get("primitive_bitwise"),
 			primitiveNumber        = this.get("primitive_number"),
 			primitiveInteger       = this.get("primitive_integer"),
@@ -185,12 +185,15 @@ public class GsEnv {
 			char_                  = this.get("char"),
 			boolean_               = this.get("boolean"),
 			void_                  = this.get("void"),
-			iterable               = this.get("Iterable"),
-			iterator               = this.get("Iterator"),
-			list                   = this.get("List"),
-			map                    = this.get("Map"),
+			iterable               = this.get("iterable"),
+			iterator               = this.get("iterator"),
+			list                   = this.get("list"),
+			map                    = this.get("map"),
 			columnStorage          = this.get("column_storage"),
-			columnLookup           = this.get("column_lookup");
+			columnLookup           = this.get("column_lookup"),
+			worldTraits            = this.get("world_traits"),
+			columnWorldTraits      = this.get("column_world_traits"),
+			lookupWorldTraits      = this.get("lookup_world_traits");
 
 		public RawTypeModel get(String name) {
 			RawTypeModel model = GsEnv.this.types.get(name);

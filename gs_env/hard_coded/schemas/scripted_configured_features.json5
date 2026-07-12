@@ -32,7 +32,8 @@
 				"custom_class",
 				"column_value/with_xyz",
 				"origin_pos",
-				"minecraft/with_world"
+				"minecraft/with_world",
+				"wood_palette/with_random"
 			]
 		}
 	]

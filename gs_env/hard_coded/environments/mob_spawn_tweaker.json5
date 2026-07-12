@@ -1,34 +1,34 @@
 {
 	"types": [
-		"class SpawnMap extends Object",
-		"class SpawnParams extends Object"
+		"class spawn_map extends object",
+		"class spawn_params extends object"
 	],
 	"environments": [
 		{
 			"name": "mob_spawn_tweaker",
 			"types": [
-				{ "name": "SpawnMap", "type": "SpawnMap" },
-				{ "name": "SpawnParams", "type": "SpawnParams" }
+				"spawn_map SpawnMap",
+				"spawn_params SpawnParams"
 			],
 			"variables": [
 				"int y",
-				"Biome biome",
-				"SpawnMap spawnMap",
-				"SpawnParams spawnParams"
+				"biome biome",
+				"spawn_map spawnMap",
+				"spawn_params spawnParams"
 			],
 			"functions": [
-				"void apply(SpawnTweakerTag tag)"
+				"void apply(spawn_tweaker_tag tag)"
 			],
 			"instance_fields": [
-				"double SpawnParams.weight",
-				"int SpawnParams.count"
+				"double spawn_params.weight",
+				"int spawn_params.count"
 			],
 			"instance_methods": [
-				"SpawnParams SpawnMap.get(EntityType type)",
-				"SpawnParams SpawnMap.put(EntityType type, SpawnParams params)",
-				"SpawnParams SpawnMap.remove(EntityType type)",
-				"void SpawnMap.clear()",
-				"meta(assignable = true) SpawnParams SpawnMap.(EntityType type)"
+				"spawn_params spawn_map.get(entity_type type)",
+				"spawn_params spawn_map.put(entity_type type, spawn_params params)",
+				"spawn_params spawn_map.remove(entity_type type)",
+				"void spawn_map.clear()",
+				"meta(assignable = true) spawn_params spawn_map.(entity_type type)"
 			]
 		}
 	]

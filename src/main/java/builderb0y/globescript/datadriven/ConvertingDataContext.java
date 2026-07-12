@@ -92,6 +92,21 @@ public class ConvertingDataContext {
 				if (pack != null) pack.columnValues.setupEnvironment(environment, source, this.flags);
 			}
 		}
+		class WorldTraitConfigurator extends EnvironmentConfigurator {
+
+			public final int flags;
+
+			public WorldTraitConfigurator(String name, int flags) {
+				super(name);
+				this.flags = flags;
+			}
+
+			@Override
+			public void configure(VirtualFile source, EnvironmentModel environment) {
+				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(source);
+				if (pack != null) pack.worldTraits.setupEnvironment(environment, this.flags);
+			}
+		}
 		return switch (name) {
 			case null -> null;
 			case "custom_class" -> new EnvironmentConfigurator(name) {
@@ -106,6 +121,10 @@ public class ConvertingDataContext {
 			case "column_value/with_y"      -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_Y_PROVIDED);
 			case "column_value/with_xz"     -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_XZ_PROVIDED);
 			case "column_value/with_xyz"    -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_XYZ_PROVIDED);
+			case "world_trait/without_xyz"  -> new  WorldTraitConfigurator(name, 0);
+			case "world_trait/with_y"       -> new  WorldTraitConfigurator(name, ColumnValueEnvironment.FLAG_Y_PROVIDED);
+			case "world_trait/with_xz"      -> new  WorldTraitConfigurator(name, ColumnValueEnvironment.FLAG_XZ_PROVIDED);
+			case "world_trait/with_xyz"     -> new  WorldTraitConfigurator(name, ColumnValueEnvironment.FLAG_XYZ_PROVIDED);
 			default -> {
 				if (this.environmentStack.add(name)) try {
 					EnvironmentConfigurator configurator = this.environments.get(name);
@@ -126,6 +145,7 @@ public class ConvertingDataContext {
 						if (pending.keywords         != null) for (PendingKeyword              keyword  : pending.keywords        ) environment.addKeyword       (keyword .resolve(this));
 						if (pending.instanceKeywords != null) for (PendingInstanceKeyword      keyword  : pending.instanceKeywords) environment.addMemberKeyword (keyword .resolve(this));
 						if (pending.casters          != null) for (PendingCaster               caster   : pending.casters         ) environment.addCaster        (caster  .resolve(this));
+						if (pending.importedValues   != null) for (PendingVariable             value    : pending.importedValues  ) environment.addImportedValue (value   .resolve(this));
 						if (pending.includes         != null) {
 							List<EnvironmentConfigurator> includes = new ArrayList<>(pending.includes.length);
 							for (PendingEnvironmentReference include : pending.includes) {

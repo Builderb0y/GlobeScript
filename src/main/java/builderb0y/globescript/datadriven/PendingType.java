@@ -15,7 +15,6 @@ import builderb0y.globescript.Colors;
 import builderb0y.globescript.ExpressionReader;
 import builderb0y.globescript.Token;
 import builderb0y.globescript.TokenInfo;
-import builderb0y.globescript.datadriven.PendingElement.FieldInjectorMap;
 import builderb0y.globescript.datadriven.PendingEnvironment.ListBackedStructure;
 
 import static builderb0y.globescript.datadriven.TypeModifiersModel.BY_NAME;
@@ -125,9 +124,9 @@ public class PendingType extends PendingElement implements PendingElement.Named 
 					superClass = word.getIdentifierText().toString();
 				}
 				else switch (modifiers & (TypeModifiersModel.INTERFACE_ONLY | TypeModifiersModel.RECORD_ONLY | TypeModifiersModel.ENUM)) {
-					case TypeModifiersModel.INTERFACE_ONLY -> superClass = "Object";
-					case TypeModifiersModel.RECORD_ONLY -> superClass = "Record";
-					case TypeModifiersModel.ENUM -> superClass = "Enum";
+					case TypeModifiersModel.INTERFACE_ONLY -> superClass = "object";
+					case TypeModifiersModel.RECORD_ONLY -> superClass = "record";
+					case TypeModifiersModel.ENUM -> superClass = "enum";
 					case 0 -> {
 						throw new RuntimeException("Must specify extends");
 					}

@@ -1,6 +1,6 @@
 {
 	"types": [
-		"interface Random"
+		"interface random"
 	],
 	"environments": [
 		{
@@ -9,55 +9,46 @@
 				"random/base"
 			],
 			"variables": [
-				"Random random"
+				"random random"
 			]
 		},
 		{
 			"name": "random/base",
 			"types": [
-				{ "name": "Random", "type": "Random" }
+				"random Random"
 			],
 			"static_methods": [
-				{
-					"owner": "Random",
-					"name": "new",
-					"type": "Random",
-					"color": "keyword",
-					"parameters": [
-						{ "name": "seed", "type": "long" },
-						{ "name": "salt", "type": "int", "repeatable": true }
-					]
-				}
+				"meta(color = keyword) random random.new(long seed, int... salt)"
 			],
 			"instance_methods": [
-				"int Random.nextInt()",
-				"int Random.nextInt(int max)",
-				"int Random.nextInt(int*(min, max))",
-				"long Random.nextLong()",
-				"long Random.nextLong(long min)",
-				"long Random.nextLong(long*(min, max))",
-				"float Random.nextFloat()",
-				"float Random.nextFloat(float min)",
-				"float Random.nextFloat(float*(min, max))",
-				"double Random.nextDouble()",
-				"double Random.nextDouble(double max)",
-				"double Random.nextDouble(double*(min, max))",
-				"boolean Random.nextBoolean()",
-				"boolean Random.nextBoolean(float chance)",
-				"boolean Random.nextBoolean(double chance)",
-				"double Random.nextGaussian()",
-				"double Random.nextGaussian(double*(mean, standardDeviation))",
-				"double Random.nextExponential()",
-				"int Random.roundInt(float number)",
-				"int Random.roundInt(double number)",
-				"long Random.roundLong(float number)",
-				"long Random.roundLong(double number)"
+				"int random.nextInt()",
+				"int random.nextInt(int max)",
+				"int random.nextInt(int*(min, max))",
+				"long random.nextLong()",
+				"long random.nextLong(long min)",
+				"long random.nextLong(long*(min, max))",
+				"float random.nextFloat()",
+				"float random.nextFloat(float min)",
+				"float random.nextFloat(float*(min, max))",
+				"double random.nextDouble()",
+				"double random.nextDouble(double max)",
+				"double random.nextDouble(double*(min, max))",
+				"boolean random.nextBoolean()",
+				"boolean random.nextBoolean(float chance)",
+				"boolean random.nextBoolean(double chance)",
+				"double random.nextGaussian()",
+				"double random.nextGaussian(double*(mean, standardDeviation))",
+				"double random.nextExponential()",
+				"int random.roundInt(float number)",
+				"int random.roundInt(double number)",
+				"long random.roundLong(float number)",
+				"long random.roundLong(double number)"
 			],
 			"instance_keywords": [
-				{ "owner": "Random", "name": "if",          "keyword": "random_if"      },
-				{ "owner": "Random", "name": "unless",      "keyword": "random_if"      },
-				{ "owner": "Random", "name": "nextBetween", "keyword": "random_between", "color": "instance_method" },
-				//{ "owner": "Random", "name": "switch", "keyword": "random_switch" }
+				{ "owner": "random", "name": "if",          "keyword": "random_if"      },
+				{ "owner": "random", "name": "unless",      "keyword": "random_if"      },
+				{ "owner": "random", "name": "nextBetween", "keyword": "random_between", "color": "instance_method" },
+				//{ "owner": "random", "name": "switch", "keyword": "random_switch" }
 			]
 		}
 	]

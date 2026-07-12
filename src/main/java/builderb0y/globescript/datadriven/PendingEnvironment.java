@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import builderb0y.globescript.*;
 import builderb0y.globescript.ConstantValue.*;
 import builderb0y.globescript.StructureParser.Structure;
-import builderb0y.globescript.datadriven.PendingEnvironment.PendingTypeReference.Shorthand;
 import builderb0y.globescript.keywords.Keywords;
 import builderb0y.globescript.keywords.Keywords.KeywordFactory;
 import builderb0y.globescript.keywords.Keywords.MemberKeywordFactory;
@@ -99,6 +98,13 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 			public void inject(PendingEnvironment self, PendingDataContext context, @Nullable PsiElement value) {
 				self.casters = context.expectArray(value, PendingCaster::new).toArray(PendingCaster[]::new);
 			}
+		},
+		new FieldInjector<PendingEnvironment>("imported_values", false) {
+
+			@Override
+			public void inject(PendingEnvironment self, PendingDataContext context, @Nullable PsiElement value) {
+				self.importedValues = context.expectArray(value, PendingVariable::new).toArray(PendingVariable[]::new);
+			}
 		}
 	);
 
@@ -122,6 +128,8 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 	public PendingInstanceKeyword[] instanceKeywords;
 
 	public PendingCaster[] casters;
+
+	public PendingVariable[] importedValues;
 
 	public PendingEnvironment(PendingDataContext context, PsiElement element) {
 		super(context, element);
@@ -295,7 +303,7 @@ public class PendingEnvironment extends PendingElement implements PendingElement
 					Token type = reader.nextIdentifierAfterWhitespace();
 					Token name = reader.nextIdentifierAfterWhitespace();
 					if (name != null) {
-						return new Shorthand(List.of(type.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE), name.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE)), type.getIdentifierText().toString(), name.getIdentifierText().toString());
+						return new Shorthand(List.of(type.initIdentifier(Colors.KEYWORD, TokenInfo.NON_VALUE), name.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE)), type.getIdentifierText().toString(), name.getIdentifierText().toString());
 					}
 					else {
 						return new Shorthand(Collections.singletonList(type.initIdentifier(Colors.TYPE, TokenInfo.NON_VALUE)), type.getIdentifierText().toString(), type.getIdentifierText().toString());

@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Range;
 
 import builderb0y.globescript.Colors;
 import builderb0y.globescript.TokenInfo;
-import builderb0y.globescript.datadriven.ColumnValueEnvironment.AccessSchema;
+import builderb0y.globescript.datadriven.ColumnValueEnvironment.ColumnValueElement;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.CyclicException;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.TypeElement;
 import builderb0y.globescript.datadriven.EnvironmentModel.FieldData;
@@ -26,7 +26,7 @@ import builderb0y.globescript.datadriven.EnvironmentModel.VariableData;
 import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 import builderb0y.globescript.util.Util;
 
-public class ColumnValueEnvironment extends DynamicRegistry<AccessSchema> {
+public class ColumnValueEnvironment extends DynamicRegistry<ColumnValueElement> {
 
 	public static final int
 		FLAG_ASSIGNABLE = 1 << 0,
@@ -39,7 +39,7 @@ public class ColumnValueEnvironment extends DynamicRegistry<AccessSchema> {
 	}
 
 	@Override
-	public AccessSchema compute(VirtualFile file) {
+	public ColumnValueElement compute(VirtualFile file) {
 		PsiFile psiFile = PsiManager.getInstance(this.packData.projectData.project).findFile(file);
 		if (
 			psiFile instanceof JsonFile jsonFile &&
@@ -57,18 +57,18 @@ public class ColumnValueEnvironment extends DynamicRegistry<AccessSchema> {
 				Util.findProperty(root, "has_border") instanceof JsonBooleanLiteral hasBorder &&
 				hasBorder.getValue()
 			);
-			return new AccessSchema(ID.parseBG(type.getValue()), is3D.getValue(), border);
+			return new ColumnValueElement(ID.parseBG(type.getValue()), is3D.getValue(), border);
 		}
 		return null;
 	}
 
 	public void setupEnvironment(EnvironmentModel environment, VirtualFile file, int flags) {
-		for (Map.Entry<ID, AccessSchema> entry : this.elements.entrySet()) {
+		for (Map.Entry<ID, ColumnValueElement> entry : this.elements.entrySet()) {
 			entry.getValue().setupEnvironment(environment, entry.getKey().toString(), flags);
 		}
 		ID id = this.idOf(file);
 		if (id != null) {
-			for (Map.Entry<ID, AccessSchema> entry : this.elements.entrySet()) {
+			for (Map.Entry<ID, ColumnValueElement> entry : this.elements.entrySet()) {
 				if (entry.getKey().namespace().equals(id.namespace())) {
 					int start = relativize(entry.getKey().path(), id.path());
 					if (start >= 0) {
@@ -113,7 +113,7 @@ public class ColumnValueEnvironment extends DynamicRegistry<AccessSchema> {
 		}
 	}
 
-	public class AccessSchema extends DynamicRegistryElement {
+	public class ColumnValueElement extends DynamicRegistryElement {
 
 		public static final AtomicInteger BORDER_COUNTER = new AtomicInteger();
 
@@ -121,7 +121,7 @@ public class ColumnValueEnvironment extends DynamicRegistry<AccessSchema> {
 		public final boolean is3D;
 		public final boolean border;
 
-		public AccessSchema(ID type, boolean is3D, boolean border) {
+		public ColumnValueElement(ID type, boolean is3D, boolean border) {
 			this.type = type;
 			this.is3D = is3D;
 			this.border = border;
@@ -173,7 +173,8 @@ public class ColumnValueEnvironment extends DynamicRegistry<AccessSchema> {
 
 	public static enum AccessMode {
 		COLUMN,
-		LOOKUP;
+		LOOKUP,
+		TRAIT;
 	}
 
 	public static boolean isValidAccess(

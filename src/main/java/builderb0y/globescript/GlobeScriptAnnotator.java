@@ -74,13 +74,13 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 		public static final Pattern SCRIPT_TEMPLATE_PATH = Pattern.compile("/data/[^/]+/bigglobe/script_template/");
 
 		public boolean annotateEnvironment(JsonElement element, AnnotationHolder holder, GsEnv metadata) {
-			if (element instanceof JsonStringLiteral string) {
-				List<PsiErrorDisplay> errors = metadata.errors.get(element);
-				if (errors != null) {
-					for (PsiErrorDisplay error : errors) {
-						error.addTo(element, holder);
-					}
+			List<PsiErrorDisplay> errors = metadata.errors.get(element);
+			if (errors != null) {
+				for (PsiErrorDisplay error : errors) {
+					error.addTo(element, holder);
 				}
+			}
+			if (element instanceof JsonStringLiteral string) {
 				if (!string.isPropertyName()) {
 					ShorthandParser<?, ?> parser = switch (getPathNoArrays(string)) {
 						case "types"                         -> PendingType       .Shorthand.PARSER;
@@ -92,6 +92,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 						case "environments>instance_methods" -> PendingMethod     .Shorthand.INSTANCE_PARSER;
 						case "environments>static_methods"   -> PendingMethod     .Shorthand.STATIC_PARSER;
 						case "environments>casters"          -> PendingCaster     .Shorthand.PARSER;
+						case "environments>imported_values"  -> PendingVariable   .Shorthand.PARSER;
 						default -> null;
 					};
 					exit:

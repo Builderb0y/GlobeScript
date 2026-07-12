@@ -106,6 +106,7 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 	}
 
 	public void addImportedValue(VariableData value) {
+		this.addVariable(value);
 		this.importedValues.put(value.key(), value);
 	}
 

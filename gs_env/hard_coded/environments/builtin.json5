@@ -24,10 +24,9 @@
 				"Void",
 
 				"Number",
-				"Object",
+				"object Object",
 				"Comparable",
-				"String",
-				"Class",
+				"string String",
 				"MinecraftVersion",
 			],
 			"variables": [
@@ -35,7 +34,7 @@
 				{ "name": "false", "type": "boolean", "color": "keyword", "constant": false },
 				{ "name": "yes",   "type": "boolean", "color": "keyword", "constant": true },
 				{ "name": "no",    "type": "boolean", "color": "keyword", "constant": false },
-				{ "name": "null",  "type": { "name": "Object", "generic": true }, "color": "keyword", "constant": null },
+				{ "name": "null",  "type": { "name": "object", "generic": true }, "color": "keyword", "constant": null },
 				{ "name": "noop",  "type": "void",    "color": "keyword", "statement": true }
 			],
 			"instance_fields": [
@@ -119,8 +118,8 @@
 			"instance_keywords": [
 				{ "name": "if",        "owner": "boolean",          "keyword": "receiver_if" },
 				{ "name": "unless",    "owner": "boolean",          "keyword": "receiver_if" },
-				{ "name": "is",        "owner": "Object",           "keyword": "is" },
-				{ "name": "isnt",      "owner": "Object",           "keyword": "is" },
+				{ "name": "is",        "owner": "object",           "keyword": "is" },
+				{ "name": "isnt",      "owner": "object",           "keyword": "is" },
 				{ "name": "as",        "owner": "value",            "keyword": "as" },
 				{ "name": "isBetween", "owner": "primitive_number", "keyword": "between", "color": "instance_method" }
 			],

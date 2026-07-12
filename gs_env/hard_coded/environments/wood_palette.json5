@@ -1,0 +1,109 @@
+{
+	"types": [
+		"class wood_palette extends object"
+	],
+	"environments": [
+		{
+			"name": "wood_palette/base",
+			"types": [
+				"wood_palette WoodPalette"
+			],
+			"instance_fields": [
+				"random_list wood_palette.logBlocks",
+				"random_list wood_palette.woodBlocks",
+				"random_list wood_palette.strippedLogBlocks",
+				"random_list wood_palette.strippedWoodBlocks",
+				"random_list wood_palette.planksBlocks",
+				"random_list wood_palette.stairsBlocks",
+				"random_list wood_palette.slabBlocks",
+				"random_list wood_palette.fenceBlocks",
+				"random_list wood_palette.fenceGateBlocks",
+				"random_list wood_palette.doorBlocks",
+				"random_list wood_palette.trapdoorBlocks",
+				"random_list wood_palette.pressurePlateBlocks",
+				"random_list wood_palette.buttonBlocks",
+				"random_list wood_palette.leavesBlocks",
+				"random_list wood_palette.saplingBlocks",
+				"random_list wood_palette.pottedSaplingBlocks",
+				"random_list wood_palette.standingSignBlocks",
+				"random_list wood_palette.wallSignBlocks",
+				"random_list wood_palette.hangingSignBlocks",
+				"random_list wood_palette.wallHangingSignBlocks",
+			],
+			"instance_methods": [
+				"block wood_palette.logBlock(random random)",
+				"block wood_palette.woodBlock(random random)",
+				"block wood_palette.strippedLogBlock(random random)",
+				"block wood_palette.strippedWoodBlock(random random)",
+				"block wood_palette.planksBlock(random random)",
+				"block wood_palette.stairsBlock(random random)",
+				"block wood_palette.slabBlock(random random)",
+				"block wood_palette.fenceBlock(random random)",
+				"block wood_palette.fenceGateBlock(random random)",
+				"block wood_palette.doorBlock(random random)",
+				"block wood_palette.trapdoorBlock(random random)",
+				"block wood_palette.pressurePlateBlock(random random)",
+				"block wood_palette.buttonBlock(random random)",
+				"block wood_palette.leavesBlock(random random)",
+				"block wood_palette.saplingBlock(random random)",
+				"block wood_palette.pottedSaplingBlock(random random)",
+				"block wood_palette.standingSignBlock(random random)",
+				"block wood_palette.wallSignBlock(random random)",
+				"block wood_palette.hangingSignBlock(random random)",
+				"block wood_palette.wallHangingSignBlock(random random)",
+
+				"block wood_palette.logBlock(long seed)",
+				"block wood_palette.woodBlock(long seed)",
+				"block wood_palette.strippedLogBlock(long seed)",
+				"block wood_palette.strippedWoodBlock(long seed)",
+				"block wood_palette.planksBlock(long seed)",
+				"block wood_palette.stairsBlock(long seed)",
+				"block wood_palette.slabBlock(long seed)",
+				"block wood_palette.fenceBlock(long seed)",
+				"block wood_palette.fenceGateBlock(long seed)",
+				"block wood_palette.doorBlock(long seed)",
+				"block wood_palette.trapdoorBlock(long seed)",
+				"block wood_palette.pressurePlateBlock(long seed)",
+				"block wood_palette.buttonBlock(long seed)",
+				"block wood_palette.leavesBlock(long seed)",
+				"block wood_palette.saplingBlock(long seed)",
+				"block wood_palette.pottedSaplingBlock(long seed)",
+				"block wood_palette.standingSignBlock(long seed)",
+				"block wood_palette.wallSignBlock(long seed)",
+				"block wood_palette.hangingSignBlock(long seed)",
+				"block wood_palette.wallHangingSignBlock(long seed)",
+			],
+			"casters": [
+				"implicit string -> wood_palette"
+			]
+		},
+		{
+			"name": "wood_palette/with_random",
+			"includes": [
+				"wood_palette/base"
+			],
+			"instance_fields": [
+				"block wood_palette.logBlock",
+				"block wood_palette.woodBlock",
+				"block wood_palette.strippedLogBlock",
+				"block wood_palette.strippedWoodBlock",
+				"block wood_palette.planksBlock",
+				"block wood_palette.stairsBlock",
+				"block wood_palette.slabBlock",
+				"block wood_palette.fenceBlock",
+				"block wood_palette.fenceGateBlock",
+				"block wood_palette.doorBlock",
+				"block wood_palette.trapdoorBlock",
+				"block wood_palette.pressurePlateBlock",
+				"block wood_palette.buttonBlock",
+				"block wood_palette.leavesBlock",
+				"block wood_palette.saplingBlock",
+				"block wood_palette.pottedSaplingBlock",
+				"block wood_palette.standingSignBlock",
+				"block wood_palette.wallSignBlock",
+				"block wood_palette.hangingSignBlock",
+				"block wood_palette.wallHangingSignBlock",
+			]
+		}
+	]
+}
