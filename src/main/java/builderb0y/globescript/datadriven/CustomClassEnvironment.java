@@ -19,8 +19,6 @@ import builderb0y.globescript.util.Util;
 
 public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
-	public static final Logger LOGGER = Logger.getInstance(CustomClassEnvironment.class);
-
 	public CustomClassEnvironment(PackData packData) {
 		super(packData, "bigglobe", "custom_class");
 	}
@@ -322,9 +320,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
 		@Override
 		public RawTypeModel resolve(Set<ID> seen) {
-			RawTypeModel type = CustomClassEnvironment.this.packData.projectData.environment().types.get(this.name);
-			if (type == null) LOGGER.warn("Missing builtin type definition: " + this.name);
-			return type;
+			return CustomClassEnvironment.this.packData.projectData.environment().types.get(this.name);
 		}
 
 		@Override

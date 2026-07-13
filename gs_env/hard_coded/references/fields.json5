@@ -1,0 +1,116 @@
+{
+	"references": [
+
+		//normal fields
+
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
+			"json_path": "owner",
+			"default_namespace": "bigglobe",
+			"registry": "bigglobe/custom_class",
+			"when": {
+				"element_type": [
+					"field/normal",
+					"bigglobe:field/normal"
+				]
+			},
+			"filter": {
+				"element_type": [
+					"class/normal",
+					"bigglobe:class/normal"
+				]
+			},
+			"reference_type": "element"
+		},
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
+			"json_path": "field_type",
+			"default_namespace": "bigglobe",
+			"registry": "bigglobe/custom_class",
+			"when": {
+				"element_type": [
+					"field/normal",
+					"bigglobe:field/normal"
+				]
+			},
+			"filter": {
+				"element_type": [
+					"class/builtin",
+					"class/normal",
+					"class/enum",
+					"bigglobe:class/builtin",
+					"bigglobe:class/normal",
+					"bigglobe:class/enum"
+				]
+			},
+			"reference_type": "element"
+		},
+
+		//enum fields
+
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
+			"json_path": "owner",
+			"default_namespace": "bigglobe",
+			"registry": "bigglobe/custom_class",
+			"when": {
+				"element_type": [
+					"field/enum",
+					"bigglobe:field/enum"
+				]
+			},
+			"filter": {
+				"element_type": [
+					"class/enum",
+					"bigglobe:class/enum"
+				]
+			},
+			"reference_type": "element"
+		},
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
+			"json_path": "impl_type",
+			"default_namespace": "bigglobe",
+			"registry": "bigglobe/custom_class",
+			"when": {
+				"element_type": [
+					"field/enum",
+					"bigglobe:field/enum"
+				]
+			},
+			"filter": {
+				"element_type": [
+					"class/enum",
+					"bigglobe:class/enum"
+				]
+			},
+			"reference_type": "element"
+		},
+
+		//constant fields
+
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
+			"json_path": "field_type",
+			"default_namespace": "bigglobe",
+			"registry": "bigglobe/custom_class",
+			"when": {
+				"element_type": [
+					"field/constant",
+					"bigglobe:field/constant"
+				]
+			},
+			"filter": {
+				"element_type": [
+					"class/builtin",
+					"class/normal",
+					"class/enum",
+					"bigglobe:class/builtin",
+					"bigglobe:class/normal",
+					"bigglobe:class/enum"
+				]
+			},
+			"reference_type": "element"
+		}
+	]
+}

@@ -28,15 +28,14 @@ public class PendingType extends PendingElement implements PendingElement.Named 
 			@Override
 			public void inject(PendingType self, PendingDataContext context, @Nullable PsiElement value) {
 				self.modifiers = (
-					context.expectArray(
-							value, JsonStringLiteral.class, (JsonStringLiteral literal) -> {
-								int flag = BY_NAME.getInt(literal.getValue());
-								if (flag == 0) context.addError(literal, "Expected one of: " + BY_NAME.keySet());
-								return flag;
-							}
-						)
-						.mapToInt(Integer::intValue)
-						.reduce(0, (int a, int b) -> a | b)
+					context
+					.expectArray(value, JsonStringLiteral.class, (JsonStringLiteral literal) -> {
+						int flag = BY_NAME.getInt(literal.getValue());
+						if (flag == 0) context.addError(literal, "Expected one of: " + BY_NAME.keySet());
+						return flag;
+					})
+					.mapToInt(Integer::intValue)
+					.reduce(0, (int a, int b) -> a | b)
 				);
 			}
 		},

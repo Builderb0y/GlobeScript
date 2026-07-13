@@ -8,9 +8,8 @@ import java.util.regex.Pattern;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.json.psi.JsonElement;
+import com.intellij.json.psi.JsonFile;
 import com.intellij.json.psi.JsonStringLiteral;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,6 +21,8 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 import builderb0y.globescript.datadriven.GsEnv;
+import builderb0y.globescript.datadriven.PendingReference;
+import builderb0y.globescript.datadriven.PendingSchema.When;
 import builderb0y.globescript.datadriven.ReferenceModel;
 import builderb0y.globescript.util.StringSimilarity;
 
@@ -60,7 +61,7 @@ public class TagCompleter extends CompletionContributor {
 						int start = matcher.start() + "/data".length();
 						while (directory.getPath().length() > start) directory = directory.getParent();
 						String registry = matcher.group(2);
-						this.search(text, registry, directory, results, jsonString.getProject());
+						this.search(text, registry, directory, results, jsonString.getProject(), PendingReference.Type.EITHER, null);
 					}
 				}
 				String filePath = directory.getPath();
@@ -68,7 +69,7 @@ public class TagCompleter extends CompletionContributor {
 				while (root.getParent() instanceof JsonElement parent && !(parent instanceof PsiFile)) {
 					root = parent;
 				}
-				GsEnv metadata = GsEnv.find(root.getContainingFile().getVirtualFile());
+				GsEnv metadata = GsEnv.find(directory);
 				if (metadata != null) for (Map.Entry<Pattern, List<ReferenceModel>> entry : metadata.references.entrySet()) {
 					Matcher matcher = entry.getKey().matcher(filePath);
 					if (matcher.find()) {
@@ -80,7 +81,7 @@ public class TagCompleter extends CompletionContributor {
 								(startingPoint = model.jsonPath.getRootFor(jsonString)) != null &&
 								model.when.test(startingPoint)
 							) {
-								this.search(text, model.registry, directory, results, jsonString.getProject());
+								this.search(text, model.registry, directory, results, jsonString.getProject(), model.type, model.filter);
 							}
 						}
 					}
@@ -88,43 +89,61 @@ public class TagCompleter extends CompletionContributor {
 			}
 		}
 
-		public void search(String text, String registry, VirtualFile dataFolder, CompletionResultSet results, Project project) {
+		public void search(String text, String registry, VirtualFile dataFolder, CompletionResultSet results, Project project, PendingReference.Type type, When filter) {
 			for (VirtualFile namespace : dataFolder.getChildren()) {
-				VirtualFile elements = namespace.findFileByRelativePath(registry);
-				if (elements != null) {
-					VfsUtilCore.iterateChildrenRecursively(elements, (VirtualFile file) -> file.isDirectory() || file.getExtension().equals("json"), (VirtualFile fileOrDir) -> {
-						if (!fileOrDir.isDirectory()) {
-							String path = fileOrDir.getPath();
-							int start = elements.getPath().length() + 1;
-							int end = path.length() - ".json".length();
-							path = path.substring(start, end);
-							String identifier = namespace.getName() + ":" + path;
-							if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
-								results.addElement(LookupElementBuilder.create(identifier).withPsiElement(PsiManager.getInstance(project).findFile(fileOrDir)));
+				if (type != PendingReference.Type.TAG) {
+					VirtualFile elements = namespace.findFileByRelativePath(registry);
+					if (elements != null) {
+						VfsUtilCore.iterateChildrenRecursively(
+							elements,
+							(VirtualFile file) -> file.isDirectory() || "json".equals(file.getExtension()),
+							(VirtualFile fileOrDir) -> {
+								if (!fileOrDir.isDirectory()) {
+									if (filter != null) {
+										PsiFile psiFile = PsiManager.getInstance(project).findFile(fileOrDir);
+										if (!(psiFile instanceof JsonFile jsonFile) || !filter.test(jsonFile.getTopLevelValue())) {
+											return true;
+										}
+									}
+									String path = fileOrDir.getPath();
+									int start = elements.getPath().length() + 1;
+									int end = path.length() - ".json".length();
+									path = path.substring(start, end);
+									String identifier = namespace.getName() + ":" + path;
+									if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
+										results.addElement(LookupElementBuilder.create(identifier).withPsiElement(PsiManager.getInstance(project).findFile(fileOrDir)));
+									}
+								}
+								return true;
 							}
-						}
-						return true;
-					});
+						);
+					}
 				}
 
-				VirtualFile tags = namespace.findChild("tags");
-				if (tags != null) {
-					tags = tags.findFileByRelativePath(registry);
+				if (type != PendingReference.Type.ELEMENT) {
+					VirtualFile tags = namespace.findChild("tags");
 					if (tags != null) {
-						final VirtualFile tags_ = tags;
-						VfsUtilCore.iterateChildrenRecursively(tags_, (VirtualFile file) -> file.isDirectory() || file.getExtension().equals("json"), (VirtualFile fileOrDir) -> {
-							if (!fileOrDir.isDirectory()) {
-								String path = fileOrDir.getPath();
-								int start = tags_.getPath().length() + 1;
-								int end = path.length() - ".json".length();
-								path = path.substring(start, end);
-								String identifier = "#" + namespace.getName() + ":" + path;
-								if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
-									results.addElement(LookupElementBuilder.create(identifier).withPsiElement(PsiManager.getInstance(project).findFile(fileOrDir)));
+						tags = tags.findFileByRelativePath(registry);
+						if (tags != null) {
+							final VirtualFile tags_ = tags;
+							VfsUtilCore.iterateChildrenRecursively(
+								tags_,
+								(VirtualFile file) -> file.isDirectory() || "json".equals(file.getExtension()),
+								(VirtualFile fileOrDir) -> {
+									if (!fileOrDir.isDirectory()) {
+										String path = fileOrDir.getPath();
+										int start = tags_.getPath().length() + 1;
+										int end = path.length() - ".json".length();
+										path = path.substring(start, end);
+										String identifier = "#" + namespace.getName() + ":" + path;
+										if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
+											results.addElement(LookupElementBuilder.create(identifier).withPsiElement(PsiManager.getInstance(project).findFile(fileOrDir)));
+										}
+									}
+									return true;
 								}
-							}
-							return true;
-						});
+							);
+						}
 					}
 				}
 			}
