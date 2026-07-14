@@ -10,19 +10,19 @@ import com.intellij.json.psi.*;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.annotations.NotNull;
 
 import builderb0y.globescript.StructureParser.Structure;
 import builderb0y.globescript.TagReferencer.TagReference;
 import builderb0y.globescript.datadriven.*;
-import builderb0y.globescript.datadriven.EnvironmentModel.TypeData;
 import builderb0y.globescript.datadriven.PendingElement.ShorthandParser;
 import builderb0y.globescript.datadriven.PendingEnvironment.*;
 
@@ -54,13 +54,12 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 		@Override
 		public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
 			if (!(element instanceof PsiFile)) {
-				VirtualFile file = element.getContainingFile().getVirtualFile();
-				ProjectData data = ProjectData.find(file);
+				ProjectData data = ProjectData.find(element.getContainingFile().getVirtualFile());
 				if (data != null) {
 					String text = element.getText();
 					ExpressionParser parser = new ExpressionParser(
 						new ExpressionReader(text, 0, text.length()),
-						data.combineAllEnvironments(file)
+						data.combineAllEnvironments(element)
 					);
 					this.annotate(parser, holder);
 
@@ -70,8 +69,6 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 	}
 
 	public static class JsonAnnotator extends GlobeScriptAnnotator {
-
-		public static final Pattern SCRIPT_TEMPLATE_PATH = Pattern.compile("/data/[^/]+/bigglobe/script_template/");
 
 		public boolean annotateEnvironment(JsonElement element, AnnotationHolder holder, GsEnv metadata) {
 			List<PsiErrorDisplay> errors = metadata.errors.get(element);
@@ -186,7 +183,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 						String text = psiFile.getText();
 						ExpressionParser parser = new ExpressionParser(
 							new JsonExpressionReader(text, range.getStartOffset(), range.getEndOffset()),
-							schema.copyEnvironment(metadata.standardTypes, virtualFile)
+							schema.copyEnvironment(metadata.standardTypes, jsonElement)
 						);
 						this.annotate(parser, holder);
 						return true;

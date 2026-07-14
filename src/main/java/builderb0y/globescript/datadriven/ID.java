@@ -21,6 +21,15 @@ public record ID(String namespace, String path) {
 		return parse(combined, "bigglobe");
 	}
 
+	public static ID parseRequireNamespace(String combined) {
+		int colon = combined.indexOf(':');
+		return (
+			colon >= 0
+			? new ID(combined.substring(0, colon), combined.substring(colon + 1))
+			: null
+		);
+	}
+
 	@Override
 	public @NotNull String toString() {
 		return this.namespace + ":" + this.path;

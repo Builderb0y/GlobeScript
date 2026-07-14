@@ -1,102 +1,118 @@
 {
 	"references": [
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "owner",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "owner",
+				"conditions": {
+					"element_type": [
+						"method/normal",
+						"method/abstract",
+						"method/static",
+						"bigglobe:method/normal",
+						"bigglobe:method/abstract",
+						"bigglobe:method/static"
+					]
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				},
+			},
 			"default_namespace": "bigglobe",
-			"when": {
-				"element_type": [
-					"method/normal",
-					"method/abstract",
-					"method/static",
-					"bigglobe:method/normal",
-					"bigglobe:method/abstract",
-					"bigglobe:method/static"
-				]
-			},
-			"filter": {
-				"element_type": [
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "return_type",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "return_type",
+				"conditions": {
+					"element_type": [
+						"method/normal",
+						"method/abstract",
+						"method/static",
+						"bigglobe:method/normal",
+						"bigglobe:method/abstract",
+						"bigglobe:method/static"
+					]
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/builtin",
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/builtin",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				},
+			},
 			"default_namespace": "bigglobe",
-			"when": {
-				"element_type": [
-					"method/normal",
-					"method/abstract",
-					"method/static",
-					"bigglobe:method/normal",
-					"bigglobe:method/abstract",
-					"bigglobe:method/static"
-				]
-			},
-			"filter": {
-				"element_type": [
-					"class/builtin",
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/builtin",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "override",
-			"registry": "bigglobe:custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "override",
+				"conditions": {
+					"element_type": [
+						"method/override",
+						"bigglobe:method/override"
+					]
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"method/normal",
+						"method/abstract",
+						"method/override",
+						"bigglobe:method/normal",
+						"bigglobe:method/abstract",
+						"bigglobe:method/override"
+					]
+				},
+			},
 			"default_namespace": "bigglobe",
-			"when": {
-				"element_type": [
-					"method/override",
-					"bigglobe:method/override"
-				]
-			},
-			"filter": {
-				"element_type": [
-					"method/normal",
-					"method/abstract",
-					"method/override",
-					"bigglobe:method/normal",
-					"bigglobe:method/abstract",
-					"bigglobe:method/override"
-				]
-			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "parameters>*>type",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "parameters>*>type",
+				"conditions": {
+					"element_type": [
+						"method/normal",
+						"method/abstract",
+						"method/static"
+					]
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/builtin",
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/builtin",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				},
+			},
 			"default_namespace": "bigglobe",
-			"when": {
-				"element_type": [
-					"method/normal",
-					"method/abstract",
-					"method/static"
-				]
-			},
-			"filter": {
-				"element_type": [
-					"class/builtin",
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/builtin",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			},
 			"reference_type": "element"
 		}
 	]

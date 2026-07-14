@@ -1,0 +1,54 @@
+{
+	"script_schemas": [
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class",
+			"json_path": "code",
+			"when": {
+				"element_type": [
+					"method/normal",
+					"method/override",
+					"method/static",
+					"bigglobe:method/normal",
+					"bigglobe:method/override",
+					"bigglobe:method/static"
+				]
+			},
+			"environments": [
+				"builtin",
+				"math",
+				"random/base",
+				"stateless_random",
+				"minecraft",
+				"column_value/base",
+				"column_value/without_xyz",
+				"world_trait/without_xyz",
+				"custom_class",
+				"custom_class/internal"
+			]
+		},
+		{
+			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class",
+			"json_path": "get|set",
+			"when": {
+				"element_type": [
+					"property/normal",
+					"property/override",
+					"bigglobe:property/normal",
+					"bigglobe:property/override"
+				]
+			},
+			"environments": [
+				"builtin",
+				"math",
+				"random/base",
+				"stateless_random",
+				"minecraft",
+				"column_value/base",
+				"column_value/without_xyz",
+				"world_trait/without_xyz",
+				"custom_class",
+				"custom_class/internal"
+			]
+		}
+	]
+}

@@ -34,7 +34,7 @@ public class SchemaModel {
 		);
 	}
 
-	public ScriptEnvironment copyEnvironment(StandardTypes standardTypes, VirtualFile source) {
+	public ScriptEnvironment copyEnvironment(StandardTypes standardTypes, PsiElement source) {
 		return new ScriptEnvironment(standardTypes, source, this.environments);
 	}
 }

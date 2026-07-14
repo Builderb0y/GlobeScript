@@ -35,20 +35,7 @@ public class GsEnv {
 	public Map<String, RawTypeModel> types = new Object2ObjectOpenHashMap<>();
 	public Map<String, EnvironmentConfigurator> environments = new Object2ObjectOpenHashMap<>();
 	public List<SchemaModel> schemas = new ObjectArrayList<>();
-	public Map<Pattern, List<ReferenceModel>> references = new Object2ObjectOpenCustomHashMap<>(new Hash.Strategy<>() {
-
-		@Override
-		public int hashCode(Pattern o) {
-			return o == null ? 0 : o.pattern().hashCode();
-		}
-
-		@Override
-		public boolean equals(Pattern a, Pattern b) {
-			if (a == b) return true;
-			if (a == null || b == null) return false;
-			return a.pattern().equals(b.pattern());
-		}
-	});
+	public List<ReferenceModel> references = new ObjectArrayList<>();
 	public List<RequiredTagModel> requiredTags = new ObjectArrayList<>();
 	public StandardTypes standardTypes;
 
@@ -140,7 +127,7 @@ public class GsEnv {
 			}
 			if (this.checkErrors(pending)) break done;
 			for (PendingReference reference : pending.references) {
-				this.references.computeIfAbsent(reference.filePath, (Pattern $) -> new ArrayList<>()).add(reference.resolve());
+				this.references.add(reference.resolve());
 			}
 			for (PendingRequiredTag requiredTag : pending.requiredTags) {
 				this.requiredTags.add(requiredTag.resolve());

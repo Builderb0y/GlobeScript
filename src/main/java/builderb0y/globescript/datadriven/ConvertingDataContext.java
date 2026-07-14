@@ -3,13 +3,26 @@ package builderb0y.globescript.datadriven;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.intellij.json.psi.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiReference;
+import com.intellij.util.xml.Convert;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
+import builderb0y.globescript.Colors;
+import builderb0y.globescript.TagReferencer.TagReference;
+import builderb0y.globescript.TokenInfo;
+import builderb0y.globescript.datadriven.CustomClassEnvironment.CustomElement;
+import builderb0y.globescript.datadriven.CustomClassEnvironment.CyclicException;
+import builderb0y.globescript.datadriven.CustomClassEnvironment.TypeElement;
+import builderb0y.globescript.datadriven.CustomClassEnvironment.UserClassElement;
+import builderb0y.globescript.datadriven.EnvironmentModel.VariableData;
 import builderb0y.globescript.datadriven.PendingEnvironment.*;
+import builderb0y.globescript.util.Util;
 
 public class ConvertingDataContext {
 
@@ -87,9 +100,10 @@ public class ConvertingDataContext {
 			}
 
 			@Override
-			public void configure(VirtualFile source, EnvironmentModel environment) {
-				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(source);
-				if (pack != null) pack.columnValues.setupEnvironment(environment, source, this.flags);
+			public void configure(PsiElement source, EnvironmentModel environment) {
+				VirtualFile file = source.getContainingFile().getVirtualFile();
+				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(file);
+				if (pack != null) pack.columnValues.setupEnvironment(environment, file, this.flags);
 			}
 		}
 		class WorldTraitConfigurator extends EnvironmentConfigurator {
@@ -102,9 +116,101 @@ public class ConvertingDataContext {
 			}
 
 			@Override
-			public void configure(VirtualFile source, EnvironmentModel environment) {
-				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(source);
+			public void configure(PsiElement source, EnvironmentModel environment) {
+				VirtualFile file = source.getContainingFile().getVirtualFile();
+				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(file);
 				if (pack != null) pack.worldTraits.setupEnvironment(environment, this.flags);
+			}
+		}
+		class CustomClassConfigurator extends EnvironmentConfigurator {
+
+			public CustomClassConfigurator(String name) {
+				super(name);
+			}
+
+			public RawTypeModel resolve(JsonStringLiteral typeText) {
+				PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(typeText.getContainingFile().getVirtualFile());
+				if (pack != null) {
+					if (pack.customClasses.elements.get(ID.parseBG(typeText.getValue())) instanceof TypeElement type) {
+						try {
+							return type.resolve(new HashSet<>());
+						}
+						catch (CyclicException ignored) {}
+					}
+				}
+				return null;
+			}
+
+			public void addOwner(JsonObject root, EnvironmentModel environment) {
+				if (Util.findProperty(root, "owner") instanceof JsonStringLiteral owner) {
+					RawTypeModel resolution = this.resolve(owner);
+					if (resolution != null) {
+						environment.addImportedValue(new VariableData("this", Colors.KEYWORD, new TokenInfo(resolution)));
+					}
+				}
+			}
+
+			public void addParameters(JsonObject root, EnvironmentModel environment) {
+				if (Util.findProperty(root, "parameters") instanceof JsonArray parameters) {
+					for (JsonValue parameterValue : parameters.getValueList()) {
+						if (
+							parameterValue instanceof JsonObject parameter &&
+							Util.findProperty(parameter, "name") instanceof JsonStringLiteral name &&
+							Util.findProperty(parameter, "type") instanceof JsonStringLiteral type
+						) {
+							RawTypeModel resolution = this.resolve(type);
+							if (resolution != null) {
+								environment.addVariable(new VariableData(name.getValue(), Colors.PARAMETER, new TokenInfo(resolution, TokenInfo.FLAG_ASSIGNABLE)));
+							}
+						}
+					}
+				}
+			}
+
+			@Override
+			public void configure(PsiElement source, EnvironmentModel environment) {
+				if (
+					source.getContainingFile() instanceof JsonFile jsonFile &&
+					jsonFile.getTopLevelValue() instanceof JsonObject root &&
+					Util.findProperty(root, "element_type") instanceof JsonStringLiteral elementType
+				) {
+					switch (elementType.getValue()) {
+						case
+							"method/normal",
+							"method/override",
+							"bigglobe:method/normal",
+							"bigglobe:method/override"
+						-> {
+							this.addOwner(root, environment);
+							this.addParameters(root, environment);
+						}
+						case
+							"method/static",
+							"bigglobe:method/static"
+						-> {
+							this.addParameters(root, environment);
+						}
+						case
+							"property/normal",
+							"property/override",
+							"bigglobe:property/normal",
+							"bigglobe:property/override"
+						-> {
+							this.addOwner(root, environment);
+							for (PsiElement parent = source; parent != null; parent = parent.getParent()) {
+								if (parent instanceof JsonProperty property && property.getName().equals("set")) {
+									if (Util.findProperty(root, "property_type") instanceof JsonStringLiteral propertyType) {
+										RawTypeModel value = this.resolve(propertyType);
+										if (value != null) {
+											environment.addVariable(new VariableData("value", Colors.PARAMETER, new TokenInfo(value, TokenInfo.FLAG_ASSIGNABLE)));
+										}
+									}
+									break;
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		return switch (name) {
@@ -112,11 +218,13 @@ public class ConvertingDataContext {
 			case "custom_class" -> new EnvironmentConfigurator(name) {
 
 				@Override
-				public void configure(VirtualFile source, EnvironmentModel environment) {
-					PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(source);
+				public void configure(PsiElement source, EnvironmentModel environment) {
+					VirtualFile file = source.getContainingFile().getVirtualFile();
+					PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(file);
 					if (pack != null) pack.customClasses.setupEnvironment(environment);
 				}
 			};
+			case "custom_class/internal"    -> new CustomClassConfigurator(name);
 			case "column_value/without_xyz" -> new ColumnValueConfigurator(name, 0);
 			case "column_value/with_y"      -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_Y_PROVIDED);
 			case "column_value/with_xz"     -> new ColumnValueConfigurator(name, ColumnValueEnvironment.FLAG_XZ_PROVIDED);
@@ -154,7 +262,7 @@ public class ConvertingDataContext {
 							configurator = new EnvironmentConfigurator(name) {
 
 								@Override
-								public void configure(VirtualFile source, EnvironmentModel toConfigure) {
+								public void configure(PsiElement source, EnvironmentModel toConfigure) {
 									environment.configure(source, toConfigure);
 									for (EnvironmentConfigurator include : includes) {
 										include.configure(source, toConfigure);

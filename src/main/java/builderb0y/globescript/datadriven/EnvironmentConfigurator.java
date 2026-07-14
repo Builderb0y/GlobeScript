@@ -1,6 +1,6 @@
 package builderb0y.globescript.datadriven;
 
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 
 public abstract class EnvironmentConfigurator {
 
@@ -10,7 +10,7 @@ public abstract class EnvironmentConfigurator {
 		this.name = name;
 	}
 
-	public abstract void configure(VirtualFile source, EnvironmentModel environment);
+	public abstract void configure(PsiElement source, EnvironmentModel environment);
 
 	@Override
 	public String toString() {

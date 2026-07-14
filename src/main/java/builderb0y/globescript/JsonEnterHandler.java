@@ -15,6 +15,7 @@ import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler;
 import com.intellij.openapi.editor.ex.util.EditorUtil;
 import com.intellij.openapi.util.Ref;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions;
@@ -37,6 +38,9 @@ public class JsonEnterHandler implements EnterHandlerDelegate {
 	) {
 		if (EnterHandler.getLanguage(dataContext) instanceof JsonLanguage) {
 			int pos = caretOffset.get();
+			PsiDocumentManager manager = PsiDocumentManager.getInstance(psiFile.getProject());
+			manager.commitDocument(editor.getDocument());
+			manager.doPostponedOperationsAndUnblockDocument(editor.getDocument());
 			PsiElement element = psiFile.findElementAt(pos);
 			if (element != null) element = element.getParent();
 			if (element instanceof JsonStringLiteral string && !string.isPropertyName()) {

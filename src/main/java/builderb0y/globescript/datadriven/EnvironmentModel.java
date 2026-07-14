@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 
 import builderb0y.globescript.*;
 
@@ -26,12 +27,12 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 		super(name);
 	}
 
-	public EnvironmentModel(VirtualFile source, EnvironmentConfigurator from) {
+	public EnvironmentModel(PsiElement source, EnvironmentConfigurator from) {
 		super(from.name);
 		from.configure(source, this);
 	}
 
-	public EnvironmentModel(VirtualFile source, EnvironmentConfigurator... from) {
+	public EnvironmentModel(PsiElement source, EnvironmentConfigurator... from) {
 		super(
 			Arrays
 			.stream(from)
@@ -44,7 +45,7 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 	}
 
 	@Override
-	public void configure(VirtualFile source, EnvironmentModel environment) {
+	public void configure(PsiElement source, EnvironmentModel environment) {
 		environment.addAll(this);
 	}
 

@@ -1,38 +1,54 @@
 {
 	"references": [
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/decision_tree/",
-			"json_path": "if_true|if_false",
-			"registry": "bigglobe/worldgen/decision_tree",
-			"when": {
-				"condition": {}
+			"reference": {
+				"registry": "bigglobe:worldgen/decision_tree",
+				"json_path": "if_true|if_false",
+				"conditions": {
+					"condition": {}
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/decision_tree"
 			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/decision_tree/",
-			"json_path": "if_positive|if_negative",
-			"registry": "bigglobe/worldgen/decision_tree",
-			"when": {
-				"border": {}
+			"reference": {
+				"registry": "bigglobe:worldgen/decision_tree",
+				"json_path": "if_positive|if_negative",
+				"conditions": {
+					"border": {}
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/decision_tree"
 			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/decision_tree/",
-			"json_path": "world_trait",
-			"registry": "bigglobe/worldgen/world_trait",
-			"when": {
-				"type": "world_trait"
+			"reference": {
+				"registry": "bigglobe:worldgen/decision_tree",
+				"json_path": "world_trait",
+				"conditions": {
+					"type": "world_trait"
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/world_trait"
 			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/decision_tree/",
-			"json_path": "column_value",
-			"registry": "bigglobe/worldgen/column_value",
-			"when": {
-				"type": "column_value"
+			"reference": {
+				"registry": "bigglobe:worldgen/decision_tree",
+				"json_path": "column_value",
+				"conditions": {
+					"type": "column_value"
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/column_value"
 			},
 			"reference_type": "element"
 		}

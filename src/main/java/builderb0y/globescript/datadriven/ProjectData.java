@@ -6,6 +6,8 @@ import java.util.Map;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileUtil;
+import com.intellij.psi.PsiElement;
 
 import builderb0y.globescript.ScriptEnvironment;
 
@@ -38,15 +40,16 @@ public class ProjectData {
 		return null;
 	}
 
-	public ScriptEnvironment combineAllEnvironments(VirtualFile file) {
+	public ScriptEnvironment combineAllEnvironments(PsiElement source) {
 		GsEnv gsEnv = this.environment();
 		ScriptEnvironment environment = new ScriptEnvironment(
 			gsEnv.standardTypes,
-			file,
+			source,
 			gsEnv.environments.values().toArray(
 				new EnvironmentConfigurator[gsEnv.environments.size()]
 			)
 		);
+		VirtualFile file = source.getContainingFile().getVirtualFile();
 		PackData pack = this.getPackData(file);
 		if (pack != null) pack.setupEnvironment(environment, file, ColumnValueEnvironment.FLAG_XYZ_PROVIDED);
 		return environment;

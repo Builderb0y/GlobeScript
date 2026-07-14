@@ -4,42 +4,53 @@
 		//normal classes
 
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "extends",
-			"registry": "bigglobe/custom_class",
-			"when": {
-				"element_type": [
-					"class/normal",
-					"bigglobe:class/normal"
-				]
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "extends",
+				"conditions": {
+					"element_type": [
+						"class/normal",
+						"bigglobe:class/normal"
+					]
+				}
 			},
-			"filter": {
-				"element_type": [
-					"class/normal",
-					"bigglobe:class/normal"
-				]
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/normal",
+						"bigglobe:class/normal"
+					]
+				}
 			},
+			"default_namespace": "bigglobe",
 			"reference_type": "element"
 		},
 
 		//enum classes
 
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "extends",
-			"registry": "bigglobe/custom_class",
-			"when": {
-				"element_type": [
-					"class/enum",
-					"bigglobe:class/enum"
-				]
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "extends",
+				"conditions": {
+					"element_type": [
+						"class/enum",
+						"bigglobe:class/enum"
+					]
+				}
 			},
-			"filter": {
-				"element_type": [
-					"class/enum",
-					"bigglobe:class/enum"
-				]
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/enum",
+						"bigglobe:class/enum"
+					]
+
+				}
 			},
+			"default_namespace": "bigglobe",
 			"reference_type": "element"
 		}
 	]

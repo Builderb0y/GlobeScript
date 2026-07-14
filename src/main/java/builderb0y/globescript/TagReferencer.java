@@ -3,10 +3,7 @@ package builderb0y.globescript;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.intellij.codeInsight.daemon.quickFix.CreateFilePathFix;
 import com.intellij.codeInsight.daemon.quickFix.NewFileLocation;
@@ -20,13 +17,9 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import builderb0y.globescript.datadriven.GsEnv;
-import builderb0y.globescript.datadriven.PendingReference;
-import builderb0y.globescript.datadriven.ReferenceModel;
+import builderb0y.globescript.datadriven.*;
 
 public class TagReferencer extends PsiReferenceContributor {
-
-	public static final Pattern TAG_START = Pattern.compile("/data/([a-z_.\\-]+)/tags/(bigglobe/(?:custom_class|worldgen/(?:feature_dispatcher|overrider))|block|fluid|item|worldgen/(?:biome|configured_feature|structure|structure_type))/[a-z_.\\-/]+\\.json$");
 
 	@Override
 	public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
@@ -37,39 +30,42 @@ public class TagReferencer extends PsiReferenceContributor {
 				@Override
 				public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
 					if (!(element instanceof JsonStringLiteral jsonElement) || jsonElement.isPropertyName()) return PsiReference.EMPTY_ARRAY;
-					VirtualFile directory = element.getContainingFile().getOriginalFile().getVirtualFile();
-					if (directory == null) return PsiReference.EMPTY_ARRAY;
-
-					if (isTagEntry(jsonElement)) {
-						Matcher matcher = TAG_START.matcher(directory.getPath());
-						if (matcher.find()) {
-							int start = matcher.start() + "/data".length();
-							while (directory.getPath().length() > start) directory = directory.getParent();
-							String registry = matcher.group(2);
-							return new PsiReference[] { new TagReference(jsonElement, directory, registry, "minecraft", PendingReference.Type.EITHER) };
+					VirtualFile containingFile = element.getContainingFile().getOriginalFile().getVirtualFile();
+					if (containingFile == null) return PsiReference.EMPTY_ARRAY;
+					PackData pack = PackData.find(containingFile);
+					if (pack == null) return PsiReference.EMPTY_ARRAY;
+					UID uid = pack.identify(containingFile);
+					if (uid == null) return PsiReference.EMPTY_ARRAY;
+					if (uid.tag()) {
+						if (isTagEntry(jsonElement)) {
+							String registryPath = (
+								uid.registry().namespace().equals("minecraft")
+								? uid.registry().path()
+								: uid.registry().namespace() + "/" + uid.registry().path()
+							);
+							return new PsiReference[] { new TagReference(jsonElement, pack.dataFolder, registryPath, "minecraft", PendingReference.Type.EITHER) };
+						}
+						else {
+							return PsiReference.EMPTY_ARRAY;
 						}
 					}
-					GsEnv env = GsEnv.find(element.getContainingFile().getVirtualFile());
-					if (env != null) {
-						String filePath = directory.getPath();
-						for (Map.Entry<Pattern, List<ReferenceModel>> entry : env.references.entrySet()) {
-							Matcher matcher = entry.getKey().matcher(filePath);
-							if (matcher.find()) {
-								int start = matcher.start() + "/data".length();
-								while (directory.getPath().length() > start) directory = directory.getParent();
-								for (ReferenceModel model : entry.getValue()) {
-									PsiElement startingPoint;
-									if (
-										(startingPoint = model.jsonPath.getRootFor(jsonElement)) != null &&
-										model.when.test(startingPoint)
-									) {
-										return new PsiReference[] { new TagReference(jsonElement, directory, model.registry, model.defaultNamespace, model.type) };
-									}
+					else {
+						List<PsiReference> result = new ArrayList<>();
+						for (ReferenceModel model : pack.projectData.environment().references) {
+							if (model.reference.registry.equals(uid.registry())) {
+								PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonElement);
+								if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
+									String registryPath = (
+										model.declaration.registry.namespace().equals("minecraft")
+										? model.declaration.registry.path()
+										: model.declaration.registry.namespace() + "/" + model.declaration.registry.path()
+									);
+									result.add(new TagReference(jsonElement, pack.dataFolder, registryPath, model.defaultNamespace, model.type));
 								}
 							}
 						}
+						return result.toArray(PsiReference.EMPTY_ARRAY);
 					}
-					return PsiReference.EMPTY_ARRAY;
 				}
 			}
 		);
@@ -102,13 +98,13 @@ public class TagReferencer extends PsiReferenceContributor {
 
 		public TagReference(
 			@NotNull JsonStringLiteral element,
-			VirtualFile directory,
+			VirtualFile dataFolder,
 			String registry,
 			String defaultNamespace,
 			PendingReference.Type type
 		) {
 			super(element);
-			this.dataDirectory = directory;
+			this.dataDirectory = dataFolder;
 			this.registry = registry;
 			this.defaultNamespace = defaultNamespace;
 			this.type = type;
@@ -219,7 +215,13 @@ public class TagReferencer extends PsiReferenceContributor {
 
 		@Override
 		public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
-			return super.bindToElement(element);
+			UID uid = PackData.identify(this.dataDirectory, element.getContainingFile().getOriginalFile().getVirtualFile());
+			if (uid != null) {
+				return super.handleElementRename(uid.formatElement());
+			}
+			else {
+				return this.myElement;
+			}
 		}
 	}
 }

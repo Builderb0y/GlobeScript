@@ -1,22 +1,25 @@
 {
 	"references": [
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/world_trait/",
-			"json_path": "type",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "type"
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/builtin",
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/builtin",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				}
+			},
 			"default_namespace": "bigglobe",
 			"reference_type": "element",
-			"when": {},
-			"filter": {
-				"element_type": [
-					"class/builtin",
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/builtin",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			}
 		}
 	]
 }

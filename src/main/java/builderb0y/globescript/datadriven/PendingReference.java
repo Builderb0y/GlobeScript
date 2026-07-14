@@ -1,50 +1,28 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.regex.Pattern;
-
 import com.intellij.json.psi.JsonStringLiteral;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.datadriven.PendingSchema.JsonPath;
 import builderb0y.globescript.datadriven.PendingSchema.When;
+import builderb0y.globescript.datadriven.ReferenceModel.TargetModel;
 
 public class PendingReference extends PendingElement {
 
 	public static final FieldInjectorMap FIELDS = new FieldInjectorMap(
-		new FieldInjector<PendingReference>("file_path", true) {
+		new FieldInjector<PendingReference>("reference", true) {
 
 			@Override
 			public void inject(PendingReference self, PendingDataContext context, @Nullable PsiElement value) {
-				self.filePath = PendingSchema.pattern(context, value);
+				self.reference = new PendingTarget(context, value);
 			}
 		},
-		new FieldInjector<PendingReference>("json_path", true) {
+		new FieldInjector<PendingReference>("declaration", true) {
 
 			@Override
 			public void inject(PendingReference self, PendingDataContext context, @Nullable PsiElement value) {
-				self.jsonPath = JsonPath.parse(context, value);
-			}
-		},
-		new FieldInjector<PendingReference>("when", true) {
-
-			@Override
-			public void inject(PendingReference self, PendingDataContext context, @Nullable PsiElement value) {
-				self.when = When.parse(context, value);
-			}
-		},
-		new FieldInjector<PendingReference>("filter", false) {
-
-			@Override
-			public void inject(PendingReference self, PendingDataContext context, @Nullable PsiElement value) {
-				self.filter = When.parse(context, value);
-			}
-		},
-		new FieldInjector<PendingReference>("registry", true) {
-
-			@Override
-			public void inject(PendingReference self, PendingDataContext context, @Nullable PsiElement value) {
-				self.registry = context.expectString(value);
+				self.declaration = new PendingTarget(context, value);
 			}
 		},
 		new FieldInjector<PendingReference>("default_namespace", false) {
@@ -70,10 +48,8 @@ public class PendingReference extends PendingElement {
 		}
 	);
 
-	public String registry, defaultNamespace;
-	public Pattern filePath;
-	public JsonPath jsonPath;
-	public When when, filter;
+	public PendingTarget reference, declaration;
+	public String defaultNamespace;
 	public Type type;
 
 	public PendingReference(PendingDataContext context, PsiElement element) {
@@ -86,12 +62,66 @@ public class PendingReference extends PendingElement {
 	}
 
 	public ReferenceModel resolve() {
-		return new ReferenceModel(this.registry, this.defaultNamespace, this.jsonPath, this.when, this.filter, this.type);
+		return new ReferenceModel(this.reference.resolve(), this.declaration.resolve(), this.defaultNamespace, this.type);
+	}
+
+	public static class PendingTarget extends PendingElement {
+
+		public static final FieldInjectorMap FIELDS = new FieldInjectorMap(
+			new FieldInjector<PendingTarget>("registry", true) {
+
+				@Override
+				public void inject(PendingTarget self, PendingDataContext context, @Nullable PsiElement value) {
+					if ((self.registry = context.expectString(value, ID::parseRequireNamespace)) == null) {
+						context.addError(value, "Can't parse as namespace:path");
+					}
+				}
+			},
+			new FieldInjector<PendingTarget>("json_path", false) {
+
+				@Override
+				public void inject(PendingTarget self, PendingDataContext context, @Nullable PsiElement value) {
+					self.jsonPath = JsonPath.parse(context, value);
+				}
+			},
+			new FieldInjector<PendingTarget>("conditions", false) {
+
+				@Override
+				public void inject(PendingTarget self, PendingDataContext context, @Nullable PsiElement value) {
+					self.conditions = When.parse(context, value);
+				}
+			}
+		);
+
+		@Override
+		public FieldInjectorMap getFields() {
+			return FIELDS;
+		}
+
+		public ID registry;
+		public JsonPath jsonPath;
+		public When conditions;
+
+		public PendingTarget(PendingDataContext context, PsiElement element) {
+			super(context, element);
+		}
+
+		public TargetModel resolve() {
+			return new TargetModel(this.registry, this.jsonPath, this.conditions);
+		}
 	}
 
 	public static enum Type {
 		ELEMENT,
 		TAG,
 		EITHER;
+
+		public boolean elementsAllowed() {
+			return this != TAG;
+		}
+
+		public boolean tagsAllowed() {
+			return this != ELEMENT;
+		}
 	}
 }

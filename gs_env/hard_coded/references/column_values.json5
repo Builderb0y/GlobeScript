@@ -1,35 +1,42 @@
 {
 	"references": [
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/column_value/",
-			"json_path": "params>type",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:worldgen/column_value",
+				"json_path": "params>type"
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/builtin",
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/builtin",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				}
+			},
 			"default_namespace": "bigglobe",
 			"reference_type": "element",
-			"when": {},
-			"filter": {
-				"element_type": [
-					"class/builtin",
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/builtin",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			}
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/worldgen/column_value/",
-			"json_path": "root",
-			"registry": "bigglobe/worldgen/decision_tree",
+			"reference": {
+				"registry": "bigglobe:worldgen/column_value",
+				"json_path": "root",
+				"conditions": {
+					"type": [
+						"decision_tree",
+						"bigglobe:decision_tree"
+					]
+				}
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/decision_tree"
+			},
 			"default_namespace": "bigglobe",
-			"reference_type": "element",
-			"when": {
-				"type": [
-					"decision_tree",
-					"bigglobe:decision_tree"
-				]
-			}
+			"reference_type": "element"
 		}
 	]
 }

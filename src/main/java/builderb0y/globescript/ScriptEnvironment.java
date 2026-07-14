@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.datadriven.EnvironmentConfigurator;
@@ -17,12 +18,12 @@ public class ScriptEnvironment extends EnvironmentModel {
 	public final List<LoopLabel> loopLabels = new ArrayList<>();
 	public int loopLabelCount = 0;
 
-	public ScriptEnvironment(StandardTypes standardTypes, VirtualFile source, EnvironmentConfigurator from) {
+	public ScriptEnvironment(StandardTypes standardTypes, PsiElement source, EnvironmentConfigurator from) {
 		super(source, from);
 		this.standardTypes = standardTypes;
 	}
 
-	public ScriptEnvironment(StandardTypes standardTypes, VirtualFile source, EnvironmentConfigurator... from) {
+	public ScriptEnvironment(StandardTypes standardTypes, PsiElement source, EnvironmentConfigurator... from) {
 		super(source, from);
 		this.standardTypes = standardTypes;
 	}

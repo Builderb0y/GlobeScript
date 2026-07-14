@@ -4,75 +4,87 @@
 		//normal, abstract
 
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "owner",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "owner",
+				"conditions": {
+					"element_type": [
+						"property/normal",
+						"property/abstract",
+						"bigglobe:property/normal",
+						"bigglobe:property/abstract"
+					]
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				}
+			},
 			"default_namespace": "bigglobe",
-			"when": {
-				"element_type": [
-					"property/normal",
-					"property/abstract",
-					"bigglobe:property/normal",
-					"bigglobe:property/abstract"
-				]
-			},
-			"filter": {
-				"element_type": [
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			},
 			"reference_type": "element"
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "property_type",
-			"registry": "bigglobe/custom_class",
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "property_type",
+				"conditions": {
+					"element_type": [
+						"property/normal",
+						"property/abstract",
+						"bigglobe:property/normal",
+						"bigglobe:property/abstract"
+					]
+				},
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/builtin",
+						"class/normal",
+						"class/enum",
+						"bigglobe:class/builtin",
+						"bigglobe:class/normal",
+						"bigglobe:class/enum"
+					]
+				}
+			},
 			"default_namespace": "bigglobe",
-			"when": {
-				"element_type": [
-					"property/normal",
-					"property/abstract",
-					"bigglobe:property/normal",
-					"bigglobe:property/abstract"
-				]
-			},
-			"filter": {
-				"element_type": [
-					"class/builtin",
-					"class/normal",
-					"class/enum",
-					"bigglobe:class/builtin",
-					"bigglobe:class/normal",
-					"bigglobe:class/enum"
-				]
-			},
 			"reference_type": "element"
 		},
 
 		//override
 
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class/",
-			"json_path": "override",
-			"registry": "bigglobe/custom_class",
-			"when": {
-				"element_type": [
-					"property/override",
-					"bigglobe:property/override"
-				]
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "override",
+				"conditions": {
+					"element_type": [
+						"property/override",
+						"bigglobe:property/override"
+					]
+				}
 			},
-			"filter": {
-				"element_type": [
-					"property/normal",
-					"property/abstract",
-					"property/override",
-					"bigglobe:property/normal",
-					"bigglobe:property/abstract",
-					"bigglobe:property/override"
-				]
+			"declaration": {
+				"registry": "bigglobe:custom_class"
+				"conditions": {
+					"element_type": [
+						"property/normal",
+						"property/abstract",
+						"property/override",
+						"bigglobe:property/normal",
+						"bigglobe:property/abstract",
+						"bigglobe:property/override"
+					]
+				},
 			},
 			"reference_type": "element"
 		}
