@@ -52,6 +52,11 @@ public class PackData {
 			registryPath = registryNamespace;
 			registryNamespace = "minecraft";
 		}
+		if ("worldgen".equals(registryPath)) {
+			String next = _get(parts, --index);
+			if (next == null) return null;
+			registryPath = registryPath + "/" + next;
+		}
 		if (index == 0) return null;
 		String elementPath = String.join("/", parts.subList(0, index).reversed());
 		return new UID(new ID(registryNamespace, registryPath), new ID(elementNamespace, elementPath), tag);

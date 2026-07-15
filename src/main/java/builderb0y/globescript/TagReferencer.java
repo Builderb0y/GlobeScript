@@ -55,7 +55,7 @@ public class TagReferencer extends PsiReferenceContributor {
 								for (ReferenceModel model : entry.getValue()) {
 									PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonElement);
 									if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
-										result.add(new TagReference(jsonElement, pack.dataFolder, uid.registry(), model.defaultNamespace, model.type));
+										result.add(new TagReference(jsonElement, pack.dataFolder, model.declaration.registry, model.defaultNamespace, model.type));
 									}
 								}
 							}

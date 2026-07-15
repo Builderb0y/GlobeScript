@@ -39,6 +39,11 @@ public class ProjectData {
 		return null;
 	}
 
+	public PackData getProvidedDataPack() {
+		VirtualFile provided = this.contentRoot.findFileByRelativePath("gs_env/provided/data");
+		return provided != null ? this.packs.get(provided) : null;
+	}
+
 	public ScriptEnvironment combineAllEnvironments(PsiElement source) {
 		GsEnv gsEnv = this.environment();
 		ScriptEnvironment environment = new ScriptEnvironment(
@@ -55,20 +60,24 @@ public class ProjectData {
 	}
 
 	public boolean fileChanged(VirtualFile file) {
-		VirtualFile parent = file;
 		boolean changed = false;
-		while (parent != null) {
+		loop:
+		for (VirtualFile parent = file; parent != null; parent = parent.getParent()) {
 			switch (parent.getName()) {
 				case "data" -> {
 					PackData pack = this.packs.get(parent);
-					if (pack != null) changed |= pack.fileChanged(file);
+					if (pack != null) {
+						changed |= pack.fileChanged(file);
+						break loop;
+					}
 				}
 				case "gs_env" -> {
-					this.env = null;
-					changed = true;
+					if (this.env != null && file.equals(this.env.envFolder())) {
+						this.env = null;
+						changed = true;
+					}
 				}
 			}
-			parent = parent.getParent();
 		}
 		return changed;
 	}
@@ -89,15 +98,18 @@ public class ProjectData {
 		VirtualFile src = this.contentRoot.findChild("src");
 		if (src != null) {
 			for (VirtualFile dataPack : src.getChildren()) {
-				VirtualFile resources = dataPack.findChild("resources");
-				if (resources != null) {
-					VirtualFile dataFolder = resources.findChild("data");
-					if (dataFolder != null) {
-						PackData customClasses = new PackData(this, dataFolder);
-						customClasses.scan();
-						this.packs.put(dataFolder, customClasses);
-					}
+				VirtualFile dataFolder = dataPack.findFileByRelativePath("resources/data");
+				if (dataFolder != null) {
+					PackData pack = new PackData(this, dataFolder);
+					pack.scan();
+					this.packs.put(dataFolder, pack);
 				}
+			}
+			VirtualFile provided = this.contentRoot.findFileByRelativePath("gs_env/provided/data");
+			if (provided != null) {
+				PackData pack = new PackData(this, provided);
+				pack.scan();
+				this.packs.put(provided, pack);
 			}
 		}
 	}

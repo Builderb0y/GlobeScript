@@ -56,6 +56,7 @@ public abstract class DynamicRegistry<T extends DynamicRegistryElement> {
 
 	public ID idOf(VirtualFile file) {
 		String path = VfsUtilCore.getRelativePath(file, this.packData.dataFolder);
+		if (path == null) return null;
 		int firstSlash = path.indexOf('/'), slash = firstSlash;
 		for (String part : this.registryPath) {
 			if (path.regionMatches(slash + 1, part, 0, part.length())) {

@@ -20,7 +20,8 @@
 				"minecraft",
 				"column_value/base",
 				"column_value/without_xyz",
-				"world_trait/without_xyz"
+				"world_trait/without_xyz",
+				"custom_class"
 			]
 		},
 		{
@@ -43,7 +44,8 @@
 				"minecraft",
 				"column_value/base",
 				"column_value/with_y",
-				"world_trait/with_y"
+				"world_trait/with_y",
+				"custom_class"
 			]
 		},
 		{
@@ -58,7 +60,8 @@
 				"minecraft",
 				"column_value/base",
 				"column_value/without_xyz",
-				"world_trait/without_xyz"
+				"world_trait/without_xyz",
+				"custom_class"
 			]
 		}
 	]
