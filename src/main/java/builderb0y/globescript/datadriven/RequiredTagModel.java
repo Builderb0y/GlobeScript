@@ -1,16 +1,14 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.regex.Pattern;
-
 import builderb0y.globescript.datadriven.PendingSchema.When;
 
 public class RequiredTagModel {
 
-	public final Pattern filePath;
+	public final ID registry;
 	public final When when;
 
-	public RequiredTagModel(Pattern filePath, When when) {
-		this.filePath = filePath;
+	public RequiredTagModel(ID registry, When when) {
+		this.registry = registry;
 		this.when = when;
 	}
 }

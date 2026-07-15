@@ -76,7 +76,7 @@ public class PackData {
 	}
 
 	public void setupEnvironment(EnvironmentModel environment, VirtualFile file, int columnValueFlags) {
-		this.customClasses.setupEnvironment(environment);
+		this.customClasses.setupEnvironment(environment, file);
 		this.columnValues.setupEnvironment(environment, file, columnValueFlags);
 		this.worldTraits.setupEnvironment(environment, columnValueFlags);
 	}

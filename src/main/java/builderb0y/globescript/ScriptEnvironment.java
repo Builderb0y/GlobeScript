@@ -3,13 +3,12 @@ package builderb0y.globescript;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.datadriven.EnvironmentConfigurator;
-import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 import builderb0y.globescript.datadriven.EnvironmentModel;
+import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 import builderb0y.globescript.datadriven.RawTypeModel;
 
 public class ScriptEnvironment extends EnvironmentModel {

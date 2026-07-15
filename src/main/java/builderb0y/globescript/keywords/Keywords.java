@@ -1,6 +1,6 @@
 package builderb0y.globescript.keywords;
 
-import java.util.*;
+import java.util.Map;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 

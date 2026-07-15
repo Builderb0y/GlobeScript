@@ -1,7 +1,7 @@
 {
 	"script_schemas": [
 		{
-			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
+			"registry": "bigglobe:worldgen/column_value",
 			"when": {
 				"type": [
 					"script",
@@ -24,7 +24,7 @@
 			]
 		},
 		{
-			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
+			"registry": "bigglobe:worldgen/column_value",
 			"when": {
 				"type": [
 					"script",
@@ -47,7 +47,7 @@
 			]
 		},
 		{
-			"file_path": "/data/[^/]+/bigglobe/worldgen/column_value/",
+			"registry": "bigglobe:worldgen/column_value",
 			"when": {},
 			"json_path": "valid>where|min_y|max_y",
 			"environments": [

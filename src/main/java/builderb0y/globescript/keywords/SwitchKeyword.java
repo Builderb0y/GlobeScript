@@ -1,12 +1,18 @@
 package builderb0y.globescript.keywords;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 
-import builderb0y.globescript.*;
+import builderb0y.globescript.Colors;
 import builderb0y.globescript.ConstantValue.IntegerConstantValue;
+import builderb0y.globescript.ExpressionParser;
 import builderb0y.globescript.StructureParser.*;
+import builderb0y.globescript.Token;
+import builderb0y.globescript.TokenInfo;
 import builderb0y.globescript.datadriven.EnvironmentModel.KeywordData;
 import builderb0y.globescript.datadriven.Plicity;
 import builderb0y.globescript.datadriven.RawTypeModel;

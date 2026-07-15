@@ -3,12 +3,16 @@ package builderb0y.globescript;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.intellij.codeInsight.daemon.quickFix.CreateFilePathFix;
 import com.intellij.codeInsight.daemon.quickFix.NewFileLocation;
 import com.intellij.codeInsight.daemon.quickFix.TargetDirectory;
-import com.intellij.json.psi.*;
+import com.intellij.json.psi.JsonArray;
+import com.intellij.json.psi.JsonObject;
+import com.intellij.json.psi.JsonProperty;
+import com.intellij.json.psi.JsonStringLiteral;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.*;
@@ -38,12 +42,7 @@ public class TagReferencer extends PsiReferenceContributor {
 					if (uid == null) return PsiReference.EMPTY_ARRAY;
 					if (uid.tag()) {
 						if (isTagEntry(jsonElement)) {
-							String registryPath = (
-								uid.registry().namespace().equals("minecraft")
-								? uid.registry().path()
-								: uid.registry().namespace() + "/" + uid.registry().path()
-							);
-							return new PsiReference[] { new TagReference(jsonElement, pack.dataFolder, registryPath, "minecraft", PendingReference.Type.EITHER) };
+							return new PsiReference[] { new TagReference(jsonElement, pack.dataFolder, uid.registry(), "minecraft", PendingReference.Type.EITHER) };
 						}
 						else {
 							return PsiReference.EMPTY_ARRAY;
@@ -51,16 +50,13 @@ public class TagReferencer extends PsiReferenceContributor {
 					}
 					else {
 						List<PsiReference> result = new ArrayList<>();
-						for (ReferenceModel model : pack.projectData.environment().references) {
-							if (model.reference.registry.equals(uid.registry())) {
-								PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonElement);
-								if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
-									String registryPath = (
-										model.declaration.registry.namespace().equals("minecraft")
-										? model.declaration.registry.path()
-										: model.declaration.registry.namespace() + "/" + model.declaration.registry.path()
-									);
-									result.add(new TagReference(jsonElement, pack.dataFolder, registryPath, model.defaultNamespace, model.type));
+						for (Map.Entry<ID, List<ReferenceModel>> entry : pack.projectData.environment().references.entrySet()) {
+							if (entry.getKey().registryEquals(uid)) {
+								for (ReferenceModel model : entry.getValue()) {
+									PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonElement);
+									if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
+										result.add(new TagReference(jsonElement, pack.dataFolder, uid.registry(), model.defaultNamespace, model.type));
+									}
 								}
 							}
 						}
@@ -92,19 +88,20 @@ public class TagReferencer extends PsiReferenceContributor {
 
 	public static class TagReference extends PsiReferenceBase<JsonStringLiteral> {
 
-		public final VirtualFile dataDirectory;
-		public final String registry, defaultNamespace;
+		public final VirtualFile dataFolder;
+		public final ID registry;
+		public final String defaultNamespace;
 		public final PendingReference.Type type;
 
 		public TagReference(
 			@NotNull JsonStringLiteral element,
 			VirtualFile dataFolder,
-			String registry,
+			ID registry,
 			String defaultNamespace,
 			PendingReference.Type type
 		) {
 			super(element);
-			this.dataDirectory = dataFolder;
+			this.dataFolder = dataFolder;
 			this.registry = registry;
 			this.defaultNamespace = defaultNamespace;
 			this.type = type;
@@ -116,30 +113,17 @@ public class TagReferencer extends PsiReferenceContributor {
 
 		public NewFileLocation getCreationLocation() {
 			String elementID = this.myElement.getValue();
-			boolean isTag = elementID.startsWith("#");
-			int colon = elementID.indexOf(':');
-			String namespace, path;
-			if (colon >= 0) {
-				namespace = elementID.substring(isTag ? 1 : 0, colon);
-				path = elementID.substring(colon + 1);
-			}
-			else {
-				namespace = this.defaultNamespace;
-				path = elementID.substring(isTag ? 1 : 0);
-			}
-			List<String> list = new ArrayList<>();
-			list.add(namespace);
-			if (isTag) list.add("tags");
-			Collections.addAll(list, this.registry.split("/"));
-			Collections.addAll(list, path.split("/"));
-			String name = list.removeLast() + ".json";
+			boolean tag = elementID.startsWith("#");
+			ID id = ID.parseSkipTag(elementID, this.defaultNamespace);
+			List<String> parts = new UID(this.registry, id, tag).jsonFilePathParts();
+			String name = parts.removeLast() + ".json";
 			return new NewFileLocation(
 				Collections.singletonList(
 					new TargetDirectory(
-						PsiManager.getInstance(this.myElement.getProject()).findDirectory(this.dataDirectory)
+						PsiManager.getInstance(this.myElement.getProject()).findDirectory(this.dataFolder)
 					)
 				),
-				list.toArray(new String[list.size()]),
+				parts.toArray(new String[parts.size()]),
 				name
 			);
 		}
@@ -179,20 +163,9 @@ public class TagReferencer extends PsiReferenceContributor {
 		@Override
 		public @Nullable PsiElement resolve() {
 			String elementID = this.myElement.getValue();
-			boolean isTag = elementID.startsWith("#");
-			int colon = elementID.indexOf(':');
-			String elementNamespace, elementPath;
-			if (colon >= 0) {
-				elementNamespace = elementID.substring(isTag ? 1 : 0, colon);
-				elementPath = elementID.substring(colon + 1);
-			}
-			else {
-				elementNamespace = this.defaultNamespace;
-				elementPath = elementID.substring(isTag ? 1 : 0);
-			}
-			String registry = this.registry;
-			String path = elementNamespace + (isTag ? "/tags/" : "/") + registry + "/" + elementPath + ".json";
-			VirtualFile found = this.dataDirectory.findFileByRelativePath(path);
+			boolean tag = elementID.startsWith("#");
+			ID id = ID.parseSkipTag(elementID, this.defaultNamespace);
+			VirtualFile found = new UID(this.registry, id, tag).findJson(this.dataFolder);
 			if (found != null) {
 				return PsiManager.getInstance(this.myElement.getProject()).findFile(found);
 			}
@@ -215,7 +188,7 @@ public class TagReferencer extends PsiReferenceContributor {
 
 		@Override
 		public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
-			UID uid = PackData.identify(this.dataDirectory, element.getContainingFile().getOriginalFile().getVirtualFile());
+			UID uid = PackData.identify(this.dataFolder, element.getContainingFile().getOriginalFile().getVirtualFile());
 			if (uid != null) {
 				return super.handleElementRename(uid.formatElement());
 			}

@@ -4,7 +4,9 @@ import java.util.Set;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 
-import builderb0y.globescript.*;
+import builderb0y.globescript.ExpressionParser;
+import builderb0y.globescript.Token;
+import builderb0y.globescript.TokenInfo;
 import builderb0y.globescript.datadriven.EnvironmentModel.KeywordData;
 import builderb0y.globescript.util.Util;
 

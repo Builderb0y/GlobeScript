@@ -140,6 +140,12 @@
 
 				"boolean block_state.canPlaceAt(int*(x, y, z))",
 				"boolean block_state.canStayAt(int*(x, y, z))"
+			]
+		},
+		{
+			"name": "minecraft/with_imported_world",
+			"includes": [
+				"minecraft/with_world"
 			],
 			"imported_values": [
 				"world world"

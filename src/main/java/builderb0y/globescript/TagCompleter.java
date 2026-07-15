@@ -1,11 +1,12 @@
 package builderb0y.globescript;
 
+import java.util.List;
+import java.util.Map;
+
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.json.psi.JsonFile;
 import com.intellij.json.psi.JsonStringLiteral;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiElement;
@@ -14,11 +15,8 @@ import com.intellij.psi.PsiManager;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
-import builderb0y.globescript.datadriven.PackData;
-import builderb0y.globescript.datadriven.PendingReference;
-import builderb0y.globescript.datadriven.ReferenceModel;
+import builderb0y.globescript.datadriven.*;
 import builderb0y.globescript.datadriven.ReferenceModel.TargetModel;
-import builderb0y.globescript.datadriven.UID;
 import builderb0y.globescript.util.StringSimilarity;
 
 public class TagCompleter extends CompletionContributor {
@@ -58,11 +56,13 @@ public class TagCompleter extends CompletionContributor {
 							this.search(text, pack, new TargetModel(uid.registry(), null, null), PendingReference.Type.EITHER, results);
 						}
 						else {
-							for (ReferenceModel reference : pack.projectData.environment().references) {
-								if (reference.reference.registry.equals(uid.registry())) {
-									PsiElement startingPoint = reference.reference.jsonPath.getRootFor(jsonString);
-									if (startingPoint != null && (reference.reference.condition == null || reference.reference.condition.test(startingPoint))) {
-										this.search(text, pack, reference.declaration, reference.type, results);
+							for (Map.Entry<ID, List<ReferenceModel>> entry : pack.projectData.environment().references.entrySet()) {
+								if (entry.getKey().registryEquals(uid)) {
+									for (ReferenceModel model : entry.getValue()) {
+										PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonString);
+										if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
+											this.search(text, pack, model.declaration, model.type, results);
+										}
 									}
 								}
 							}
@@ -79,62 +79,28 @@ public class TagCompleter extends CompletionContributor {
 			PendingReference.Type referenceType,
 			CompletionResultSet results
 		) {
-			String registryPath = (
-				target.registry.namespace().equals("minecraft")
-				? target.registry.path()
-				: target.registry.namespace() + "/" + target.registry.path()
-			);
-			for (VirtualFile namespace : VfsUtil.getChildren(pack.dataFolder)) {
-				if (referenceType.elementsAllowed()) {
-					VirtualFile elements = namespace.findFileByRelativePath(registryPath);
-					if (elements != null) {
-						VfsUtilCore.iterateChildrenRecursively(
-							elements,
-							(VirtualFile file) -> file.isDirectory() || "json".equals(file.getExtension()),
-							(VirtualFile fileOrDir) -> {
-								if (!fileOrDir.isDirectory()) {
-									PsiFile psiFile = PsiManager.getInstance(pack.projectData.project).findFile(fileOrDir);
-									if (target.condition != null) {
-										if (!(psiFile instanceof JsonFile jsonFile) || !target.condition.test(jsonFile.getTopLevelValue())) {
-											return true;
-										}
-									}
-									String path = VfsUtilCore.getRelativePath(fileOrDir, elements);
-									path = path.substring(0, path.length() - ".json".length());
-									String identifier = namespace.getName() + ":" + path;
-									if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
-										results.addElement(LookupElementBuilder.create(identifier).withPsiElement(psiFile));
-									}
-								}
-								return true;
-							}
-						);
-					}
-				}
-				if (referenceType.tagsAllowed()) {
-					VirtualFile allTags = namespace.findChild("tags");
-					if (allTags != null) {
-						VirtualFile specificTags = allTags.findFileByRelativePath(registryPath);
-						if (specificTags != null) {
-							VfsUtilCore.iterateChildrenRecursively(
-								specificTags,
-								(VirtualFile file) -> file.isDirectory() || "json".equals(file.getExtension()),
-								(VirtualFile fileOrDir) -> {
-									if (!fileOrDir.isDirectory()) {
-										String path = VfsUtilCore.getRelativePath(fileOrDir, specificTags);
-										path = path.substring(0, path.length() - ".json".length());
-										String identifier = "#" + namespace.getName() + ":" + path;
-										if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
-											PsiFile psiFile = PsiManager.getInstance(pack.projectData.project).findFile(fileOrDir);
-											results.addElement(LookupElementBuilder.create(identifier).withPsiElement(psiFile));
-										}
-									}
-									return true;
-								}
-							);
+			if (referenceType.elementsAllowed()) {
+				target.registry.walkJsonRegistry(pack.dataFolder, false, (VirtualFile file, ID id) -> {
+					PsiFile psiFile = PsiManager.getInstance(pack.projectData.project).findFile(file);
+					if (target.condition != null) {
+						if (!(psiFile instanceof JsonFile jsonFile) || !target.condition.test(jsonFile.getTopLevelValue())) {
+							return;
 						}
 					}
-				}
+					String identifier = id.toString();
+					if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
+						results.addElement(LookupElementBuilder.create(identifier).withPsiElement(psiFile));
+					}
+				});
+			}
+			if (referenceType.tagsAllowed()) {
+				target.registry.walkJsonRegistry(pack.dataFolder, true, (VirtualFile file, ID id) -> {
+					String identifier = id.toTagString();
+					if (StringSimilarity.compare(text, identifier).compareTo(StringSimilarity.NO_MATCH) > 0) {
+						PsiFile psiFile = PsiManager.getInstance(pack.projectData.project).findFile(file);
+						results.addElement(LookupElementBuilder.create(identifier).withPsiElement(psiFile));
+					}
+				});
 			}
 		}
 	}

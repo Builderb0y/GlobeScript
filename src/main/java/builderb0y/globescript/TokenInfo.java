@@ -44,12 +44,12 @@ public record TokenInfo(ConstantValue constant, byte flags) {
 	}
 
 	public CallableEligibility getEligibility(ScriptEnvironment environment, RawTypeModel type, Plicity plicity) {
-		if (this.type().isAssignableTo(type)) return CallableEligibility.EXACT_MATCH;
+		if (this.type().extendsOrImplements(type)) return CallableEligibility.EXACT_MATCH;
 		return this.canCastTo(environment, type, plicity) ? CallableEligibility.REQUIRES_IMPLICIT_CAST : CallableEligibility.INVALID;
 	}
 
 	public boolean isAssignableToOrCanCast(ScriptEnvironment environment, RawTypeModel type, Plicity plicity) {
-		return this.type().isAssignableTo(type) || this.canCastTo(environment, type, plicity);
+		return this.type().extendsOrImplements(type) || this.canCastTo(environment, type, plicity);
 	}
 
 	public boolean canCastTo(ScriptEnvironment environment, RawTypeModel to, Plicity plicity) {
@@ -70,10 +70,10 @@ public record TokenInfo(ConstantValue constant, byte flags) {
 			}
 		}
 		if (
-			this.type().isAssignableTo(environment.standardTypes.object) &&
-			to.isAssignableTo(environment.standardTypes.object) &&
+			this.type().extendsOrImplements(environment.standardTypes.object) &&
+			to.extendsOrImplements(environment.standardTypes.object) &&
 			plicity == Plicity.EXPLICIT && (
-				to.isAssignableTo(this.type()) ||
+				to.extendsOrImplements(this.type()) ||
 				(to.isInterface() && !this.type().isFinal())
 			)
 		) {
@@ -83,7 +83,7 @@ public record TokenInfo(ConstantValue constant, byte flags) {
 	}
 
 	public @Nullable TokenInfo tryCastIfNotAssignable(ScriptEnvironment environment, RawTypeModel type, Plicity plicity) {
-		return this.type().isAssignableTo(type) ? this : this.tryCastTo(environment, type, plicity);
+		return this.type().extendsOrImplements(type) ? this : this.tryCastTo(environment, type, plicity);
 	}
 
 	public @Nullable TokenInfo tryCastTo(ScriptEnvironment environment, RawTypeModel type, Plicity plicity) {

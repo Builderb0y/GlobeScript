@@ -6,7 +6,6 @@ import java.util.Map;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileUtil;
 import com.intellij.psi.PsiElement;
 
 import builderb0y.globescript.ScriptEnvironment;

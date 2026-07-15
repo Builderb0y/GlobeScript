@@ -17,7 +17,7 @@
 	],
 	"script_schemas": [
 		{
-			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"registry": "minecraft:worldgen/configured_feature",
 			"when": {
 				"type": "bigglobe:natural_tree"
 			},
@@ -31,7 +31,7 @@
 			]
 		},
 		{
-			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"registry": "minecraft:worldgen/configured_feature",
 			"when": {
 				"type": "bigglobe:natural_tree"
 			},
@@ -45,7 +45,7 @@
 			]
 		},
 		{
-			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"registry": "minecraft:worldgen/configured_feature",
 			"when": {
 				"type": "bigglobe:natural_tree"
 			},

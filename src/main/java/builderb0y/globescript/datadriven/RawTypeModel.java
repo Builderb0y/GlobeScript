@@ -49,7 +49,7 @@ public class RawTypeModel implements TypeModifiersModel {
 		return set;
 	}
 
-	public boolean isAssignableTo(RawTypeModel that) {
+	public boolean extendsOrImplements(RawTypeModel that) {
 		return this.getAssignableTypes().contains(that);
 	}
 

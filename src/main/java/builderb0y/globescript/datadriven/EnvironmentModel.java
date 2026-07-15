@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 
 import builderb0y.globescript.*;
@@ -100,7 +99,7 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 
 	public void addCaster(CastData cast) {
 		for (RawTypeModel to : cast.to.getAssignableTypes()) {
-			if (!cast.from.isAssignableTo(to)) {
+			if (!cast.from.extendsOrImplements(to)) {
 				this.casters.computeIfAbsent(new CastData.Key(cast.from, to), (CastData.Key $) -> new ArrayList<>()).add(cast);
 			}
 		}

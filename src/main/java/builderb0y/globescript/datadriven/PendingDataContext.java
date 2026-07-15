@@ -9,9 +9,6 @@ import java.util.stream.Stream;
 
 import com.intellij.json.psi.*;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;

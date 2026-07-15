@@ -18,11 +18,13 @@ import builderb0y.globescript.util.Util;
 public class PendingSchema extends PendingElement {
 
 	public static final FieldInjectorMap FIELDS = new FieldInjectorMap(
-		new FieldInjector<PendingSchema>("file_path", true) {
+		new FieldInjector<PendingSchema>("registry", true) {
 
 			@Override
 			public void inject(PendingSchema self, PendingDataContext context, @Nullable PsiElement value) {
-				self.filePath = pattern(context, value);
+				if ((self.registry = context.expectString(value, ID::parseRequireNamespace)) == null) {
+					context.addError(value, "Can't parse as namespace:path pair");
+				}
 			}
 		},
 		new FieldInjector<PendingSchema>("json_path", true) {
@@ -48,7 +50,7 @@ public class PendingSchema extends PendingElement {
 		}
 	);
 
-	public Pattern filePath;
+	public ID registry;
 	public JsonPath jsonPath;
 	public When when;
 	public PendingEnvironmentReference[] environments;
@@ -63,7 +65,7 @@ public class PendingSchema extends PendingElement {
 	}
 
 	public SchemaModel resolve(ConvertingDataContext context) {
-		return new SchemaModel(this.filePath, this.jsonPath, this.when, context.getEnvironments(this.environments));
+		return new SchemaModel(this.registry, this.jsonPath, this.when, context.getEnvironments(this.environments));
 	}
 
 	public static Pattern pattern(PendingDataContext context, PsiElement element) {

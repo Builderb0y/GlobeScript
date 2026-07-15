@@ -6,20 +6,14 @@ import java.util.stream.Collectors;
 import com.intellij.json.psi.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiReference;
-import com.intellij.util.xml.Convert;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.Colors;
-import builderb0y.globescript.TagReferencer.TagReference;
 import builderb0y.globescript.TokenInfo;
-import builderb0y.globescript.datadriven.CustomClassEnvironment.CustomElement;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.CyclicException;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.TypeElement;
-import builderb0y.globescript.datadriven.CustomClassEnvironment.UserClassElement;
 import builderb0y.globescript.datadriven.EnvironmentModel.VariableData;
 import builderb0y.globescript.datadriven.PendingEnvironment.*;
 import builderb0y.globescript.util.Util;
@@ -221,7 +215,7 @@ public class ConvertingDataContext {
 				public void configure(PsiElement source, EnvironmentModel environment) {
 					VirtualFile file = source.getContainingFile().getVirtualFile();
 					PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(file);
-					if (pack != null) pack.customClasses.setupEnvironment(environment);
+					if (pack != null) pack.customClasses.setupEnvironment(environment, file);
 				}
 			};
 			case "custom_class/internal"    -> new CustomClassConfigurator(name);

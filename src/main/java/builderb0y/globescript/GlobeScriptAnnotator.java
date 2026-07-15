@@ -1,8 +1,8 @@
 package builderb0y.globescript;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import com.google.common.base.Predicates;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -133,17 +133,20 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			return false;
 		}
 
-		public boolean checkRequiredTags(JsonFile file, AnnotationHolder holder, GsEnv metadata) {
+		public boolean checkRequiredTags(VirtualFile dataFolder, JsonFile file, AnnotationHolder holder, GsEnv metadata) {
 			JsonValue top = file.getTopLevelValue();
-			String path = file.getOriginalFile().getVirtualFile().getPath();
-			for (RequiredTagModel requiredTag : metadata.requiredTags) {
-				if (requiredTag.filePath.matcher(path).find() && requiredTag.when.test(top)) {
-					if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
-						break;
-					}
-					else {
-						holder.newAnnotation(HighlightSeverity.WARNING, "This file must be added to a tag to function properly.").fileLevel().create();
-						return true;
+			for (Map.Entry<ID, List<RequiredTagModel>> entry : metadata.requiredTags.entrySet()) {
+				if (entry.getKey().contains(dataFolder, file)) {
+					for (RequiredTagModel model : entry.getValue()) {
+						if (model.when.test(top)) {
+							if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
+								break;
+							}
+							else {
+								holder.newAnnotation(HighlightSeverity.WARNING, "This file must be added to a tag to function properly.").fileLevel().create();
+								return true;
+							}
+						}
 					}
 				}
 			}
@@ -172,21 +175,24 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			return end > start ? new TextRange(start, end) : null;
 		}
 
-		public boolean annotateScript(JsonElement jsonElement, AnnotationHolder holder, GsEnv metadata) {
+		public boolean annotateScript(VirtualFile dataFolder, JsonElement jsonElement, AnnotationHolder holder, GsEnv metadata) {
 			TextRange range = getArrayRange(jsonElement);
 			if (range != null) {
 				PsiFile psiFile = jsonElement.getContainingFile();
 				VirtualFile virtualFile = psiFile.getVirtualFile();
-				String filePath = virtualFile.getPath();
-				for (SchemaModel schema : metadata.schemas) {
-					if (schema.matches(filePath, jsonElement)) {
-						String text = psiFile.getText();
-						ExpressionParser parser = new ExpressionParser(
-							new JsonExpressionReader(text, range.getStartOffset(), range.getEndOffset()),
-							schema.copyEnvironment(metadata.standardTypes, jsonElement)
-						);
-						this.annotate(parser, holder);
-						return true;
+				for (Map.Entry<ID, List<SchemaModel>> entry : metadata.schemas.entrySet()) {
+					if (entry.getKey().contains(dataFolder, virtualFile)) {
+						for (SchemaModel model : entry.getValue()) {
+							if (model.matches(jsonElement)) {
+								String text = psiFile.getText();
+								ExpressionParser parser = new ExpressionParser(
+									new JsonExpressionReader(text, range.getStartOffset(), range.getEndOffset()),
+									model.copyEnvironment(metadata.standardTypes, jsonElement)
+								);
+								this.annotate(parser, holder);
+								return true;
+							}
+						}
 					}
 				}
 			}
@@ -226,64 +232,36 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			if (!(element instanceof JsonElement jsonElement)) return;
 
 			VirtualFile file = element.getContainingFile().getVirtualFile();
-			ProjectData projectData = ProjectData.find(file);
-			GsEnv metadata = projectData != null ? projectData.environment() : null;
+			ProjectData project = ProjectData.find(file);
+			PackData pack = project != null ? project.getPackData(file) : null;
+			GsEnv metadata = project != null ? project.environment() : null;
 			if (jsonElement instanceof JsonFile jsonFile) {
-				if (metadata != null) {
-					if (this.checkRequiredTags(jsonFile, holder, metadata)) return;
+				if (pack != null) {
+					if (this.checkRequiredTags(pack.dataFolder, jsonFile, holder, metadata)) return;
 				}
 			}
 			else {
 				if (this.checkInvalidReferences(jsonElement, holder)) return;
 				boolean annotated;
 				VirtualFile envFolder;
-				if (metadata != null) {
-					if (
-						(envFolder = metadata.envFolder()) != null &&
-						VfsUtil.isAncestor(envFolder, file, true)
-					) {
-						annotated = this.annotateEnvironment(jsonElement, holder, metadata);
-					}
-					else {
-						annotated = this.annotateScript(jsonElement, holder, metadata);
-					}
+				if (
+					metadata != null &&
+					(envFolder = metadata.envFolder()) != null &&
+					VfsUtil.isAncestor(envFolder, file, true)
+				) {
+					annotated = this.annotateEnvironment(jsonElement, holder, metadata);
+				}
+				else if (
+					pack != null &&
+					VfsUtil.isAncestor(pack.dataFolder, file, true)
+				) {
+					annotated = this.annotateScript(pack.dataFolder, jsonElement, holder, metadata);
 				}
 				else {
 					annotated = false;
 				}
 				if (annotated) this.grayOutQuotes(jsonElement, holder);
 			}
-			/*
-			if (SCRIPT_TEMPLATE_PATH.matcher(filePath).find()) {
-				if (jsonPath.equals("script")) {
-					ScriptEnvironment environment = new ScriptEnvironment(
-						context.standardTypes,
-						context.environments.values().toArray(
-							new EnvironmentModel[context.environments.size()]
-						)
-					);
-					if (root instanceof JsonObject object && getValue(object, "inputs") instanceof JsonArray inputs) {
-						for (JsonValue input : inputs.getValueList()) {
-							if (input instanceof JsonObject inputObject) {
-								String name = getValue(inputObject, "name") instanceof JsonStringLiteral string ? string.getValue() : null;
-								if (name == null) continue;
-								String typeName = getValue(inputObject, "type") instanceof JsonStringLiteral string ? string.getValue() : null;
-								if (typeName == null) continue;
-								TypeData typeData = environment.getType(typeName);
-								if (typeData == null) continue;
-								environment.addUserParameter(name, typeData.info.assignable(true));
-							}
-						}
-					}
-					ExpressionParser parser = new ExpressionParser(
-						new JsonExpressionReader(text, start, end),
-						environment
-					);
-					this.annotate(parser, holder);
-					annotated = true;
-				}
-			}
-			*/
 		}
 	}
 

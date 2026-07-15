@@ -1,7 +1,5 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.regex.Pattern;
-
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,11 +9,13 @@ import builderb0y.globescript.datadriven.PendingSchema.When;
 public class PendingRequiredTag extends PendingElement {
 
 	public static final FieldInjectorMap FIELDS = new FieldInjectorMap(
-		new FieldInjector<PendingRequiredTag>("file_path", true) {
+		new FieldInjector<PendingRequiredTag>("registry", true) {
 
 			@Override
 			public void inject(PendingRequiredTag self, PendingDataContext context, @Nullable PsiElement value) {
-				self.filePath = PendingSchema.pattern(context, value);
+				if ((self.registry = context.expectString(value, ID::parseRequireNamespace)) == null) {
+					context.addError(value, "Could not parse as namespace:path pair");
+				}
 			}
 		},
 		new FieldInjector<PendingRequiredTag>("when", false) {
@@ -32,7 +32,7 @@ public class PendingRequiredTag extends PendingElement {
 		return FIELDS;
 	}
 
-	public Pattern filePath;
+	public ID registry;
 	public When when;
 
 	public PendingRequiredTag(PendingDataContext context, PsiElement element) {
@@ -40,6 +40,6 @@ public class PendingRequiredTag extends PendingElement {
 	}
 
 	public RequiredTagModel resolve() {
-		return new RequiredTagModel(this.filePath, this.when);
+		return new RequiredTagModel(this.registry, this.when);
 	}
 }

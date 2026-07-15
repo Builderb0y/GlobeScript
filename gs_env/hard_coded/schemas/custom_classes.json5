@@ -1,7 +1,7 @@
 {
 	"script_schemas": [
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class",
+			"registry": "bigglobe:custom_class",
 			"json_path": "code",
 			"when": {
 				"element_type": [
@@ -18,16 +18,17 @@
 				"math",
 				"random/base",
 				"stateless_random",
-				"minecraft",
+				"minecraft/with_world",
 				"column_value/base",
 				"column_value/without_xyz",
 				"world_trait/without_xyz",
 				"custom_class",
-				"custom_class/internal"
+				"custom_class/internal",
+				"java_util/mutable"
 			]
 		},
 		{
-			"file_path": "/data/[a-z_.\\-]+/bigglobe/custom_class",
+			"registry": "bigglobe:custom_class",
 			"json_path": "get|set",
 			"when": {
 				"element_type": [
@@ -42,12 +43,13 @@
 				"math",
 				"random/base",
 				"stateless_random",
-				"minecraft",
+				"minecraft/with_world",
 				"column_value/base",
 				"column_value/without_xyz",
 				"world_trait/without_xyz",
 				"custom_class",
-				"custom_class/internal"
+				"custom_class/internal",
+				"java_util/mutable"
 			]
 		}
 	]

@@ -1,10 +1,8 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.intellij.notification.Notification;
@@ -17,8 +15,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -34,9 +30,9 @@ public class GsEnv {
 	public Map<PsiElement, List<PsiErrorDisplay>> errors = new Reference2ObjectOpenHashMap<>();
 	public Map<String, RawTypeModel> types = new Object2ObjectOpenHashMap<>();
 	public Map<String, EnvironmentConfigurator> environments = new Object2ObjectOpenHashMap<>();
-	public List<SchemaModel> schemas = new ObjectArrayList<>();
-	public List<ReferenceModel> references = new ObjectArrayList<>();
-	public List<RequiredTagModel> requiredTags = new ObjectArrayList<>();
+	public Map<ID, List<SchemaModel>> schemas = new Object2ObjectOpenHashMap<>();
+	public Map<ID, List<ReferenceModel>> references = new Object2ObjectOpenHashMap<>();
+	public Map<ID, List<RequiredTagModel>> requiredTags = new Object2ObjectOpenHashMap<>();
 	public StandardTypes standardTypes;
 
 	public GsEnv(ProjectData projectData) {
@@ -123,14 +119,14 @@ public class GsEnv {
 			}
 			if (this.checkErrors(pending)) break done;
 			for (PendingSchema schema : pending.schemas) {
-				this.schemas.add(schema.resolve(converting));
+				this.schemas.computeIfAbsent(schema.registry, $ -> new ObjectArrayList<>()).add(schema.resolve(converting));
 			}
 			if (this.checkErrors(pending)) break done;
 			for (PendingReference reference : pending.references) {
-				this.references.add(reference.resolve());
+				this.references.computeIfAbsent(reference.reference.registry, $ -> new ObjectArrayList<>()).add(reference.resolve());
 			}
 			for (PendingRequiredTag requiredTag : pending.requiredTags) {
-				this.requiredTags.add(requiredTag.resolve());
+				this.requiredTags.computeIfAbsent(requiredTag.registry, $ -> new ObjectArrayList<>()).add(requiredTag.resolve());
 			}
 			this.standardTypes = this.new StandardTypes();
 		}

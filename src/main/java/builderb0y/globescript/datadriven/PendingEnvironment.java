@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.intellij.json.psi.*;
+import com.intellij.json.psi.JsonBooleanLiteral;
+import com.intellij.json.psi.JsonNullLiteral;
+import com.intellij.json.psi.JsonNumberLiteral;
+import com.intellij.json.psi.JsonStringLiteral;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
@@ -12,10 +15,10 @@ import org.jetbrains.annotations.Nullable;
 import builderb0y.globescript.*;
 import builderb0y.globescript.ConstantValue.*;
 import builderb0y.globescript.StructureParser.Structure;
+import builderb0y.globescript.datadriven.EnvironmentModel.*;
 import builderb0y.globescript.keywords.Keywords;
 import builderb0y.globescript.keywords.Keywords.KeywordFactory;
 import builderb0y.globescript.keywords.Keywords.MemberKeywordFactory;
-import builderb0y.globescript.datadriven.EnvironmentModel.*;
 
 @SuppressWarnings("DataFlowIssue")
 public class PendingEnvironment extends PendingElement implements PendingElement.Named {

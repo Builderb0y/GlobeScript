@@ -18,7 +18,7 @@
 	],
 	"script_schemas": [
 		{
-			"file_path": "/data/[^/]+/worldgen/configured_feature/",
+			"registry": "minecraft:worldgen/configured_feature",
 			"when": {
 				"type": "bigglobe:script"
 			},
@@ -32,7 +32,7 @@
 				"custom_class",
 				"column_value/with_xyz",
 				"origin_pos",
-				"minecraft/with_world",
+				"minecraft/with_imported_world",
 				"wood_palette/with_random"
 			]
 		}

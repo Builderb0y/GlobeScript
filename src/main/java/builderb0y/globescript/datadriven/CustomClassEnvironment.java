@@ -1,20 +1,20 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.intellij.json.psi.*;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.Colors;
 import builderb0y.globescript.TokenInfo;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.CustomElement;
-import builderb0y.globescript.datadriven.EnvironmentModel.FieldData;
-import builderb0y.globescript.datadriven.EnvironmentModel.MethodData;
-import builderb0y.globescript.datadriven.EnvironmentModel.ParameterModel;
-import builderb0y.globescript.datadriven.EnvironmentModel.TypeData;
+import builderb0y.globescript.datadriven.EnvironmentModel.*;
 import builderb0y.globescript.util.Util;
 
 public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
@@ -23,41 +23,21 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		super(packData, "bigglobe", "custom_class");
 	}
 
-	public void setupEnvironment(EnvironmentModel environment) {
+	public void setupEnvironment(EnvironmentModel environment, VirtualFile caller) {
+		UID uid = this.packData.identify(caller);
+		RawTypeModel owner = null;
+		if (uid != null) try {
+			owner = this.get(uid.element()) instanceof MemberElement member ? member.owner().resolve(new HashSet<>()) : null;
+		}
+		catch (CyclicException ignored) {}
 		for (CustomElement value : this.elements.values()) {
-			value.applyTo(environment);
+			value.applyTo(environment, owner);
 		}
 	}
 
 	public CustomElement get(ID id) {
 		CustomElement element = this.elements.get(id);
 		return element == SpecialMarker.ABSENT ? null : element;
-		/*
-		if (element != null) {
-			if (element == SpecialMarker.ABSENT) return null;
-		}
-		else {
-			VirtualFile namespace = this.dataFolder.findChild(id.namespace());
-			if (namespace != null) {
-				VirtualFile bigglobe = namespace.findChild("bigglobe");
-				if (bigglobe != null) {
-					VirtualFile customClasses = bigglobe.findChild("custom_class");
-					if (customClasses != null) {
-						VirtualFile elementFile = customClasses;
-						for (String part : id.path().split("/")) {
-							elementFile = elementFile.findChild(part);
-							if (elementFile == null) break;
-						}
-						if (elementFile != null) {
-							element = this.compute(elementFile);
-						}
-					}
-				}
-			}
-			this.elements.put(id, element == null ? SpecialMarker.ABSENT : element);
-		}
-		return element;
-		*/
 	}
 
 	@Override
@@ -122,7 +102,8 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 			Util.findProperty(root, "owner") instanceof JsonStringLiteral owner &&
 			Util.findProperty(root, "field_type") instanceof JsonStringLiteral fieldType
 		) {
-			return new NormalFieldElement(name.getValue(), ID.parseBG(owner.getValue()), ID.parseBG(fieldType.getValue()));
+			boolean import_ = Util.findProperty(root, "import") instanceof JsonBooleanLiteral bool && bool.getValue();
+			return new NormalFieldElement(name.getValue(), ID.parseBG(owner.getValue()), ID.parseBG(fieldType.getValue()), import_);
 		}
 		return null;
 	}
@@ -261,7 +242,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 			this.name = name;
 		}
 
-		public abstract void applyTo(EnvironmentModel environment);
+		public abstract void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner);
 	}
 
 	public static class SpecialMarker extends CustomElement {
@@ -273,7 +254,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		}
 
 		@Override
-		public void applyTo(EnvironmentModel environment) {
+		public void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner) {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -295,19 +276,19 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
 		public abstract RawTypeModel resolve(Set<ID> seen) throws CyclicException;
 
-		public void applyTo(EnvironmentModel environment, RawTypeModel type) {
+		public void applyTo(EnvironmentModel environment, RawTypeModel type, @Nullable RawTypeModel callerOwner) {
 			environment.addType(new TypeData(this.name, Colors.TYPE, new TokenInfo(type)));
 		}
 
 		@Override
-		public void applyTo(EnvironmentModel environment) {
+		public void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner) {
 			RawTypeModel type = null;
 			try {
 				type = this.resolve(new HashSet<>());
 			}
 			catch (CyclicException ignored) {}
 			if (type != null) {
-				this.applyTo(environment, type);
+				this.applyTo(environment, type, callerOwner);
 			}
 		}
 	}
@@ -324,7 +305,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		}
 
 		@Override
-		public void applyTo(EnvironmentModel environment) {
+		public void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner) {
 			//no-op.
 		}
 	}
@@ -396,8 +377,8 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		}
 
 		@Override
-		public void applyTo(EnvironmentModel environment, RawTypeModel type) {
-			super.applyTo(environment, type);
+		public void applyTo(EnvironmentModel environment, RawTypeModel type, @Nullable RawTypeModel callerOwner) {
+			super.applyTo(environment, type, callerOwner);
 			environment.addStaticMethod(new MethodData("new", Colors.KEYWORD, type, new TokenInfo(type)));
 		}
 	}
@@ -431,10 +412,12 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 	public abstract class FieldElement extends MemberElement {
 
 		public final ID fieldType;
+		public final boolean import_;
 
-		public FieldElement(String name, ID owner, ID fieldType) {
+		public FieldElement(String name, ID owner, ID fieldType, boolean import_) {
 			super(name, owner);
 			this.fieldType = fieldType;
+			this.import_ = import_;
 		}
 
 		public TypeElement fieldType() {
@@ -446,7 +429,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		public abstract boolean isStatic();
 
 		@Override
-		public void applyTo(EnvironmentModel environment) {
+		public void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner) {
 			UserClassElement ownerElement = this.owner();
 			TypeElement fieldTypeElement = this.fieldType();
 			if (ownerElement != null && fieldTypeElement != null) {
@@ -460,11 +443,15 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 				}
 				catch (CyclicException ignored) {}
 				if (ownerType != null && fieldType != null) {
+					TokenInfo info = new TokenInfo(fieldType, this.assignable() ? TokenInfo.FLAG_ASSIGNABLE : 0);
 					if (this.isStatic()) {
-						environment.addStaticField(new FieldData(ownerType, this.name, Colors.STATIC_FIELD, new TokenInfo(fieldType, this.assignable() ? TokenInfo.FLAG_ASSIGNABLE : 0)));
+						environment.addStaticField(new FieldData(ownerType, this.name, Colors.STATIC_FIELD, info));
 					}
 					else {
-						environment.addInstanceField(new FieldData(ownerType, this.name, Colors.INSTANCE_FIELD, new TokenInfo(fieldType, this.assignable() ? TokenInfo.FLAG_ASSIGNABLE : 0)));
+						if (this.import_ && callerOwner != null && callerOwner.extendsOrImplements(ownerType)) {
+							environment.addImportedValue(new VariableData(this.name, Colors.INSTANCE_FIELD, info));
+						}
+						environment.addInstanceField(new FieldData(ownerType, this.name, Colors.INSTANCE_FIELD, info));
 					}
 				}
 			}
@@ -473,8 +460,8 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
 	public abstract class InstanceFieldElement extends FieldElement {
 
-		public InstanceFieldElement(String name, ID owner, ID fieldType) {
-			super(name, owner, fieldType);
+		public InstanceFieldElement(String name, ID owner, ID fieldType, boolean import_) {
+			super(name, owner, fieldType, import_);
 		}
 
 		@Override
@@ -485,8 +472,8 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
 	public class NormalFieldElement extends InstanceFieldElement {
 
-		public NormalFieldElement(String name, ID owner, ID fieldType) {
-			super(name, owner, fieldType);
+		public NormalFieldElement(String name, ID owner, ID fieldType, boolean import_) {
+			super(name, owner, fieldType, import_);
 		}
 
 		@Override
@@ -498,7 +485,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 	public class ConstantFieldElement extends InstanceFieldElement {
 
 		public ConstantFieldElement(String name, ID owner, ID fieldType) {
-			super(name, owner, fieldType);
+			super(name, owner, fieldType, false);
 		}
 
 		@Override
@@ -510,7 +497,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 	public class EnumFieldElement extends FieldElement {
 
 		public EnumFieldElement(String name, ID owner, ID implType) {
-			super(name, owner, implType);
+			super(name, owner, implType, false);
 		}
 
 		@Override
@@ -600,7 +587,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		public abstract boolean isStatic();
 
 		@Override
-		public void applyTo(EnvironmentModel environment) {
+		public void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner) {
 			try {
 				UserClassElement owner = this.owner();
 				if (owner != null) {
@@ -763,7 +750,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		public abstract boolean settable(Set<ID> seen) throws CyclicException;
 
 		@Override
-		public void applyTo(EnvironmentModel environment) {
+		public void applyTo(EnvironmentModel environment, @Nullable RawTypeModel callerOwner) {
 			try {
 				UserClassElement ownerElement = this.owner();
 				if (ownerElement != null) {

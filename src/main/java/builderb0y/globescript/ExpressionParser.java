@@ -8,11 +8,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.ConstantFolding.*;
-import builderb0y.globescript.keywords.BodyIfKeyword;
 import builderb0y.globescript.StructureParser.*;
 import builderb0y.globescript.datadriven.EnvironmentModel.*;
 import builderb0y.globescript.datadriven.Plicity;
 import builderb0y.globescript.datadriven.RawTypeModel;
+import builderb0y.globescript.keywords.BodyIfKeyword;
 import builderb0y.globescript.util.Util;
 
 public class ExpressionParser {
@@ -172,7 +172,7 @@ public class ExpressionParser {
 			TokenInfo info = switch (ASSIGNMENTS.get(assignOp.getText())) {
 				case VOID -> new TokenInfo(this.environment.standardTypes.void_);
 				case PRE  -> left.info;
-				case POST -> right.info.type().isAssignableTo(left.info.type()) ? right.info : left.info;
+				case POST -> right.info.type().extendsOrImplements(left.info.type()) ? right.info : left.info;
 			};
 			info = info.statement(true);
 			return new Token(this.reader.input, info, left, assignOp, right);
