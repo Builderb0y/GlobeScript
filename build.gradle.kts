@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "builderb0y"
-version = "1.0-SNAPSHOT"
+version = "0.0.0"
 
 sourceSets() {
 	main() {
@@ -25,14 +25,14 @@ repositories() {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies() {
 	intellijPlatform() {
-		intellijIdea("2025.2.4")
+		intellijIdea("2026.1.4")
 		testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
 
 		// Add plugin dependencies for compilation here:
 
 		//bundledPlugin("com.intellij.java")
 		bundledPlugin("com.intellij.modules.json")
-		bundledPlugin("org.intellij.intelliLang")
+		//bundledModule("org.intellij.intelliLang")
 	}
 }
 
