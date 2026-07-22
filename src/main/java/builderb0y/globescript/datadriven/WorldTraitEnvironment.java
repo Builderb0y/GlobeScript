@@ -46,6 +46,9 @@ public class WorldTraitEnvironment extends DynamicRegistry<WorldTraitElement> {
 		for (Map.Entry<ID, WorldTraitElement> entry : this.elements.entrySet()) {
 			entry.getValue().setupEnvironment(environment, entry.getKey().toString(), flags);
 		}
+		StandardTypes standardTypes = this.packData.projectData.environment().standardTypes;
+		environment.addInstanceField(new FieldData(standardTypes.columnStorage, "world_traits", Colors.GLOBAL, new TokenInfo(standardTypes.columnWorldTraits)));
+		environment.addInstanceField(new FieldData(standardTypes.columnLookup, "world_traits", Colors.GLOBAL, new TokenInfo(standardTypes.lookupWorldTraits)));
 	}
 
 	public class WorldTraitElement extends DynamicRegistryElement {

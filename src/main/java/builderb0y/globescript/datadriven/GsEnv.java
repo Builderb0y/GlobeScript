@@ -93,6 +93,10 @@ public class GsEnv {
 		return this.projectData.contentRoot.findChild("gs_env");
 	}
 
+	public VirtualFile hardCodedFolder() {
+		return this.projectData.contentRoot.findFileByRelativePath("gs_env/hard_coded");
+	}
+
 	public void reload() {
 		this.errors.clear();
 		this.types.clear();

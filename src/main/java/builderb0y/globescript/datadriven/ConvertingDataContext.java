@@ -96,10 +96,10 @@ public class ConvertingDataContext {
 		public void configure(PsiElement source, EnvironmentModel environment) {
 			VirtualFile file = source.getContainingFile().getVirtualFile();
 			ProjectData project = ConvertingDataContext.this.pending.projectData;
-			PackData pack = project.getPackData(file);
-			if (pack != null) pack.columnValues.setupEnvironment(environment, file, this.flags);
-			pack = project.getProvidedDataPack();
-			if (pack != null) pack.columnValues.setupEnvironment(environment, file, this.flags);
+			PackData provided = project.getProvidedDataPack();
+			if (provided != null) provided.columnValues.setupEnvironment(environment, file, this.flags);
+			PackData current = project.getPackData(file);
+			if (current != null && current != provided) current.columnValues.setupEnvironment(environment, file, this.flags);
 		}
 	}
 
@@ -116,10 +116,10 @@ public class ConvertingDataContext {
 		public void configure(PsiElement source, EnvironmentModel environment) {
 			VirtualFile file = source.getContainingFile().getVirtualFile();
 			ProjectData project = ConvertingDataContext.this.pending.projectData;
-			PackData pack = project.getPackData(file);
-			if (pack != null) pack.worldTraits.setupEnvironment(environment, this.flags);
-			pack = project.getProvidedDataPack();
-			if (pack != null) pack.worldTraits.setupEnvironment(environment, this.flags);
+			PackData provided = project.getProvidedDataPack();
+			if (provided != null) provided.worldTraits.setupEnvironment(environment, this.flags);
+			PackData current = project.getPackData(file);
+			if (current != null && current != provided) current.worldTraits.setupEnvironment(environment, this.flags);
 		}
 	}
 
@@ -133,10 +133,10 @@ public class ConvertingDataContext {
 		public void configure(PsiElement source, EnvironmentModel environment) {
 			VirtualFile file = source.getContainingFile().getVirtualFile();
 			ProjectData project = ConvertingDataContext.this.pending.projectData;
-			PackData pack = project.getPackData(file);
-			if (pack != null) pack.customClasses.setupEnvironment(environment, file);
-			pack = project.getProvidedDataPack();
-			if (pack != null) pack.customClasses.setupEnvironment(environment, file);
+			PackData provided = project.getProvidedDataPack();
+			if (provided != null) provided.customClasses.setupEnvironment(environment, file);
+			PackData current = project.getPackData(file);
+			if (current != null && current != provided) current.customClasses.setupEnvironment(environment, file);
 		}
 	}
 

@@ -246,7 +246,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 				VirtualFile envFolder;
 				if (
 					metadata != null &&
-					(envFolder = metadata.envFolder()) != null &&
+					(envFolder = metadata.hardCodedFolder()) != null &&
 					VfsUtil.isAncestor(envFolder, file, true)
 				) {
 					annotated = this.annotateEnvironment(jsonElement, holder, metadata);

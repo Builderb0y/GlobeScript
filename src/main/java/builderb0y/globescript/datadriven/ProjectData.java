@@ -72,7 +72,7 @@ public class ProjectData {
 					}
 				}
 				case "gs_env" -> {
-					if (this.env != null && file.equals(this.env.envFolder())) {
+					if (this.env != null && parent.equals(this.env.envFolder())) {
 						this.env = null;
 						changed = true;
 					}
@@ -105,12 +105,12 @@ public class ProjectData {
 					this.packs.put(dataFolder, pack);
 				}
 			}
-			VirtualFile provided = this.contentRoot.findFileByRelativePath("gs_env/provided/data");
-			if (provided != null) {
-				PackData pack = new PackData(this, provided);
-				pack.scan();
-				this.packs.put(provided, pack);
-			}
+		}
+		VirtualFile provided = this.contentRoot.findFileByRelativePath("gs_env/provided/data");
+		if (provided != null) {
+			PackData pack = new PackData(this, provided);
+			pack.scan();
+			this.packs.put(provided, pack);
 		}
 	}
 }

@@ -77,6 +77,8 @@ public class ColumnValueEnvironment extends DynamicRegistry<ColumnValueElement> 
 					}
 				}
 			}
+		}
+		if ((flags & FLAG_XZ_PROVIDED) != 0) {
 			environment.addImportedValue(new VariableData("column", Colors.GLOBAL, new TokenInfo(this.packData.projectData.environment().standardTypes.columnStorage)));
 		}
 		if ((flags & FLAG_Y_PROVIDED) != 0) {
@@ -129,7 +131,12 @@ public class ColumnValueEnvironment extends DynamicRegistry<ColumnValueElement> 
 
 		public RawTypeModel resolveType() {
 			CustomClassEnvironment environment = ColumnValueEnvironment.this.packData.customClasses;
-			if (environment != null && environment.get(this.type) instanceof TypeElement type) try {
+			if (environment.get(this.type) instanceof TypeElement type) try {
+				return type.resolve(new HashSet<>());
+			}
+			catch (CyclicException ignored) {}
+			PackData provided = ColumnValueEnvironment.this.packData.projectData.getProvidedDataPack();
+			if (provided != null && provided.customClasses.get(this.type) instanceof TypeElement type) try {
 				return type.resolve(new HashSet<>());
 			}
 			catch (CyclicException ignored) {}

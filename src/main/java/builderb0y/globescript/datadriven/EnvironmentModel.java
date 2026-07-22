@@ -49,16 +49,17 @@ public class EnvironmentModel extends EnvironmentConfigurator {
 	}
 
 	public void addAll(EnvironmentModel model) {
-		this.types.putAll(model.types);
-		this.variables.putAll(model.variables);
-		this.staticFields.putAll(model.staticFields);
-		this.instanceFields.putAll(model.instanceFields);
-		this.keywords.putAll(model.keywords);
-		this.memberKeywords.putAll(model.memberKeywords);
-		this.functions.putAll(model.functions);
-		this.staticMethods.putAll(model.staticMethods);
+		this.types          .putAll(model.types);
+		this.variables      .putAll(model.variables);
+		this.staticFields   .putAll(model.staticFields);
+		this.instanceFields .putAll(model.instanceFields);
+		this.keywords       .putAll(model.keywords);
+		this.memberKeywords .putAll(model.memberKeywords);
+		this.functions      .putAll(model.functions);
+		this.staticMethods  .putAll(model.staticMethods);
 		this.instanceMethods.putAll(model.instanceMethods);
-		this.casters.putAll(model.casters);
+		this.casters        .putAll(model.casters);
+		this.importedValues .putAll(model.importedValues);
 	}
 
 	public void addType(TypeData type) {

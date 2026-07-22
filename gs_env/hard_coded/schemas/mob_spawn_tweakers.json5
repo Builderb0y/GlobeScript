@@ -9,7 +9,7 @@
 				"math",
 				"random/instance",
 				"stateless_random",
-				"minecraft",
+				"minecraft/base",
 				"custom_class",
 				"column_value/with_xyz",
 				"mob_spawn_tweaker"

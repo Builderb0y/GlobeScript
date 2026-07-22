@@ -17,7 +17,7 @@
 	],
 	"environments": [
 		{
-			"name": "minecraft",
+			"name": "minecraft/base",
 			"types": [
 				"mc_tag Tag",
 				"block Block",
@@ -94,7 +94,7 @@
 		{
 			"name": "minecraft/with_random",
 			"includes": [
-				"minecraft"
+				"minecraft/base"
 			],
 			"instance_methods": [
 				"block_state block.getRandomState()",
@@ -148,7 +148,7 @@
 				"minecraft/with_world"
 			],
 			"imported_values": [
-				"world world"
+				"world  world"
 			]
 		}
 	]

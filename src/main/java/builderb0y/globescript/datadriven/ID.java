@@ -83,7 +83,9 @@ public record ID(String namespace, String path) {
 				(VirtualFile file) -> file.isDirectory() || "json".equals(file.getExtension()),
 				(VirtualFile file) -> {
 					if (!file.isDirectory()) {
-						action.accept(file, new ID(namespace, VfsUtilCore.getRelativePath(file, registryRoot)));
+						String relativePath = VfsUtilCore.getRelativePath(file, registryRoot);
+						relativePath = relativePath.substring(0, relativePath.length() - ".json".length());
+						action.accept(file, new ID(namespace, relativePath));
 					}
 					return true;
 				}

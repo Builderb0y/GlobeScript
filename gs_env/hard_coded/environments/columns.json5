@@ -31,7 +31,22 @@
 				"boolean column_hints.isLod",
 				"int column_hints.lod",
 				"int column_hints.distanceBetweenColumns",
-				"column_usage column_hints.usage"
+				"column_usage column_hints.usage",
+
+				"int voronoi.cellX",
+				"int voronoi.cellZ",
+				"int voronoi.centerX",
+				"int voronoi.centerZ",
+				"double voronoi.softDistanceSquared",
+				"double voronoi.dxSoftDistanceSquared",
+				"double voronoi.dzSoftDistanceSquared",
+				"double voronoi.softDistance",
+				"double voronoi.dxSoftDistance",
+				"double voronoi.dzSoftDistance",
+				"double voronoi.hardDistanceSquared",
+				"double voronoi.hardDistance",
+				"double voronoi.euclideanDistanceSquared",
+				"double voronoi.euclideanDistance",
 			],
 			"instance_methods": [
 				"long column_storage.worldSeed(long salt)",

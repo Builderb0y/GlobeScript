@@ -211,13 +211,13 @@ public interface StructureParser<T extends OneOrMoreTokens> {
 			}
 			Token star = parser.reader.hasOperatorAfterWhitespace("*", Colors.OPERATOR);
 			if (star != null) {
-				GroupStructure<MultiStructure<Token>> results = new GroupParser<>(false, new MultiParser<>(true, StructureParser.IDENTIFIER.then((ExpressionParser p, Token token) -> token.withColor(Colors.PARAMETER).withInfo(type.info)), operator(","))).parse(parser);
+				GroupStructure<MultiStructure<Token>> results = new GroupParser<>(false, new MultiParser<>(true, StructureParser.IDENTIFIER.then((ExpressionParser p, Token token) -> { if (token != null) token.withColor(Colors.PARAMETER).withInfo(type.info); }), operator(","))).parse(parser);
 				if (results == null) return new ParameterStructure(List.of(type, star, parser.error("Expected '('")), type, Collections.emptyList());
 				List<Token> tokens = new ArrayList<>();
 				tokens.add(type);
 				tokens.add(star);
 				results.addTo(tokens);
-				return new ParameterStructure(tokens, type, results.content.values);
+				return new ParameterStructure(tokens, type, results.content != null ? results.content.values : Collections.emptyList());
 			}
 			else {
 				Token name = parser.reader.nextIdentifierAfterWhitespace(Colors.PARAMETER);

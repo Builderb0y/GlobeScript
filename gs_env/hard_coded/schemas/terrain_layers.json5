@@ -1,0 +1,146 @@
+{
+	"environments": [
+		{
+			"name": "block_segment_list",
+			"variables": [
+				"int minY",
+				"int maxY"
+			],
+			"functions": [
+				"block_state getBlockState(int y)",
+				"void setBlockState(int y, block_state state)",
+				"void setBlockStates(int*(minY, maxY), block_state state)",
+				"int getTopOfSegment(int y)",
+				"int getBottomOfSegment(int y)"
+			]
+		}
+	],
+	"script_schemas": [
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {},
+			"json_path": "valid>where|min_y|max_y",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/base",
+				"column_value/with_xz",
+				"world_trait/with_xz",
+				"minecraft/base",
+				"wood_palette/base"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {},
+			"json_path": "before_children|after_children",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/base",
+				"column_value/with_xz",
+				"world_trait/with_xz",
+				"minecraft/base",
+				"wood_palette/base",
+				"block_segment_list"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {
+				"type": [
+					"script",
+					"bigglobe:script"
+				]
+			},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/base",
+				"column_value/with_xz",
+				"world_trait/with_xz",
+				"minecraft/base",
+				"wood_palette/base",
+				"block_segment_list"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {
+				"type": [
+					"root",
+					"simple_2d",
+					"bigglobe:root",
+					"bigglobe:simple_2d"
+				]
+			},
+			"json_path": "state",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/base",
+				"column_value/with_xz",
+				"world_trait/with_xz",
+				"minecraft/base",
+				"wood_palette/base"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {
+				"type": [
+					"simple_3d",
+					"bigglobe:simple_3d"
+				]
+			},
+			"json_path": "state|condition",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/base",
+				"column_value/with_xyz",
+				"world_trait/with_xyz",
+				"minecraft/base",
+				"wood_palette/base"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {
+				"type": [
+					"multi_state_3d",
+					"bigglobe:multi_state_3d"
+				]
+			},
+			"json_path": "state",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/base",
+				"column_value/with_xyz",
+				"world_trait/with_xyz",
+				"minecraft/base",
+				"wood_palette/base"
+			]
+		}
+	]
+}

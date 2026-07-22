@@ -40,9 +40,11 @@ public class TagReferencer extends PsiReferenceContributor {
 					if (pack == null) return PsiReference.EMPTY_ARRAY;
 					UID uid = pack.identify(containingFile);
 					if (uid == null) return PsiReference.EMPTY_ARRAY;
+					PackData providedPack = pack.projectData.getProvidedDataPack();
+					VirtualFile providedDataFolder = providedPack != null ? providedPack.dataFolder : null;
 					if (uid.tag()) {
 						if (isTagEntry(jsonElement)) {
-							return new PsiReference[] { new TagReference(jsonElement, pack.dataFolder, uid.registry(), "minecraft", PendingReference.Type.EITHER) };
+							return new PsiReference[] { new TagReference(jsonElement, pack.dataFolder, providedDataFolder, uid.registry(), "minecraft", PendingReference.Type.EITHER) };
 						}
 						else {
 							return PsiReference.EMPTY_ARRAY;
@@ -55,7 +57,7 @@ public class TagReferencer extends PsiReferenceContributor {
 								for (ReferenceModel model : entry.getValue()) {
 									PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonElement);
 									if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
-										result.add(new TagReference(jsonElement, pack.dataFolder, model.declaration.registry, model.defaultNamespace, model.type));
+										result.add(new TagReference(jsonElement, pack.dataFolder, providedDataFolder, model.declaration.registry, model.defaultNamespace, model.type));
 									}
 								}
 							}
@@ -88,7 +90,7 @@ public class TagReferencer extends PsiReferenceContributor {
 
 	public static class TagReference extends PsiReferenceBase<JsonStringLiteral> {
 
-		public final VirtualFile dataFolder;
+		public final VirtualFile dataFolder, altDataFolder;
 		public final ID registry;
 		public final String defaultNamespace;
 		public final PendingReference.Type type;
@@ -96,12 +98,14 @@ public class TagReferencer extends PsiReferenceContributor {
 		public TagReference(
 			@NotNull JsonStringLiteral element,
 			VirtualFile dataFolder,
+			VirtualFile altDataFolder,
 			ID registry,
 			String defaultNamespace,
 			PendingReference.Type type
 		) {
 			super(element);
 			this.dataFolder = dataFolder;
+			this.altDataFolder = altDataFolder;
 			this.registry = registry;
 			this.defaultNamespace = defaultNamespace;
 			this.type = type;
@@ -165,7 +169,12 @@ public class TagReferencer extends PsiReferenceContributor {
 			String elementID = this.myElement.getValue();
 			boolean tag = elementID.startsWith("#");
 			ID id = ID.parseSkipTag(elementID, this.defaultNamespace);
-			VirtualFile found = new UID(this.registry, id, tag).findJson(this.dataFolder);
+			UID uid = new UID(this.registry, id, tag);
+			VirtualFile found = uid.findJson(this.dataFolder);
+			if (found != null) {
+				return PsiManager.getInstance(this.myElement.getProject()).findFile(found);
+			}
+			found = uid.findJson(this.altDataFolder);
 			if (found != null) {
 				return PsiManager.getInstance(this.myElement.getProject()).findFile(found);
 			}
