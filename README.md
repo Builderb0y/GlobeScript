@@ -16,7 +16,7 @@ src
 			data
 			pack.mcmeta
 ```
-7. Populate the contents of the gs_env folder from this Github page. You can download the repository as a zip for this, or use the `git clone` command, or whatever suits your needs.
+7. Populate the gs_env folder in your project with the contents of the gs_env folder on this Github page. You can download the repository as a zip for this, or use the `git clone` command, or whatever suits your needs.
 8. Optional: run the `/bigglobe:dumpRegistries full` command in-game (requires Big Globe V6.1.2 or later to be in the correct format), and copy or move the `data` folder it outputs to `gs_env/provided/data`. This will allow you to make data packs that have a dependency on Big Globe's default data files.
 
 The src folder may contain more than one data pack. This will allow you to develop multiple data packs at once.
