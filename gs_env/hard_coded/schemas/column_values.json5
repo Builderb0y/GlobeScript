@@ -19,8 +19,8 @@
 				"stateless_random",
 				"minecraft/base",
 				"column_value/base",
-				"column_value/without_xyz",
-				"world_trait/without_xyz",
+				"column_value/with_xz",
+				"world_trait/with_xz",
 				"custom_class"
 			]
 		},
@@ -43,8 +43,8 @@
 				"stateless_random",
 				"minecraft/base",
 				"column_value/base",
-				"column_value/with_y",
-				"world_trait/with_y",
+				"column_value/with_xyz",
+				"world_trait/with_xyz",
 				"custom_class"
 			]
 		},
@@ -59,8 +59,8 @@
 				"stateless_random",
 				"minecraft/base",
 				"column_value/base",
-				"column_value/without_xyz",
-				"world_trait/without_xyz",
+				"column_value/with_xz",
+				"world_trait/with_xz",
 				"custom_class"
 			]
 		}
