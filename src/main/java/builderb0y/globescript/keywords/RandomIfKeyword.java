@@ -47,6 +47,7 @@ public class RandomIfKeyword extends MemberKeywordData {
 			builder.with(close);
 			Token else_ = parser.reader.hasIdentifierAfterWhitespace("else", this.color);
 			if (else_ != null) {
+				builder.with(else_.withInfo(TokenInfo.NON_VALUE));
 				Token elseOpen = parser.tryOpenGroup();
 				Token elseBody;
 				if (elseOpen != null) {

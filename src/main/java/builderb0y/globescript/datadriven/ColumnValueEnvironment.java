@@ -22,7 +22,6 @@ import builderb0y.globescript.datadriven.CustomClassEnvironment.TypeElement;
 import builderb0y.globescript.datadriven.EnvironmentModel.FieldData;
 import builderb0y.globescript.datadriven.EnvironmentModel.MethodData;
 import builderb0y.globescript.datadriven.EnvironmentModel.ParameterModel;
-import builderb0y.globescript.datadriven.EnvironmentModel.VariableData;
 import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 import builderb0y.globescript.util.Util;
 
@@ -78,12 +77,14 @@ public class ColumnValueEnvironment extends DynamicRegistry<ColumnValueElement> 
 				}
 			}
 		}
+		/*
 		if ((flags & FLAG_XZ_PROVIDED) != 0) {
 			environment.addImportedValue(new VariableData("column", Colors.GLOBAL, new TokenInfo(this.packData.projectData.environment().standardTypes.columnStorage)));
 		}
 		if ((flags & FLAG_Y_PROVIDED) != 0) {
 			environment.addVariable(new VariableData("y", Colors.GLOBAL, new TokenInfo(this.packData.projectData.environment().standardTypes.int_)));
 		}
+		*/
 	}
 
 	public static int relativize(String selfPath, String callerPath) {
@@ -164,13 +165,13 @@ public class ColumnValueEnvironment extends DynamicRegistry<ColumnValueElement> 
 					if (isValidAccess(AccessMode.COLUMN, this.is3D, flags, providedArguments)) {
 						environment.addInstanceMethod(new MethodData(name, Colors.INSTANCE_METHOD, column, info, createParameters(intType, providedArguments)));
 						if (providedArguments == 0) {
-							environment.addInstanceField(new FieldData(column, name, Colors.INSTANCE_FIELD, info));
+							environment.addInstanceField(new FieldData(column, name, Colors.PROPERTY, info));
 						}
 					}
 					if (isValidAccess(AccessMode.LOOKUP, this.is3D, flags, providedArguments)) {
 						environment.addInstanceMethod(new MethodData(name, Colors.INSTANCE_METHOD, lookup, info, createParameters(intType, providedArguments)));
 						if (providedArguments == 0) {
-							environment.addInstanceField(new FieldData(lookup, name, Colors.INSTANCE_FIELD, info));
+							environment.addInstanceField(new FieldData(lookup, name, Colors.PROPERTY, info));
 						}
 					}
 				}

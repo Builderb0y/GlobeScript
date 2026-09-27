@@ -132,7 +132,7 @@ public class GsEnv {
 			for (PendingRequiredTag requiredTag : pending.requiredTags) {
 				this.requiredTags.computeIfAbsent(requiredTag.registry, $ -> new ObjectArrayList<>()).add(requiredTag.resolve());
 			}
-			this.standardTypes = this.new StandardTypes();
+			this.standardTypes = this.new StandardTypesImpl();
 		}
 		catch (Exception exception) {
 			this.types.clear();
@@ -151,7 +151,7 @@ public class GsEnv {
 		}
 	}
 
-	public class StandardTypes {
+	public static abstract class StandardTypes {
 
 		public final RawTypeModel
 			root                   = this.get("root"),
@@ -175,6 +175,7 @@ public class GsEnv {
 			iterable               = this.get("iterable"),
 			iterator               = this.get("iterator"),
 			list                   = this.get("list"),
+			set                    = this.get("set"),
 			map                    = this.get("map"),
 			columnStorage          = this.get("column_storage"),
 			columnLookup           = this.get("column_lookup"),
@@ -182,6 +183,12 @@ public class GsEnv {
 			columnWorldTraits      = this.get("column_world_traits"),
 			lookupWorldTraits      = this.get("lookup_world_traits");
 
+		public abstract RawTypeModel get(String name);
+	}
+
+	public class StandardTypesImpl extends StandardTypes {
+
+		@Override
 		public RawTypeModel get(String name) {
 			RawTypeModel model = GsEnv.this.types.get(name);
 			if (model != null) return model;

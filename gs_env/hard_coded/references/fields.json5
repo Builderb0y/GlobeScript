@@ -10,7 +10,7 @@
 				"conditions": {
 					"element_type": [
 						"field/normal",
-						"bigglobe:field/normal"
+						"bigglobe:field/normal",
 					]
 				}
 			},
@@ -105,6 +105,29 @@
 
 		//constant fields
 
+		{
+			"reference": {
+				"registry": "bigglobe:custom_class",
+				"json_path": "owner",
+				"conditions": {
+					"element_type": [
+						"field/constant",
+						"bigglobe:field/constant"
+					]
+				}
+			},
+			"declaration": {
+				"registry": "bigglobe:custom_class",
+				"conditions": {
+					"element_type": [
+						"class/enum",
+						"bigglobe:class/enum"
+					]
+				}
+			},
+			"default_namespace": "bigglobe",
+			"reference_type": "element"
+		},
 		{
 			"reference": {
 				"registry": "bigglobe:custom_class",

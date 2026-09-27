@@ -31,6 +31,7 @@
 				"java_util/mutable_with_random",
 				"custom_class",
 				"column_value/with_xyz",
+				"world_trait/with_xyz",
 				"origin_pos",
 				"minecraft/with_imported_world",
 				"wood_palette/with_random"

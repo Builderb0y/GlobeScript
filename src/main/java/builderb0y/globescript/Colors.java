@@ -24,10 +24,11 @@ public class Colors {
 		GLOBAL             = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_GLOBAL",             DefaultLanguageHighlighterColors.GLOBAL_VARIABLE),
 		PARAMETER          = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_PARAMETER",          DefaultLanguageHighlighterColors.PARAMETER),
 		INSTANCE_FIELD     = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_INSTANCE_FIELD",     DefaultLanguageHighlighterColors.INSTANCE_FIELD),
-		STATIC_FIELD       = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_TYPE_FIELD",         DefaultLanguageHighlighterColors.STATIC_FIELD),
+		STATIC_FIELD       = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_STATIC_FIELD",       DefaultLanguageHighlighterColors.STATIC_FIELD),
 		FUNCTION           = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_FUNCTION",           DefaultLanguageHighlighterColors.STATIC_METHOD),
 		INSTANCE_METHOD    = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_INSTANCE_METHOD",    DefaultLanguageHighlighterColors.INSTANCE_METHOD),
 		STATIC_METHOD      = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_STATIC_METHOD",      DefaultLanguageHighlighterColors.STATIC_METHOD),
+		PROPERTY           = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_PROPERTY",           DefaultLanguageHighlighterColors.INSTANCE_METHOD),
 		KEYWORD            = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_KEYWORD",            DefaultLanguageHighlighterColors.KEYWORD),
 		TYPE               = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_TYPE",               DefaultLanguageHighlighterColors.CLASS_NAME),
 		LABEL              = TextAttributesKey.createTextAttributesKey("GLOBESCRIPT_LABEL",              DefaultLanguageHighlighterColors.LABEL);

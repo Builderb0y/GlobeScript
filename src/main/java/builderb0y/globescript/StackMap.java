@@ -124,7 +124,7 @@ public class StackMap<K, V> {
 	}
 
 	public void pop() {
-		if (this.nodeCount != 0) while (true) {
+		while (this.nodeCount != 0) {
 			Node<K, V> toRemove = this.rightMost;
 			assert toRemove.right == null;
 			if (toRemove.stackFrame < this.frameCount) break;

@@ -75,7 +75,7 @@ public abstract class DynamicRegistry<T extends DynamicRegistryElement> {
 	public boolean fileChanged(VirtualFile file) {
 		ID id = this.idOf(file);
 		if (id != null) {
-			T element = this.compute(file);
+			T element = file.exists() ? this.compute(file) : null;
 			if (element != null) this.elements.put(id, element);
 			else this.elements.remove(id);
 			this.elements.values().forEach(T::clearCaches);

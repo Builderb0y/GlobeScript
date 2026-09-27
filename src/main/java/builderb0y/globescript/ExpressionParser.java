@@ -474,7 +474,10 @@ public class ExpressionParser {
 	}
 
 	public Token nextMember() {
-		Token left = this.nextTerm();
+		return this.finishNextMember(this.nextTerm());
+	}
+
+	public Token finishNextMember(Token left) {
 		while (true) {
 			Token dot = this.reader.hasOperatorAfterWhitespace(MEMBERS.keySet(), Colors.OPERATOR);
 			if (dot != null) {
@@ -504,7 +507,7 @@ public class ExpressionParser {
 							}
 							else { //object.field
 								FieldData field = this.environment.getInstanceField(left.info.type(), memberNameText);
-								if (field != null) yield new Token(this.reader.input, (flags & MEMBER_FLAG_RECEIVER) != 0 ? left.info : field.info, left, dot, memberName.withColor(Colors.INSTANCE_FIELD).withInfo(TokenInfo.NON_VALUE));
+								if (field != null) yield new Token(this.reader.input, (flags & MEMBER_FLAG_RECEIVER) != 0 ? left.info : field.info, left, dot, field.applyColor(memberName).withInfo(TokenInfo.NON_VALUE));
 								else yield new Token(this.reader.input, TokenInfo.ERROR, left, dot, memberName.error("Unknown field"));
 							}
 						}
@@ -519,7 +522,7 @@ public class ExpressionParser {
 							if (field != null) {
 								if (!field.info.assignable()) memberName.withTooltip("This field is not assignable");
 								if (arguments != null) yield Token.builder().with(left).with(dot).with(field.applyColor(memberName).withInfo(TokenInfo.NON_VALUE)).withAll(arguments).build(this.reader.input, (flags & MEMBER_FLAG_RECEIVER) != 0 ? left.info : new TokenInfo(this.environment.standardTypes.void_, TokenInfo.FLAG_STATEMENT));
-								else yield new Token(this.reader.input, field.info, left, dot, memberName.withColor(Colors.INSTANCE_FIELD).withInfo(field.info), this.error("Expected '(' for field setter syntax"));
+								else yield new Token(this.reader.input, field.info, left, dot, field.applyColor(memberName).withInfo(field.info), this.error("Expected '(' for field setter syntax"));
 							}
 							else {
 								if (arguments != null) yield Token.builder().with(left).with(dot).with(memberName.withColor(Colors.ERROR).withInfo(TokenInfo.ERROR).withTooltip("Unknown field")).withAll(arguments).build(this.reader.input, TokenInfo.ERROR);
@@ -717,7 +720,7 @@ public class ExpressionParser {
 				}
 				else { //Type.field
 					FieldData field = this.environment.getStaticField(type.info.type(), memberNameText);
-					if (field != null) yield new Token(this.reader.input, (flags & MEMBER_FLAG_RECEIVER) != 0 ? type.info : field.info, type, dot, memberName.withColor(Colors.INSTANCE_FIELD).withInfo(TokenInfo.NON_VALUE));
+					if (field != null) yield new Token(this.reader.input, (flags & MEMBER_FLAG_RECEIVER) != 0 ? type.info : field.info, type, dot, field.applyColor(memberName).withInfo(TokenInfo.NON_VALUE));
 					else yield new Token(this.reader.input, TokenInfo.ERROR, type, dot, memberName.error("Unknown static field"));
 				}
 			}
@@ -738,7 +741,7 @@ public class ExpressionParser {
 						yield Token.builder().with(type).with(dot).with(field.applyColor(memberName).withInfo(TokenInfo.NON_VALUE)).withAll(arguments).build(this.reader.input, (flags & MEMBER_FLAG_RECEIVER) != 0 ? type.info : new TokenInfo(this.environment.standardTypes.void_, TokenInfo.FLAG_STATEMENT));
 					}
 					else {
-						yield new Token(this.reader.input, field.info, type, dot, memberName.withColor(Colors.STATIC_FIELD).withInfo(TokenInfo.NON_VALUE), this.error("Expected '(' for field setter syntax"));
+						yield new Token(this.reader.input, field.info, type, dot, field.applyColor(memberName).withInfo(TokenInfo.NON_VALUE), this.error("Expected '(' for field setter syntax"));
 					}
 				}
 				else {
@@ -934,7 +937,7 @@ public class ExpressionParser {
 		if (type != null) {
 			Token new_ = this.reader.hasIdentifierAfterWhitespace("new", Colors.KEYWORD);
 			if (new_ != null) {
-				return this.nextNew(type, new_);
+				return this.finishNextMember(this.nextNew(type, new_));
 			}
 		}
 		return this.nextSingleExpression();

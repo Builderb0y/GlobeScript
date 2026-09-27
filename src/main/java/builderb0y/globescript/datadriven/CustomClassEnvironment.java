@@ -15,6 +15,7 @@ import builderb0y.globescript.Colors;
 import builderb0y.globescript.TokenInfo;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.CustomElement;
 import builderb0y.globescript.datadriven.EnvironmentModel.*;
+import builderb0y.globescript.datadriven.GsEnv.StandardTypes;
 import builderb0y.globescript.util.Util;
 
 public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
@@ -27,7 +28,12 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		UID uid = this.packData.identify(caller);
 		RawTypeModel owner = null;
 		if (uid != null) try {
-			owner = this.get(uid.element()) instanceof MemberElement member ? member.owner().resolve(new HashSet<>()) : null;
+			if (this.get(uid.element()) instanceof MemberElement member) {
+				UserClassElement ownerElement = member.owner();
+				if (ownerElement != null) {
+					owner = ownerElement.resolve(new HashSet<>());
+				}
+			}
 		}
 		catch (CyclicException ignored) {}
 		for (CustomElement value : this.elements.values()) {
@@ -61,7 +67,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 				case "bigglobe:method/override",   "method/override"   -> this.parseOverrideMethod(root);
 				case "bigglobe:method/abstract",   "method/abstract"   -> this.parseAbstractMethod(root);
 				case "bigglobe:property/normal",   "property/normal"   -> this.parseNormalProperty(root);
-				case "bigglobe:property/override", "property/override" -> this.parseOverridePRoperty(root);
+				case "bigglobe:property/override", "property/override" -> this.parseOverrideProperty(root);
 				case "bigglobe:property/abstract", "property/abstract" -> this.parseAbstractProperty(root);
 				default -> null;
 			};
@@ -136,7 +142,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 			Util.findProperty(root, "name") instanceof JsonStringLiteral parameterName &&
 			Util.findProperty(root, "type") instanceof JsonStringLiteral parameterType
 		) {
-			return new ParameterElement(parameterName.getValue(), ID.parseBG(parameterType.getValue()));
+			return new ParameterElement(parameterName.getValue(), ID.parseBG(parameterType.getValue()), Util.findProperty(root, "import") instanceof JsonBooleanLiteral import_ && import_.getValue());
 		}
 		return null;
 	}
@@ -223,7 +229,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		return null;
 	}
 
-	public OverridePropertyElement parseOverridePRoperty(JsonObject root) {
+	public OverridePropertyElement parseOverrideProperty(JsonObject root) {
 		if (
 			Util.findProperty(root, "name") instanceof JsonStringLiteral name &&
 			Util.findProperty(root, "owner") instanceof JsonStringLiteral owner &&
@@ -393,6 +399,15 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 		public UserClassElement extends_() {
 			return super.extends_() instanceof EnumClassElement element ? element : null;
 		}
+
+		@Override
+		public void applyTo(EnvironmentModel environment, RawTypeModel type, @Nullable RawTypeModel callerOwner) {
+			super.applyTo(environment, type, callerOwner);
+			StandardTypes standardTypes = CustomClassEnvironment.this.packData.projectData.environment().standardTypes;
+			environment.addStaticField(new FieldData(type, "valueSet", Colors.STATIC_FIELD, new TokenInfo(standardTypes.set)));
+			environment.addStaticField(new FieldData(type, "valueMap", Colors.STATIC_FIELD, new TokenInfo(standardTypes.map)));
+			environment.addStaticMethod(new MethodData("valueOf", Colors.STATIC_METHOD, type, new TokenInfo(type), new ParameterModel("name", standardTypes.string, false)));
+		}
 	}
 
 	public abstract class MemberElement extends CustomElement {
@@ -525,10 +540,12 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 
 		public final String name;
 		public final ID type;
+		public final boolean import_;
 
-		public ParameterElement(String name, ID type) {
+		public ParameterElement(String name, ID type, boolean import_) {
 			this.name = name;
 			this.type = type;
+			this.import_ = import_;
 		}
 
 		public TypeElement type() {
@@ -559,7 +576,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 					ParameterElement[] parameters = this.parameters(seen);
 					assert seen.isEmpty();
 					if (parameters != null) {
-					parameterTypes = new ParameterModel[parameters.length];
+						parameterTypes = new ParameterModel[parameters.length];
 						for (int index = 0, length = parameters.length; index < length; index++) {
 							ParameterElement parameter = parameters[index];
 							RawTypeModel resolution = parameter.type().resolve(seen);
@@ -763,7 +780,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 							RawTypeModel propertyType = propertyTypeElement.resolve(cyclicChecker);
 							assert cyclicChecker.isEmpty();
 							if (propertyType != null) {
-								environment.addInstanceField(new FieldData(ownerType, this.name, Colors.INSTANCE_FIELD, new TokenInfo(propertyType, this.settable(cyclicChecker) ? TokenInfo.FLAG_ASSIGNABLE : 0)));
+								environment.addInstanceField(new FieldData(ownerType, this.name, Colors.PROPERTY, new TokenInfo(propertyType, this.settable(cyclicChecker) ? TokenInfo.FLAG_ASSIGNABLE : 0)));
 							}
 						}
 					}

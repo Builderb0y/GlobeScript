@@ -6,11 +6,14 @@ import java.util.stream.Collectors;
 import com.intellij.json.psi.*;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiReference;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.jetbrains.annotations.Nullable;
 
 import builderb0y.globescript.Colors;
+import builderb0y.globescript.TagReferencer.TagReference;
 import builderb0y.globescript.TokenInfo;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.CyclicException;
 import builderb0y.globescript.datadriven.CustomClassEnvironment.TypeElement;
@@ -178,11 +181,28 @@ public class ConvertingDataContext {
 					) {
 						RawTypeModel resolution = this.resolve(type);
 						if (resolution != null) {
-							environment.addVariable(new VariableData(name.getValue(), Colors.PARAMETER, new TokenInfo(resolution, TokenInfo.FLAG_ASSIGNABLE)));
+							boolean import_ = Util.findProperty(parameter, "import") instanceof JsonBooleanLiteral bool && bool.getValue();
+							VariableData data = new VariableData(name.getValue(), Colors.PARAMETER, new TokenInfo(resolution, TokenInfo.FLAG_ASSIGNABLE));
+							if (import_) environment.addImportedValue(data);
+							else environment.addVariable(data);
 						}
 					}
 				}
 			}
+		}
+
+		public JsonObject resolveOverrideRoot(JsonObject root) {
+			JsonValue override = Util.findProperty(root, "override");
+			if (override == null) return null;
+			for (PsiReference reference : override.getReferences()) {
+				if (reference instanceof TagReference ref) {
+					PsiElement resolution = ref.resolve();
+					if (resolution != null && resolution.getContainingFile() instanceof JsonFile json && json.getTopLevelValue() instanceof JsonObject newRoot) {
+						return newRoot;
+					}
+				}
+			}
+			return null;
 		}
 
 		@Override
@@ -195,12 +215,46 @@ public class ConvertingDataContext {
 				switch (elementType.getValue()) {
 					case
 						"method/normal",
-						"method/override",
-						"bigglobe:method/normal",
-						"bigglobe:method/override"
+						"bigglobe:method/normal"
 					-> {
 						this.addOwner(root, environment);
 						this.addParameters(root, environment);
+					}
+					case
+						"method/override",
+						"bigglobe:method/override"
+					-> {
+						this.addOwner(root, environment);
+						Set<PsiFile> seen = new HashSet<>();
+						seen.add(jsonFile);
+						loop:
+						while (true) {
+							root = this.resolveOverrideRoot(root);
+							if (root == null) break;
+							if (!seen.add(root.getContainingFile())) break;
+							if (Util.findProperty(root, "element_type") instanceof JsonStringLiteral newElementType) {
+								switch (newElementType.getValue()) {
+									case
+										"method/normal",
+										"method/abstract",
+										"bigglobe:method/normal",
+										"bigglobe:method/abstract"
+									-> {
+										this.addParameters(root, environment);
+									}
+									case
+										"method/override",
+										"bigglobe:method/override"
+									-> {
+										continue;
+									}
+									default -> {
+										break loop;
+									}
+								}
+							}
+							break;
+						}
 					}
 					case
 						"method/static",

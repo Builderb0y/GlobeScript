@@ -482,13 +482,13 @@ public class ExpressionReader {
 		int startChar = this.peek();
 		if (isLetterOrUnderscore(startChar)) {
 			this.skip();
-			this.hasMulti(ExpressionReader::isLetterNumberOrUnderscore);
+			this.skipWhile(ExpressionReader::isLetterNumberOrUnderscore);
 			int end = this.cursor;
 			return this.input.subSequence(start, end);
 		}
 		else if (startChar == '`') {
 			this.skip();
-			this.hasMulti((int c) -> c != '`' && c != '\n' && c != '\r');
+			this.skipWhile((int c) -> c != '`' && c != '\n' && c != '\r');
 			int end = this.cursor;
 			this.has('`');
 			return this.input.subSequence(start + 1, end);

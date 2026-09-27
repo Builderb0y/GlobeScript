@@ -103,7 +103,7 @@ public class Token implements OneOrMoreTokens {
 		int end = this.range.getEndOffset();
 		if (text.charAt(start) == '`') start++;
 		if (text.charAt(end - 1) == '`') end--;
-		return text.subSequence(start, end);
+		return end >= start ? text.subSequence(start, end) : "";
 	}
 
 	public Token getParent() {

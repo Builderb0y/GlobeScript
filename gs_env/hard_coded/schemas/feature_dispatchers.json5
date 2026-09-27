@@ -1,0 +1,46 @@
+{
+	"environments": [
+		{
+			"name": "world_bounds",
+			"variables": [
+				"meta(color = global) int minAccessibleX",
+				"meta(color = global) int minAccessibleY",
+				"meta(color = global) int minAccessibleZ",
+				"meta(color = global) int maxAccessibleX",
+				"meta(color = global) int maxAccessibleY",
+				"meta(color = global) int maxAccessibleZ",
+				"meta(color = global) int minModifiableX",
+				"meta(color = global) int minModifiableY",
+				"meta(color = global) int minModifiableZ",
+				"meta(color = global) int maxModifiableX",
+				"meta(color = global) int maxModifiableY",
+				"meta(color = global) int maxModifiableZ"
+			]
+		}
+	],
+	"script_schemas": [
+		{
+			"registry": "bigglobe:worldgen/feature_dispatcher",
+			"when": {
+				"type": [
+					"script",
+					"bigglobe:script"
+				]
+			},
+			"json_path": "dispatcher",
+			"environments": [
+				"world_bounds",
+				"builtin",
+				"math",
+				"random/instance",
+				"stateless_random",
+				"java_util/mutable_with_random",
+				"custom_class",
+				"column_value/without_xyz",
+				"world_trait/without_xyz",
+				"minecraft/with_imported_world",
+				"wood_palette/with_random"
+			]
+		}
+	]
+}

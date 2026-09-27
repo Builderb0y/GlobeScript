@@ -25,6 +25,7 @@ public class ReceiverIfKeyword extends MemberKeywordData {
 			Token close = parser.closeGroup();
 			Token else_ = parser.reader.hasIdentifierAfterWhitespace("else", this.color);
 			if (else_ != null) {
+				else_.withInfo(TokenInfo.NON_VALUE);
 				Token elseOpen = parser.tryOpenGroup();
 				if (elseOpen != null) {
 					Token elseBody = parser.nextNullableScript();

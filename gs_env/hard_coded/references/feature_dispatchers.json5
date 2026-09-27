@@ -1,0 +1,38 @@
+{
+	"references": [
+		{
+			"reference": {
+				"registry": "bigglobe:worldgen/feature_dispatcher",
+				"conditions": {
+					"type": [
+						"tag",
+						"bigglobe:tag"
+					]
+				},
+				"json_path": "tag"
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/feature_dispatcher"
+			},
+			"default_namespace": "bigglobe",
+			"reference_type": "tag"
+		},
+		{
+			"reference": {
+				"registry": "bigglobe:worldgen/feature_dispatcher",
+				"conditions": {
+					"type": [
+						"group",
+						"bigglobe:group"
+					]
+				},
+				"json_path": "dispatchers>*"
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/feature_dispatcher"
+			},
+			"default_namespace": "bigglobe",
+			"reference_type": "element"
+		}
+	]
+}

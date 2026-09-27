@@ -9,9 +9,11 @@
 						"method/normal",
 						"method/abstract",
 						"method/static",
+						"method/override",
 						"bigglobe:method/normal",
 						"bigglobe:method/abstract",
-						"bigglobe:method/static"
+						"bigglobe:method/static",
+						"bigglobe:method/override"
 					]
 				},
 			},

@@ -12,6 +12,12 @@
 	"environments": [
 		{
 			"name": "column_value/base",
+			"types": [
+				"column_storage ColumnStorage",
+				"column_hints Hints",
+				"column_lookup ColumnLookup",
+				"voronoi VoronoiCell"
+			],
 			"instance_fields": [
 				"int column_storage.x",
 				"int column_storage.z",
@@ -37,16 +43,16 @@
 				"int voronoi.cellZ",
 				"int voronoi.centerX",
 				"int voronoi.centerZ",
-				"double voronoi.softDistanceSquared",
-				"double voronoi.dxSoftDistanceSquared",
-				"double voronoi.dzSoftDistanceSquared",
-				"double voronoi.softDistance",
-				"double voronoi.dxSoftDistance",
-				"double voronoi.dzSoftDistance",
-				"double voronoi.hardDistanceSquared",
-				"double voronoi.hardDistance",
-				"double voronoi.euclideanDistanceSquared",
-				"double voronoi.euclideanDistance",
+				"meta(color = property) double voronoi.softDistanceSquared",
+				"meta(color = property) double voronoi.dxSoftDistanceSquared",
+				"meta(color = property) double voronoi.dzSoftDistanceSquared",
+				"meta(color = property) double voronoi.softDistance",
+				"meta(color = property) double voronoi.dxSoftDistance",
+				"meta(color = property) double voronoi.dzSoftDistance",
+				"meta(color = property) double voronoi.hardDistanceSquared",
+				"meta(color = property) double voronoi.hardDistance",
+				"meta(color = property) double voronoi.euclideanDistanceSquared",
+				"meta(color = property) double voronoi.euclideanDistance",
 			],
 			"instance_methods": [
 				"long column_storage.worldSeed(long salt)",
@@ -55,6 +61,21 @@
 			],
 			"casters": [
 				"implicit string -> column_usage"
+			]
+		},
+		{
+			"name": "column_value/column",
+			"includes": [
+				"column_value/base"
+			],
+			"imported_values": [
+				"column_storage column"
+			]
+		},
+		{
+			"name": "y",
+			"variables": [
+				"int y"
 			]
 		}
 	]

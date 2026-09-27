@@ -50,9 +50,6 @@
 			implementation="builderb0y.globescript.JsonEnterHandler"
 			order="first"
 		/>
-		<backspaceHandlerDelegate
-			implementation="builderb0y.globescript.JsonBackspaceHandler"
-		/>
 		<customPasteProvider
 			implementation="builderb0y.globescript.JsonPasteHandler"
 		/>

@@ -200,6 +200,7 @@ public class JsonPasteHandler implements PasteProvider {
 				end = builder.length();
 			}
 		}
+		if (end < builder.length() && builder.charAt(end) == ',') end++;
 		builder.setLength(end);
 		return builder;
 	}

@@ -82,13 +82,13 @@ public class WorldTraitEnvironment extends DynamicRegistry<WorldTraitElement> {
 					if (ColumnValueEnvironment.isValidAccess(AccessMode.COLUMN, this.is3D, flags, providedArguments)) {
 						environment.addInstanceMethod(new MethodData(name, Colors.INSTANCE_METHOD, column, info, ColumnValueEnvironment.createParameters(intType, providedArguments)));
 						if (providedArguments == 0) {
-							environment.addInstanceField(new FieldData(column, name, Colors.INSTANCE_FIELD, info));
+							environment.addInstanceField(new FieldData(column, name, Colors.PROPERTY, info));
 						}
 					}
 					if (ColumnValueEnvironment.isValidAccess(AccessMode.LOOKUP, this.is3D, flags, providedArguments)) {
 						environment.addInstanceMethod(new MethodData(name, Colors.INSTANCE_METHOD, lookup, info, ColumnValueEnvironment.createParameters(intType, providedArguments)));
 						if (providedArguments == 0) {
-							environment.addInstanceField(new FieldData(lookup, name, Colors.INSTANCE_FIELD, info));
+							environment.addInstanceField(new FieldData(lookup, name, Colors.PROPERTY, info));
 						}
 					}
 				}

@@ -11,8 +11,10 @@
 					"element_type": [
 						"property/normal",
 						"property/abstract",
+						"property/override",
 						"bigglobe:property/normal",
-						"bigglobe:property/abstract"
+						"bigglobe:property/abstract",
+						"bigglobe:property/override"
 					]
 				},
 			},

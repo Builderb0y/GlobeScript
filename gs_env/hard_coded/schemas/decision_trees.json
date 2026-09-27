@@ -1,25 +1,20 @@
 {
 	"script_schemas": [
 		{
-			"registry": "bigglobe:mob_spawn_tweaker",
+			"registry": "bigglobe:worldgen/decision_tree",
 			"when": {},
 			"json_path": "script",
 			"environments": [
 				"builtin",
 				"math",
-				"random/instance",
+				"random/base",
 				"stateless_random",
 				"minecraft/base",
-				"custom_class",
 				"column_value/column",
 				"column_value/with_xyz",
-				"mob_spawn_tweaker"
+				"world_trait/with_xyz",
+				"custom_class"
 			]
-		}
-	],
-	"required_tags": [
-		{
-			"registry": "bigglobe:mob_spawn_tweaker"
 		}
 	]
 }

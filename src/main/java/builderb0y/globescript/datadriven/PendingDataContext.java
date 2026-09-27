@@ -23,17 +23,18 @@ import builderb0y.globescript.PsiErrorDisplay;
 
 public class PendingDataContext {
 
-	public static final Map<String, TextAttributesKey> IDENTIFIER_COLORS = Map.of(
-		"local",           Colors.LOCAL,
-		"global",          Colors.GLOBAL,
-		"parameter",       Colors.PARAMETER,
-		"instance_field",  Colors.INSTANCE_FIELD,
-		"static_field",    Colors.STATIC_FIELD,
-		"function",        Colors.FUNCTION,
-		"instance_method", Colors.INSTANCE_METHOD,
-		"static_method",   Colors.INSTANCE_METHOD,
-		"keyword",         Colors.KEYWORD,
-		"type",            Colors.TYPE
+	public static final Map<String, TextAttributesKey> IDENTIFIER_COLORS = Map.ofEntries(
+		Map.entry("local",           Colors.LOCAL),
+		Map.entry("global",          Colors.GLOBAL),
+		Map.entry("parameter",       Colors.PARAMETER),
+		Map.entry("instance_field",  Colors.INSTANCE_FIELD),
+		Map.entry("static_field",    Colors.STATIC_FIELD),
+		Map.entry("function",        Colors.FUNCTION),
+		Map.entry("instance_method", Colors.INSTANCE_METHOD),
+		Map.entry("static_method",   Colors.STATIC_METHOD),
+		Map.entry("property",        Colors.PROPERTY),
+		Map.entry("keyword",         Colors.KEYWORD),
+		Map.entry("type",            Colors.TYPE)
 	);
 
 	public final ProjectData projectData;
