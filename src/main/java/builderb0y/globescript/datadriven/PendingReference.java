@@ -116,6 +116,10 @@ public class PendingReference extends PendingElement {
 		TAG,
 		EITHER;
 
+		public boolean allows(UID uid) {
+			return uid.tag() ? this.tagsAllowed() : this.elementsAllowed();
+		}
+
 		public boolean elementsAllowed() {
 			return this != TAG;
 		}

@@ -136,7 +136,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 		public boolean checkRequiredTags(VirtualFile dataFolder, JsonFile file, AnnotationHolder holder, GsEnv metadata) {
 			JsonValue top = file.getTopLevelValue();
 			for (Map.Entry<ID, List<RequiredTagModel>> entry : metadata.requiredTags.entrySet()) {
-				if (entry.getKey().contains(dataFolder, file)) {
+				if (entry.getKey().contains(dataFolder, file, PendingReference.Type.ELEMENT)) {
 					for (RequiredTagModel model : entry.getValue()) {
 						if (model.when.test(top)) {
 							if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
@@ -181,7 +181,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 				PsiFile psiFile = jsonElement.getContainingFile();
 				VirtualFile virtualFile = psiFile.getVirtualFile();
 				for (Map.Entry<ID, List<SchemaModel>> entry : metadata.schemas.entrySet()) {
-					if (entry.getKey().contains(dataFolder, virtualFile)) {
+					if (entry.getKey().contains(dataFolder, virtualFile, PendingReference.Type.ELEMENT)) {
 						for (SchemaModel model : entry.getValue()) {
 							if (model.matches(jsonElement)) {
 								String text = psiFile.getText();

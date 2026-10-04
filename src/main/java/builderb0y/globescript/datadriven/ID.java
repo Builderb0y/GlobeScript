@@ -97,17 +97,17 @@ public record ID(String namespace, String path) {
 		return this.equals(uid.registry());
 	}
 
-	public boolean contains(VirtualFile dataFolder, VirtualFile file) {
+	public boolean contains(VirtualFile dataFolder, VirtualFile file, PendingReference.Type type) {
 		UID uid = PackData.identify(dataFolder, file);
-		return uid != null && this.registryEquals(uid);
+		return uid != null && type.allows(uid) && this.registryEquals(uid);
 	}
 
-	public boolean contains(VirtualFile dataFolder, PsiFile psiFile) {
-		return this.contains(dataFolder, psiFile.getVirtualFile());
+	public boolean contains(VirtualFile dataFolder, PsiFile psiFile, PendingReference.Type type) {
+		return this.contains(dataFolder, psiFile.getVirtualFile(), type);
 	}
 
-	public boolean contains(VirtualFile dataFolder, PsiElement element) {
-		return this.contains(dataFolder, element.getContainingFile());
+	public boolean contains(VirtualFile dataFolder, PsiElement element, PendingReference.Type type) {
+		return this.contains(dataFolder, element.getContainingFile(), type);
 	}
 
 	public String toTagString() {

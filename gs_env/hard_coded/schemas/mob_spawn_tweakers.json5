@@ -13,6 +13,7 @@
 				"custom_class",
 				"column_value/column",
 				"column_value/with_xyz",
+				"world_trait/with_xyz",
 				"mob_spawn_tweaker"
 			]
 		}
