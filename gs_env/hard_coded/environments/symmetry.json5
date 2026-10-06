@@ -1,0 +1,44 @@
+{
+	"types": [
+		"enum symmetry(IDENTITY, ROTATE_90, ROTATE_180, ROTATE_270, FLIP_0, FLIP_45, FLIP_90, FLIP_135)"
+	],
+	"environments": [
+		{
+			"name": "symmetry/base",
+			"types": [
+				"symmetry Symmetry"
+			],
+			"instance_methods": [
+				"int symmetry.getX(int*(x, z))",
+				"int symmetry.getZ(int*(x, z))",
+				"double symmetry.getX(double*(x, z))",
+				"double symmetry.getZ(double*(x, z))",
+				"block_state symmetry.apply(block_state state)",
+				"symmetry symmetry.andThen(symmetry after)",
+				"symmetry symmetry.compose(symmetry before)",
+				"symmetry symmetry.inverse()",
+			],
+			"static_methods": [
+				"symmetry symmetry.rotation(int degrees)",
+				"symmetry symmetry.randomRotation(random random)",
+				"symmetry symmetry.randomRotation(long seed)",
+				"symmetry symmetry.flip(int degrees)",
+				"symmetry symmetry.randomFlip(random random)",
+				"symmetry symmetry.randomFlip(long seed)",
+				"symmetry symmetry.randomRotationAndFlip(random random)",
+				"symmetry symmetry.randomRotationAndFlip(long seed)",
+			],
+			"casters": [
+				"implicit string -> symmetry"
+			]
+		},
+		{
+			"name": "symmetry/with_random",
+			"static_methods": [
+				"symmetry symmetry.randomRotation()",
+				"symmetry symmetry.randomFlip()",
+				"symmetry symmetry.randomRotationAndFlip()",
+			]
+		}
+	]
+}

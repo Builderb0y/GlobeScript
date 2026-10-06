@@ -1,0 +1,111 @@
+{
+	"types": [
+		"class structure extends mc_holder",
+		"class structure_tag extends mc_tag",
+		"class structure_type extends mc_holder",
+		"class structure_type_tag extends mc_tag",
+		"class structure_piece_type extends mc_holder",
+		"class structure_piece_type_tag extends mc_tag",
+
+		"class structure_start extends record",
+		"class structure_piece extends object",
+		"class script_structure_piece extends structure_piece",
+		"class structure_placement_script extends mc_holder"
+	],
+	"environments": [
+		{
+			"name": "structure/base",
+			"types": [
+				"structure Structure",
+				"structure_tag StructureTag",
+				"structure_type StructureType",
+				"structure_type_tag StructureTypeTag",
+				"structure_piece_type StructurePieceType",
+				"structure_piece_type_tag StructurePieceTypeTag"
+			],
+			"instance_fields": [
+				"structure_type structure.type",
+				"string structure.generationStep",
+				"biome_tag structure.validBiomes",
+				"string structure.terrainAdaptation"
+			],
+			"instance_methods": [
+				"structure structure_tag.random(random random)",
+				"structure structure_tag.random(long seed)",
+				"structure_type structure_type_tag.random(random random)",
+				"structure_type structure_type_tag.random(long seed)",
+				"structure_piece_type structure_piece_type_tag.random(random random)",
+				"structure_piece_type structure_piece_type_tag.random(long seed)",
+				"boolean structure.isIn(structure_tag tag)",
+				"boolean structure_type.isIn(structure_type_tag tag)",
+				"boolean structure_piece_type.isIn(structure_piece_type_tag tag)",
+			],
+			"casters": [
+				"implicit string -> structure",
+				"implicit string -> structure_type",
+				"implicit string -> structure_piece_type"
+			],
+			"keywords": [
+				{ "name": "structure_tag",            "keyword": "tag_constructor", "color": "type" },
+				{ "name": "structure_type_tag",       "keyword": "tag_constructor", "color": "type" },
+				{ "name": "structure_piece_type_tag", "keyword": "tag_constructor", "color": "type" },
+			]
+		},
+		{
+			"name": "structure/extra",
+			"includes": [
+				"structure/base"
+			],
+			"types": [
+				"structure_start StructureStart",
+				"structure_piece StructurePiece",
+				"script_structure_piece ScriptStructurePiece",
+				"structure_placement_script StructurePlacementScript"
+			],
+			"instance_fields": [
+				"int structure_start.minX",
+				"int structure_start.minY",
+				"int structure_start.minZ",
+				"int structure_start.maxX",
+				"int structure_start.maxY",
+				"int structure_start.maxZ",
+				"int structure_start.sizeX",
+				"int structure_start.sizeY",
+				"int structure_start.sizeZ",
+				"structure structure_start.structure",
+				"list structure_start.pieces",
+				"int structure_piece.minX",
+				"int structure_piece.minY",
+				"int structure_piece.minZ",
+				"int structure_piece.maxX",
+				"int structure_piece.maxY",
+				"int structure_piece.maxZ",
+				"int structure_piece.sizeX",
+				"int structure_piece.sizeY",
+				"int structure_piece.sizeZ",
+				"int structure_piece.rotation",
+				"string structure_piece.mirror",
+				"structure_piece_type structure_piece.type",
+				"boolean structure_piece.hasPreferredTerrainHeight",
+				"int structure_piece.preferredTerrainHeight",
+				"symmetry script_structure_piece.symmetry",
+				"int script_structure_piece.offsetX",
+				"int script_structure_piece.offsetY",
+				"int script_structure_piece.offsetZ",
+				"structure_placement_script script_structure_piece.placement",
+			]
+		},
+		{
+			"name": "script_structures",
+			"variables": [
+				"list structures"
+			]
+		},
+		{
+			"name": "structure_start",
+			"variables": [
+				"structure_start start"
+			]
+		}
+	]
+}

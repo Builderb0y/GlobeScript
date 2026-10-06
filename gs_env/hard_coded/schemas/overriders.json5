@@ -1,0 +1,74 @@
+{
+	"environments": [
+		{
+			"name": "collision_starts",
+			"variables": [
+				"structure_start currentStart",
+				"structure_start otherStart"
+			]
+		}
+	],
+	"script_schemas": [
+		{
+			"registry": "bigglobe:worldgen/overrider",
+			"when": {
+				"type": "column_value"
+			},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/column",
+				"column_value/with_xz",
+				"world_trait/with_xz",
+				"minecraft/base",
+				"wood_palette/base",
+				"structure/extra",
+				"script_structures",
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/overrider",
+			"when": {
+				"type": "structure"
+			},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/without_xyz",
+				"world_trait/without_xyz",
+				"minecraft/base",
+				"wood_palette/base",
+				"structure/extra",
+				"structure_start",
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/overrider",
+			"when": {
+				"type": "collision"
+			},
+			"json_path": "script",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/without_xyz",
+				"world_trait/without_xyz",
+				"minecraft/base",
+				"wood_palette/base",
+				"structure/extra",
+				"collision_starts"
+			]
+		}
+	]
+}

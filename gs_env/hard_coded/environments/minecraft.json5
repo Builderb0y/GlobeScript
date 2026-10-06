@@ -78,8 +78,8 @@
 				"boolean entity_type.isIn(entity_type_tag tag)"
 			],
 			"keywords": [
-				{ "name": "block_tag",             "keyword": "tag_constructor", "color": "type" },
-				{ "name": "biome_tag",             "keyword": "tag_constructor", "color": "type" },
+				{ "name": "block_tag",              "keyword": "tag_constructor", "color": "type" },
+				{ "name": "biome_tag",              "keyword": "tag_constructor", "color": "type" },
 				{ "name": "configured_feature_tag", "keyword": "tag_constructor", "color": "type" },
 				{ "name": "entity_type_tag",        "keyword": "tag_constructor", "color": "type" },
 			],
