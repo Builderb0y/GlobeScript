@@ -36,6 +36,7 @@
 				"stateless_random",
 				"java_util/mutable_with_random",
 				"custom_class",
+				"column_value/base",
 				"column_value/without_xyz",
 				"world_trait/without_xyz",
 				"minecraft/with_imported_world",

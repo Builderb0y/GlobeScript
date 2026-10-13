@@ -117,7 +117,8 @@
 				"column_value/with_xyz",
 				"world_trait/with_xyz",
 				"minecraft/base",
-				"wood_palette/base"
+				"wood_palette/base",
+				"y"
 			]
 		},
 		{
@@ -139,7 +140,54 @@
 				"column_value/with_xyz",
 				"world_trait/with_xyz",
 				"minecraft/base",
-				"wood_palette/base"
+				"wood_palette/base",
+				"y"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {
+				"type": [
+					"dynamic_2d",
+					"bigglobe:dynamic_2d"
+				]
+			},
+			"json_path": "state",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/column",
+				"column_value/with_xyz",
+				"world_trait/with_xyz",
+				"minecraft/base",
+				"wood_palette/base",
+				"y"
+			]
+		},
+		{
+			"registry": "bigglobe:worldgen/terrain_layer",
+			"when": {
+				"type": [
+					"dynamic_3d",
+					"bigglobe:dynamic_3d"
+				]
+			},
+			"json_path": "state|condition",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/column",
+				"column_value/with_xyz",
+				"world_trait/with_xyz",
+				"minecraft/base",
+				"wood_palette/base",
+				"y"
 			]
 		}
 	]

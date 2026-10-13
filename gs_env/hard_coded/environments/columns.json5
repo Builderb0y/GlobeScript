@@ -57,7 +57,8 @@
 			"instance_methods": [
 				"long column_storage.worldSeed(long salt)",
 				"long column_storage.columnSeed(long salt)",
-				"column_storage column_lookup.columnAt(int*(x, z))"
+				"column_storage column_lookup.columnAt(int*(x, z))",
+				"long voronoi.nextSeed(long seed)"
 			],
 			"casters": [
 				"implicit string -> column_usage"
@@ -70,6 +71,15 @@
 			],
 			"imported_values": [
 				"column_storage column"
+			]
+		},
+		{
+			"name": "column_value/column_lookup",
+			"includes": [
+				"column_value/base"
+			],
+			"imported_values": [
+				"column_lookup columns"
 			]
 		},
 		{

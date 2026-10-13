@@ -29,6 +29,7 @@
 				"random_list wood_palette.wallSignBlocks",
 				"random_list wood_palette.hangingSignBlocks",
 				"random_list wood_palette.wallHangingSignBlocks",
+				"map wood_palette.features",
 			],
 			"instance_methods": [
 				"block wood_palette.logBlock(random random)",

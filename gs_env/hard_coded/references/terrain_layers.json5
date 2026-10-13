@@ -1,0 +1,14 @@
+{
+	"references": [
+		{
+			"reference": {
+				"registry": "bigglobe:worldgen/terrain_layer",
+				"json_path": "children>*"
+			},
+			"declaration": {
+				"registry": "bigglobe:worldgen/terrain_layer"
+			},
+			"reference_type": "element",
+		}
+	]
+}

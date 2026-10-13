@@ -1,0 +1,24 @@
+{
+	"script_schemas": [
+		{
+			"registry": "minecraft:worldgen/configured_feature",
+			"when": {
+				"type": "bigglobe:ore"
+			},
+			"json_path": "config>chance|core_chance",
+			"environments": [
+				"builtin",
+				"math",
+				"stateless_random",
+				"java_util/mutable",
+				"custom_class",
+				"column_value/column",
+				"column_value/with_xyz",
+				"world_trait/with_xyz",
+				"minecraft/base",
+				"wood_palette/base",
+				"y"
+			]
+		}
+	]
+}

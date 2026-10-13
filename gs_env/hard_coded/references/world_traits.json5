@@ -2,7 +2,7 @@
 	"references": [
 		{
 			"reference": {
-				"registry": "bigglobe:custom_class",
+				"registry": "bigglobe:worldgen/world_trait",
 				"json_path": "type"
 			},
 			"declaration": {

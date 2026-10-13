@@ -48,7 +48,7 @@ public class ReceiverIfKeyword extends MemberKeywordData {
 				if (condition.info.constant() instanceof BooleanConstantValue bool && bool.value() && body.info.jumps()) {
 					flags |= TokenInfo.FLAG_JUMPS;
 				}
-				TokenInfo info = new TokenInfo(parser.environment.standardTypes.void_, flags);
+				TokenInfo info = new TokenInfo(parser.environment.standardTypes.boolean_, flags);
 				return new Token(parser.reader.input, info, condition, dot, if_, open, body, close);
 			}
 		}

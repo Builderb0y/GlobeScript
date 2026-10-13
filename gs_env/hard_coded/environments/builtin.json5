@@ -86,6 +86,7 @@
 			"functions": [
 				"meta(color = keyword, jumps = true) void return()",
 				"meta(color = keyword, jumps = true) void return(value value)",
+				"meta(color = keyword) void breakpoint()",
 				"void print(value... values)",
 				"int floorInt(int value)",
 				"int floorInt(long value)",
