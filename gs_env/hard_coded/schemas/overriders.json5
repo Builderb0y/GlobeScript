@@ -39,8 +39,10 @@
 			"environments": [
 				"builtin",
 				"math",
+				"random/base",
+				"random/instance",
 				"stateless_random",
-				"java_util/mutable",
+				"java_util/mutable_with_random",
 				"custom_class",
 				"column_value/column_lookup",
 				"column_value/without_xyz",
@@ -60,8 +62,10 @@
 			"environments": [
 				"builtin",
 				"math",
+				"random/base",
+				"random/instance",
 				"stateless_random",
-				"java_util/mutable",
+				"java_util/mutable_with_random",
 				"custom_class",
 				"column_value/without_xyz",
 				"world_trait/without_xyz",
