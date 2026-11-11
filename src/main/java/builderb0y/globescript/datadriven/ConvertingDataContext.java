@@ -99,10 +99,9 @@ public class ConvertingDataContext {
 		public void configure(PsiElement source, EnvironmentModel environment) {
 			VirtualFile file = source.getContainingFile().getVirtualFile();
 			ProjectData project = ConvertingDataContext.this.pending.projectData;
-			PackData provided = project.getProvidedDataPack();
-			if (provided != null) provided.columnValues.setupEnvironment(environment, file, this.flags);
-			PackData current = project.getPackData(file);
-			if (current != null && current != provided) current.columnValues.setupEnvironment(environment, file, this.flags);
+			for (PackData pack : project.getPackData(file).getChain()) {
+				pack.columnValues.setupEnvironment(environment, file, this.flags);
+			}
 		}
 	}
 
@@ -119,10 +118,9 @@ public class ConvertingDataContext {
 		public void configure(PsiElement source, EnvironmentModel environment) {
 			VirtualFile file = source.getContainingFile().getVirtualFile();
 			ProjectData project = ConvertingDataContext.this.pending.projectData;
-			PackData provided = project.getProvidedDataPack();
-			if (provided != null) provided.worldTraits.setupEnvironment(environment, this.flags);
-			PackData current = project.getPackData(file);
-			if (current != null && current != provided) current.worldTraits.setupEnvironment(environment, this.flags);
+			for (PackData pack : project.getPackData(file).getChain()) {
+				pack.worldTraits.setupEnvironment(environment, this.flags);
+			}
 		}
 	}
 
@@ -136,10 +134,9 @@ public class ConvertingDataContext {
 		public void configure(PsiElement source, EnvironmentModel environment) {
 			VirtualFile file = source.getContainingFile().getVirtualFile();
 			ProjectData project = ConvertingDataContext.this.pending.projectData;
-			PackData provided = project.getProvidedDataPack();
-			if (provided != null) provided.customClasses.setupEnvironment(environment, file);
-			PackData current = project.getPackData(file);
-			if (current != null && current != provided) current.customClasses.setupEnvironment(environment, file);
+			for (PackData pack : project.getPackData(file).getChain()) {
+				pack.customClasses.setupEnvironment(environment, file);
+			}
 		}
 	}
 
@@ -150,13 +147,15 @@ public class ConvertingDataContext {
 		}
 
 		public RawTypeModel resolve(JsonStringLiteral typeText) {
-			PackData pack = ConvertingDataContext.this.pending.projectData.getPackData(typeText.getContainingFile().getVirtualFile());
-			if (pack != null) {
-				if (pack.customClasses.elements.get(ID.parseBG(typeText.getValue())) instanceof TypeElement type) {
-					try {
-						return type.resolve(new HashSet<>());
+			PackData rootPack = ConvertingDataContext.this.pending.projectData.getPackData(typeText.getContainingFile().getVirtualFile());
+			if (rootPack != null) {
+				for (PackData otherPack : rootPack.getChain()) {
+					if (otherPack.customClasses.elements.get(ID.parseBG(typeText.getValue())) instanceof TypeElement type) {
+						try {
+							return type.resolve(new HashSet<>());
+						}
+						catch (CyclicException ignored) {}
 					}
-					catch (CyclicException ignored) {}
 				}
 			}
 			return null;

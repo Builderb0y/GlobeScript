@@ -1,14 +1,16 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class PackData {
 
-	public final ProjectData projectData;
-	public final VirtualFile dataFolder;
+	public final ProjectData projectData; public ProjectData projectData() { return this.projectData; }
+	public final VirtualFile dataFolder; public VirtualFile dataFolder() { return this.dataFolder; }
+	public final Set<PackData> dependencies; public Set<PackData> dependencies() { return this.dependencies; }
 	public final CustomClassEnvironment customClasses;
 	public final ColumnValueEnvironment columnValues;
 	public final WorldTraitEnvironment worldTraits;
@@ -16,9 +18,24 @@ public class PackData {
 	public PackData(ProjectData data, VirtualFile dataFolder) {
 		this.projectData = data;
 		this.dataFolder = dataFolder;
+		this.dependencies = new ObjectLinkedOpenHashSet<>(1);
 		this.customClasses = new CustomClassEnvironment(this);
 		this.columnValues = new ColumnValueEnvironment(this);
 		this.worldTraits = new WorldTraitEnvironment(this);
+	}
+
+	public Set<PackData> getChain() {
+		Set<PackData> set = new ObjectOpenHashSet<>();
+		this.addChain(set);
+		return set;
+	}
+
+	public void addChain(Set<PackData> set) {
+		if (set.add(this)) {
+			for (PackData dependency : this.dependencies) {
+				dependency.addChain(set);
+			}
+		}
 	}
 
 	public static PackData find(VirtualFile file) {
@@ -27,12 +44,13 @@ public class PackData {
 	}
 
 	public UID identify(VirtualFile file) {
-		return identify(this.dataFolder, file);
+		return identify(Collections.singletonMap(this.dataFolder, this), file);
 	}
 
-	public static UID identify(VirtualFile dataFolder, VirtualFile file) {
+	public static UID identify(Map<VirtualFile, PackData> dataFolder, VirtualFile file) {
 		List<String> parts = new ArrayList<>();
-		while (file != null && !file.equals(dataFolder)) {
+		PackData pack = null;
+		while (file != null && (pack = dataFolder.get(file)) == null) {
 			parts.add(file.getNameWithoutExtension());
 			file = file.getParent();
 		}
@@ -59,7 +77,7 @@ public class PackData {
 		}
 		if (index == 0) return null;
 		String elementPath = String.join("/", parts.subList(0, index).reversed());
-		return new UID(new ID(registryNamespace, registryPath), new ID(elementNamespace, elementPath), tag);
+		return new UID(pack, new ID(registryNamespace, registryPath), new ID(elementNamespace, elementPath), tag);
 	}
 
 	public static String _get(List<String> parts, int index) {

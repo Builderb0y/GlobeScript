@@ -1,5 +1,6 @@
 package builderb0y.globescript.datadriven;
 
+import java.util.Collections;
 import java.util.function.BiConsumer;
 
 import com.intellij.openapi.vfs.VfsUtil;
@@ -97,17 +98,17 @@ public record ID(String namespace, String path) {
 		return this.equals(uid.registry());
 	}
 
-	public boolean contains(VirtualFile dataFolder, VirtualFile file, PendingReference.Type type) {
-		UID uid = PackData.identify(dataFolder, file);
+	public boolean contains(PackData pack, VirtualFile file, PendingReference.Type type) {
+		UID uid = PackData.identify(Collections.singletonMap(pack.dataFolder, pack), file);
 		return uid != null && type.allows(uid) && this.registryEquals(uid);
 	}
 
-	public boolean contains(VirtualFile dataFolder, PsiFile psiFile, PendingReference.Type type) {
-		return this.contains(dataFolder, psiFile.getVirtualFile(), type);
+	public boolean contains(PackData pack, PsiFile psiFile, PendingReference.Type type) {
+		return this.contains(pack, psiFile.getVirtualFile(), type);
 	}
 
-	public boolean contains(VirtualFile dataFolder, PsiElement element, PendingReference.Type type) {
-		return this.contains(dataFolder, element.getContainingFile(), type);
+	public boolean contains(PackData pack, PsiElement element, PendingReference.Type type) {
+		return this.contains(pack, element.getContainingFile(), type);
 	}
 
 	public String toTagString() {

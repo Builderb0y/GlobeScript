@@ -82,9 +82,7 @@ public abstract class PendingElement {
 		}
 	}
 
-	public FieldInjectorMap getFields() {
-		return FieldInjectorMap.EMPTY;
-	}
+	public abstract FieldInjectorMap getFields();
 
 	public ShorthandParser<?, ?> getShorthandParser() {
 		return null;

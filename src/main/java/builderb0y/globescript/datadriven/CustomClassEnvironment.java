@@ -25,10 +25,10 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 	}
 
 	public void setupEnvironment(EnvironmentModel environment, VirtualFile caller) {
-		UID uid = this.packData.identify(caller);
+		UID uid = this.packData.projectData.identify(caller);
 		RawTypeModel owner = null;
 		if (uid != null) try {
-			if (this.get(uid.element()) instanceof MemberElement member) {
+			if (uid.pack().customClasses.get(uid.element()) instanceof MemberElement member) {
 				UserClassElement ownerElement = member.owner();
 				if (ownerElement != null) {
 					owner = ownerElement.resolve(new HashSet<>());
@@ -42,8 +42,11 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 	}
 
 	public CustomElement get(ID id) {
-		CustomElement element = this.elements.get(id);
-		return element == SpecialMarker.ABSENT ? null : element;
+		for (PackData pack : this.packData.getChain()) {
+			CustomElement element = pack.customClasses.elements.get(id);
+			if (element != SpecialMarker.ABSENT) return element;
+		}
+		return null;
 	}
 
 	@Override

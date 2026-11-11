@@ -1,5 +1,6 @@
 package builderb0y.globescript.datadriven;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,8 @@ public class GsEnv {
 	public Map<ID, List<SchemaModel>> schemas = new Object2ObjectOpenHashMap<>();
 	public Map<ID, List<ReferenceModel>> references = new Object2ObjectOpenHashMap<>();
 	public Map<ID, List<RequiredTagModel>> requiredTags = new Object2ObjectOpenHashMap<>();
+	public Map<String, PackData> packsByName = new Object2ObjectOpenHashMap<>();
+	public Map<VirtualFile, PackData> packsByFolder = new Object2ObjectOpenHashMap<>();
 	public StandardTypes standardTypes;
 
 	public GsEnv(ProjectData projectData) {
@@ -63,8 +66,22 @@ public class GsEnv {
 	public boolean checkErrors(PendingDataContext pending) {
 		if (pending.errors.isEmpty()) return false;
 		this.errors.putAll(pending.errors);
-		Set<PsiFile> files = this.errors.keySet().stream().map(PsiElement::getContainingFile).collect(Collectors.toSet());
-		PsiFile firstFile = this.findUnopenFile(files);
+		Map<PsiFile, List<PsiErrorDisplay>> files = (
+			this
+			.errors
+			.entrySet()
+			.stream()
+			.collect(
+				Collectors.groupingBy(
+					(Map.Entry<PsiElement, List<PsiErrorDisplay>> entry) -> entry.getKey().getContainingFile(),
+					Collectors.flatMapping(
+						(Map.Entry<PsiElement, List<PsiErrorDisplay>> entry) -> entry.getValue().stream(),
+						Collectors.toList()
+					)
+				)
+			)
+		);
+		PsiFile firstFile = this.findUnopenFile(files.keySet());
 		if (firstFile != null) Notifications.Bus.notify(
 			new Notification(
 				Instances.ERROR_NOTIFICATION,
@@ -85,6 +102,7 @@ public class GsEnv {
 					FileEditorManager.getInstance(firstFile.getProject()).openFile(firstFile.getVirtualFile());
 				}
 			})
+			.addAction(new DisplayErrorAction(files.get(firstFile).getFirst().text))
 		);
 		return true;
 	}
@@ -103,6 +121,8 @@ public class GsEnv {
 		this.environments.clear();
 		this.schemas.clear();
 		this.references.clear();
+		this.packsByName.clear();
+		this.packsByFolder.clear();
 		this.standardTypes = null;
 		VirtualFile envFolder = this.envFolder();
 		if (envFolder == null) return;
@@ -114,12 +134,16 @@ public class GsEnv {
 			ConvertingDataContext converting = new ConvertingDataContext(pending);
 			for (PendingType type : pending.types.values()) {
 				RawTypeModel resolution = converting.getType(type.name, type.element);
-				if (resolution != null) this.types.put(type.name, resolution);
+				if (resolution != null && this.types.put(type.name, resolution) != null) {
+					throw new RuntimeException("Duplicate type name: " + type.name);
+				}
 			}
 			if (this.checkErrors(pending)) break done;
 			for (PendingEnvironment environment : pending.environments.values()) {
 				EnvironmentConfigurator resolution = converting.getEnvironment(environment.name, environment.element);
-				if (resolution != null) this.environments.put(environment.name, resolution);
+				if (resolution != null && this.environments.put(environment.name, resolution) != null) {
+					throw new RuntimeException("Duplicate environment name: " + environment.name);
+				}
 			}
 			if (this.checkErrors(pending)) break done;
 			for (PendingSchema schema : pending.schemas) {
@@ -129,9 +153,26 @@ public class GsEnv {
 			for (PendingReference reference : pending.references) {
 				this.references.computeIfAbsent(reference.reference.registry, $ -> new ObjectArrayList<>()).add(reference.resolve());
 			}
+			if (this.checkErrors(pending)) break done;
 			for (PendingRequiredTag requiredTag : pending.requiredTags) {
 				this.requiredTags.computeIfAbsent(requiredTag.registry, $ -> new ObjectArrayList<>()).add(requiredTag.resolve());
 			}
+			if (this.checkErrors(pending)) break done;
+			for (PendingPack pack : pending.packs) {
+				PackData packData = new PackData(this.projectData, pack.dataFolder);
+				if (this.packsByName.put(pack.name, packData) != null) {
+					throw new RuntimeException("Duplicate pack name: " + pack.name);
+				}
+				if (this.packsByFolder.put(pack.dataFolder, packData) != null) {
+					throw new RuntimeException("Duplicate pack folder: " + pack.dataFolder.getPath());
+				}
+			}
+			for (PendingPack pendingPack : pending.packs) {
+				PackData root = this.packsByName.get(pendingPack.name);
+				Arrays.stream(pendingPack.dependencies).map(this.packsByName::get).forEach((PackData pack) -> pack.dependencies.add(root));
+				root.scan();
+			}
+			if (this.checkErrors(pending)) break done;
 			this.standardTypes = this.new StandardTypesImpl();
 		}
 		catch (Exception exception) {
@@ -139,6 +180,8 @@ public class GsEnv {
 			this.environments.clear();
 			this.schemas.clear();
 			this.references.clear();
+			this.packsByName.clear();
+			this.packsByFolder.clear();
 			Notifications.Bus.notify(
 				new Notification(
 					Instances.ERROR_NOTIFICATION,

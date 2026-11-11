@@ -7,10 +7,10 @@ import java.util.List;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-public record UID(ID registry, ID element, boolean tag) {
+public record UID(PackData pack, ID registry, ID element, boolean tag) {
 
-	public VirtualFile findJson(VirtualFile dataFolder) {
-		VirtualFile file = dataFolder.findChild(this.element.namespace());
+	public VirtualFile findJson() {
+		VirtualFile file = this.pack.dataFolder.findChild(this.element.namespace());
 		if (file == null) return null;
 		if (this.tag) {
 			file = file.findChild("tags");

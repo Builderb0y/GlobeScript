@@ -45,6 +45,7 @@ public class PendingDataContext {
 	public List<PendingSchema> schemas = new ArrayList<>();
 	public List<PendingReference> references = new ArrayList<>();
 	public List<PendingRequiredTag> requiredTags = new ArrayList<>();
+	public List<PendingPack> packs = new ArrayList<>();
 
 	public PendingDataContext(ProjectData projectData, VirtualFile envFolder) {
 		this.projectData = projectData;
@@ -62,31 +63,30 @@ public class PendingDataContext {
 			},
 			this::scan
 		);
+		VirtualFile packsFile = this.envFolder.findChild("packs.json5");
+		if (packsFile == null) packsFile = this.envFolder.findChild("packs.json");
+		if (packsFile != null) this.scanPacks(packsFile);
 	}
 
 	public boolean scan(VirtualFile file) {
 		if (!file.isDirectory()) {
 			PsiFile psiFile = PsiManager.getInstance(this.projectData.project).findFile(file);
-			if (psiFile != null) try {
-				for (PsiElement root : psiFile.getChildren()) {
-					if (root instanceof JsonObject object) {
-						for (JsonProperty property : object.getPropertyList()) {
-							JsonValue value = property.getValue();
-							switch (property.getName()) {
-								case "types" -> this.expectArray(value, PendingType::new).forEach((PendingType type) -> {
-									PendingType old = this.types.putIfAbsent(type.name, type);
-									if (old != null) this.addError(type.element, "Type '" + type.name + "' is already defined.");
-								});
-								case "environments" -> this.expectArray(value, PendingEnvironment::new).forEach((PendingEnvironment environment) -> {
-									PendingEnvironment old = this.environments.putIfAbsent(environment.name, environment);
-									if (old != null) this.addError(environment.element, "Environment '" + environment.name + "' is already defined.");
-								});
-								case "script_schemas" -> this.expectArray(value, PendingSchema::new).forEach(this.schemas::add);
-								case "references" -> this.expectArray(value, PendingReference::new).forEach(this.references::add);
-								case "required_tags" -> this.expectArray(value, PendingRequiredTag::new).forEach(this.requiredTags::add);
-								default -> this.addError(property.getNameElement(), "Expected one of: { types, environments, schemas }");
-							}
-						}
+			if (psiFile instanceof JsonFile jsonFile && jsonFile.getTopLevelValue() instanceof JsonObject object) try {
+				for (JsonProperty property : object.getPropertyList()) {
+					JsonValue value = property.getValue();
+					switch (property.getName()) {
+						case "types" -> this.expectArray(value, PendingType::new).forEach((PendingType type) -> {
+							PendingType old = this.types.putIfAbsent(type.name, type);
+							if (old != null) this.addError(type.element, "Type '" + type.name + "' is already defined.");
+						});
+						case "environments" -> this.expectArray(value, PendingEnvironment::new).forEach((PendingEnvironment environment) -> {
+							PendingEnvironment old = this.environments.putIfAbsent(environment.name, environment);
+							if (old != null) this.addError(environment.element, "Environment '" + environment.name + "' is already defined.");
+						});
+						case "script_schemas" -> this.expectArray(value, PendingSchema::new).forEach(this.schemas::add);
+						case "references" -> this.expectArray(value, PendingReference::new).forEach(this.references::add);
+						case "required_tags" -> this.expectArray(value, PendingRequiredTag::new).forEach(this.requiredTags::add);
+						default -> this.addError(property.getNameElement(), "Expected one of: { types, environments, schemas }");
 					}
 				}
 			}
@@ -95,6 +95,20 @@ public class PendingDataContext {
 			}
 		}
 		return true;
+	}
+
+	public void scanPacks(VirtualFile packsFile) {
+		PsiFile psiFile = PsiManager.getInstance(this.projectData.project).findFile(packsFile);
+		if (psiFile instanceof JsonFile jsonFile && jsonFile.getTopLevelValue() instanceof JsonObject object) try {
+			for (JsonProperty property : object.getPropertyList()) {
+				if (property.getName().equals("packs")) {
+					this.expectArray(property.getValue(), PendingPack::new).forEach(this.packs::add);
+				}
+			}
+		}
+		catch (Exception exception) {
+			this.addError(psiFile, new PsiErrorDisplay(0, psiFile.getTextLength(), exception));
+		}
 	}
 
 	public void addError(PsiElement element, String error) {

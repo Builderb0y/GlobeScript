@@ -61,7 +61,7 @@ public abstract class DynamicRegistry<T extends DynamicRegistryElement> {
 		for (String part : this.registryPath) {
 			if (path.regionMatches(slash + 1, part, 0, part.length())) {
 				slash += part.length() + 1;
-				if (path.charAt(slash) != '/') return null;
+				if (slash >= path.length() || path.charAt(slash) != '/') return null;
 			}
 			else {
 				return null;

@@ -1,8 +1,5 @@
 package builderb0y.globescript.datadriven;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -15,7 +12,6 @@ public class ProjectData {
 	public final Project project;
 	public final VirtualFile contentRoot;
 	public GsEnv env;
-	public Map<VirtualFile /* data folder */, PackData> packs = new HashMap<>();
 
 	public ProjectData(Project project, VirtualFile contentRoot) {
 		this.project = project;
@@ -30,18 +26,18 @@ public class ProjectData {
 		return null;
 	}
 
+	public UID identify(VirtualFile file) {
+		return PackData.identify(this.environment().packsByFolder, file);
+	}
+
 	public PackData getPackData(VirtualFile file) {
+		GsEnv environment = this.environment();
 		while (file != null) {
-			PackData pack = this.packs.get(file);
+			PackData pack = environment.packsByFolder.get(file);
 			if (pack != null) return pack;
 			else file = file.getParent();
 		}
 		return null;
-	}
-
-	public PackData getProvidedDataPack() {
-		VirtualFile provided = this.contentRoot.findFileByRelativePath("gs_env/provided/data");
-		return provided != null ? this.packs.get(provided) : null;
 	}
 
 	public ScriptEnvironment combineAllEnvironments(PsiElement source) {
@@ -65,16 +61,19 @@ public class ProjectData {
 		for (VirtualFile parent = file; parent != null; parent = parent.getParent()) {
 			switch (parent.getName()) {
 				case "data" -> {
-					PackData pack = this.packs.get(parent);
-					if (pack != null) {
-						changed |= pack.fileChanged(file);
-						break loop;
+					if (this.env != null) {
+						PackData pack = this.env.packsByFolder.get(parent);
+						if (pack != null) {
+							changed |= pack.fileChanged(file);
+							break loop;
+						}
 					}
 				}
 				case "gs_env" -> {
 					if (this.env != null && parent.equals(this.env.envFolder())) {
 						this.env = null;
 						changed = true;
+						break loop;
 					}
 				}
 			}
@@ -94,23 +93,5 @@ public class ProjectData {
 
 	public void reload() {
 		this.env = null;
-		this.packs.clear();
-		VirtualFile src = this.contentRoot.findChild("src");
-		if (src != null) {
-			for (VirtualFile dataPack : src.getChildren()) {
-				VirtualFile dataFolder = dataPack.findFileByRelativePath("resources/data");
-				if (dataFolder != null) {
-					PackData pack = new PackData(this, dataFolder);
-					pack.scan();
-					this.packs.put(dataFolder, pack);
-				}
-			}
-		}
-		VirtualFile provided = this.contentRoot.findFileByRelativePath("gs_env/provided/data");
-		if (provided != null) {
-			PackData pack = new PackData(this, provided);
-			pack.scan();
-			this.packs.put(provided, pack);
-		}
 	}
 }

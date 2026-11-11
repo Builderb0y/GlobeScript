@@ -133,10 +133,10 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			return false;
 		}
 
-		public boolean checkRequiredTags(VirtualFile dataFolder, JsonFile file, AnnotationHolder holder, GsEnv metadata) {
+		public boolean checkRequiredTags(PackData pack, JsonFile file, AnnotationHolder holder, GsEnv metadata) {
 			JsonValue top = file.getTopLevelValue();
 			for (Map.Entry<ID, List<RequiredTagModel>> entry : metadata.requiredTags.entrySet()) {
-				if (entry.getKey().contains(dataFolder, file, PendingReference.Type.ELEMENT)) {
+				if (entry.getKey().contains(pack, file, PendingReference.Type.ELEMENT)) {
 					for (RequiredTagModel model : entry.getValue()) {
 						if (model.when.test(top)) {
 							if (ReferencesSearch.search(file).anyMatch(Predicates.alwaysTrue())) {
@@ -175,13 +175,13 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			return end > start ? new TextRange(start, end) : null;
 		}
 
-		public boolean annotateScript(VirtualFile dataFolder, JsonElement jsonElement, AnnotationHolder holder, GsEnv metadata) {
+		public boolean annotateScript(PackData pack, JsonElement jsonElement, AnnotationHolder holder, GsEnv metadata) {
 			TextRange range = getArrayRange(jsonElement);
 			if (range != null) {
 				PsiFile psiFile = jsonElement.getContainingFile();
 				VirtualFile virtualFile = psiFile.getVirtualFile();
 				for (Map.Entry<ID, List<SchemaModel>> entry : metadata.schemas.entrySet()) {
-					if (entry.getKey().contains(dataFolder, virtualFile, PendingReference.Type.ELEMENT)) {
+					if (entry.getKey().contains(pack, virtualFile, PendingReference.Type.ELEMENT)) {
 						for (SchemaModel model : entry.getValue()) {
 							if (model.matches(jsonElement)) {
 								String text = psiFile.getText();
@@ -237,7 +237,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 			GsEnv metadata = project != null ? project.environment() : null;
 			if (jsonElement instanceof JsonFile jsonFile) {
 				if (pack != null) {
-					if (this.checkRequiredTags(pack.dataFolder, jsonFile, holder, metadata)) return;
+					if (this.checkRequiredTags(pack, jsonFile, holder, metadata)) return;
 				}
 			}
 			else {
@@ -255,7 +255,7 @@ public abstract class GlobeScriptAnnotator implements Annotator {
 					pack != null &&
 					VfsUtil.isAncestor(pack.dataFolder, file, true)
 				) {
-					annotated = this.annotateScript(pack.dataFolder, jsonElement, holder, metadata);
+					annotated = this.annotateScript(pack, jsonElement, holder, metadata);
 				}
 				else {
 					annotated = false;

@@ -19,24 +19,33 @@ import org.jetbrains.annotations.NotNull;
 
 public class DisplayErrorAction extends AnAction {
 
-	public Throwable throwable;
+	public String message;
 
 	public DisplayErrorAction(Throwable throwable) {
 		super("Show Error");
-		this.throwable = throwable;
+		this.message = getStackTrace(throwable);
+	}
+
+	public DisplayErrorAction(String message) {
+		super("Show Error");
+		this.message = message;
 	}
 
 	@Override
 	public void actionPerformed(@NotNull AnActionEvent event) {
-		show(event.getProject(), this.throwable);
+		show(event.getProject(), this.message);
 	}
 
 	public static class DisplayErrorIntentionAction implements IntentionAction {
 
-		public Throwable throwable;
+		public String message;
+
+		public DisplayErrorIntentionAction(String message) {
+			this.message = message;
+		}
 
 		public DisplayErrorIntentionAction(Throwable throwable) {
-			this.throwable = throwable;
+			this.message = getStackTrace(throwable);
 		}
 
 		@Override
@@ -51,7 +60,7 @@ public class DisplayErrorAction extends AnAction {
 
 		@Override
 		public void invoke(@NotNull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
-			show(project, this.throwable);
+			show(project, this.message);
 		}
 
 		@Override
@@ -70,14 +79,18 @@ public class DisplayErrorAction extends AnAction {
 		}
 	}
 
-	public static void show(Project project, Throwable throwable) {
+	public static String getStackTrace(Throwable throwable) {
 		StringWriter writer = new StringWriter(1024);
 		try (PrintWriter printer = new PrintWriter(writer)) {
 			throwable.printStackTrace(printer);
 		}
+		return writer.toString();
+	}
+
+	public static void show(Project project, String message) {
 		new MessageDialog(
 			project,
-			writer.toString(),
+			message,
 			"gs_env error:",
 			new String[] { Messages.getOkButton() },
 			0,

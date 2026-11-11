@@ -48,23 +48,22 @@ public class TagCompleter extends CompletionContributor {
 			}
 			VirtualFile containingFile = parameters.getOriginalFile().getVirtualFile();
 			if (containingFile != null) {
-				PackData pack = PackData.find(containingFile);
-				if (pack != null) {
-					PackData providedPack = pack.projectData.getProvidedDataPack();
-					UID uid = pack.identify(containingFile);
+				PackData originalPack = PackData.find(containingFile);
+				if (originalPack != null) {
+					UID uid = originalPack.identify(containingFile);
 					if (uid != null) {
-						if (uid.tag()) {
-							this.search(text, pack, new TargetModel(uid.registry(), null, null), PendingReference.Type.EITHER, results);
-							if (providedPack != null) this.search(text, providedPack, new TargetModel(uid.registry(), null, null), PendingReference.Type.EITHER, results);
-						}
-						else {
-							for (Map.Entry<ID, List<ReferenceModel>> entry : pack.projectData.environment().references.entrySet()) {
-								if (entry.getKey().registryEquals(uid)) {
-									for (ReferenceModel model : entry.getValue()) {
-										PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonString);
-										if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
-											this.search(text, pack, model.declaration, model.type, results);
-											if (providedPack != null) this.search(text, providedPack, model.declaration, model.type, results);
+						for (PackData pack : originalPack.getChain()) {
+							if (uid.tag()) {
+								this.search(text, pack, new TargetModel(uid.registry(), null, null), PendingReference.Type.EITHER, results);
+							}
+							else {
+								for (Map.Entry<ID, List<ReferenceModel>> entry : pack.projectData.environment().references.entrySet()) {
+									if (entry.getKey().registryEquals(uid)) {
+										for (ReferenceModel model : entry.getValue()) {
+											PsiElement startingPoint = model.reference.jsonPath.getRootFor(jsonString);
+											if (startingPoint != null && (model.reference.condition == null || model.reference.condition.test(startingPoint))) {
+												this.search(text, pack, model.declaration, model.type, results);
+											}
 										}
 									}
 								}

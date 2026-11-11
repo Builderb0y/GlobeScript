@@ -112,6 +112,7 @@
 				"world World"
 			],
 			"instance_fields": [
+				"random world.random",
 				"long world.worldSeed",
 				"int world.minValidYLevel",
 				"int world.maxValidYLevel"

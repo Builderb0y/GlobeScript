@@ -5,6 +5,11 @@ import com.intellij.psi.PsiElement;
 
 public class PendingSuperType extends PendingElement implements PendingElement.Named {
 
+	@Override
+	public FieldInjectorMap getFields() {
+		return FieldInjectorMap.EMPTY;
+	}
+
 	public static final PendingSuperType[] EMPTY_ARRAY = {};
 
 	public String name;
@@ -22,6 +27,6 @@ public class PendingSuperType extends PendingElement implements PendingElement.N
 
 	@Override
 	public void injectAll(PendingDataContext context, PsiElement element) {
-		this.name = ((JsonStringLiteral)(element)).getValue();
+		this.name = context.expectString(element);
 	}
 }
