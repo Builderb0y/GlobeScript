@@ -5,7 +5,8 @@
 			"data_folder": "src/common/resources/data",
 			"dependencies": [
 				"26.1.2",
-				"26.2"
+				"26.2",
+				"26.3"
 			]
 		},
 		{
@@ -18,6 +19,13 @@
 		{
 			"name": "26.2",
 			"data_folder": "src/26.2/resources/data",
+			"dependencies": [
+				"common"
+			]
+		},
+		{
+			"name": "26.3",
+			"data_folder": "src/26.3/resources/data",
 			"dependencies": [
 				"common"
 			]

@@ -44,7 +44,7 @@ public class CustomClassEnvironment extends DynamicRegistry<CustomElement> {
 	public CustomElement get(ID id) {
 		for (PackData pack : this.packData.getChain()) {
 			CustomElement element = pack.customClasses.elements.get(id);
-			if (element != SpecialMarker.ABSENT) return element;
+			if (element != null && element != SpecialMarker.ABSENT) return element;
 		}
 		return null;
 	}

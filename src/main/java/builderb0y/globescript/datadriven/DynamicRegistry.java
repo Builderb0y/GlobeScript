@@ -1,5 +1,6 @@
 package builderb0y.globescript.datadriven;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -85,6 +86,11 @@ public abstract class DynamicRegistry<T extends DynamicRegistryElement> {
 	}
 
 	public abstract T compute(VirtualFile file);
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + " for " + this.packData.dataFolder.getPath();
+	}
 
 	public static class DynamicRegistryElement {
 

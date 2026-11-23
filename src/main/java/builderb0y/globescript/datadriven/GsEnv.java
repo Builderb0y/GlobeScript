@@ -169,7 +169,9 @@ public class GsEnv {
 			}
 			for (PendingPack pendingPack : pending.packs) {
 				PackData root = this.packsByName.get(pendingPack.name);
-				Arrays.stream(pendingPack.dependencies).map(this.packsByName::get).forEach((PackData pack) -> pack.dependencies.add(root));
+				for (String dependency : pendingPack.dependencies) {
+					this.packsByName.get(dependency).dependencies.add(root);
+				}
 				root.scan();
 			}
 			if (this.checkErrors(pending)) break done;
